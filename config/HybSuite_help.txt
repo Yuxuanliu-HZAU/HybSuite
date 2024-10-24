@@ -1,0 +1,171 @@
+HybSuite v. 1.1.0 released on 10.20.2024 by The Sun Lab.
+Developed by: Yuxuan Liu.
+Contributors: Miao Sun, Yiying Wang, Xueqin Wang, Liguo Zhang, Tao Xiong , Xiaotong Niu, Xinru Zhang, Xiaowen Ma, Tianxiang Li.
+If you have any questions/problems/suggestions，please visit: https://github.com/Yuxuanliu-HZAU/Super-Auto-HybPiper.git
+Latest version: 1.1.0
+
+[1] Before running HybSuite, you have to prepare:
+
+=====>>> Necessary folder and textfiles <<<=====
+> FOLDER: You have to prepare the input folder which contains nescessary txt files.
+            The absolute directory of the input folder: <input directory> needs to be specified by the parameter '-i'.
+
+> TEXTFILES:
+->Species names list (Including ingroup and outgroup):
+  According to your needs:
+  You must provide at least one of the following two types of species names lists in the <input directory> specified by the parameter '-i'.
+  And you must set the same filenames as follows.
+  Type1: SRR_Spname.txt                 The list of SRR numbers and their corresponding species names.
+                                        (the first column is SRR number, the second column is the species name corresponding to each SRR number, separated by tab, "\t")
+
+  Type2: My_Spname.txt                  The name list of new species which are sequenced by yourself and haven't been cleaned before. (include ingroups and outgroups)"
+                                        If you provide this textfile, you must set the option "-my_raw_data" to specify the directory of your new raw data in the format of fastq/fastq.gz.
+
+->Outgroup names list (Only including outgroup names):
+  Outgroup.txt                          The name list of your outgroups. (No number limitation)
+
+[2] HybSuite Usage Instructions (choose one of the following usages):
+
+===> Usage 1: Run until constructing the NGS database (Stage1)
+  Command: bash "/absolute/path/to/HybSuite.sh" --run_to_database [Options] ...
+
+===> Usage 2: Run until finishing the HybPiper pipeline (Stages 1-2)
+  Command: bash "/absolute/path/to/HybSuite.sh" --run_to_hybpiper [Options] ...
+
+===> Usage 3: Run until producing alignments (Stages 1-3)
+  Command: bash "/absolute/path/to/HybSuite.sh" --run_to_alignments [Options] ...
+
+===> Usage 4: Run until constructing trees (Stages 1-4)
+  Command: bash "/absolute/path/to/HybSuite.sh" --run_to_trees [Options] ...
+
+===> Usage 5: Run all stages (Stages 1-5)
+  Command: bash "/absolute/path/to/HybSuite.sh" --run_all [Options] ...
+
+======> General options
+  -h, --help                            Display this help message
+  -v, --version                         Display the version number
+  -i DIR                                Set the <input directory> which must encompass one of two name lists. (Absolute Path)
+  -o DIR                                Set the <output directory> (All results produced by HybSuite will be output to this directory, Absolute Path) (Default:<input directory>/05-HybSuite-Results)
+                                        (Default: <output directory>/HybSuite_results)
+  -d DIR                                Set the <database directory> which is used to store downloaded data and existing data.
+                                        (Default: <output directory>/NGS_database)
+  -t DIR                                Set the absolute way of your target file for HybPiper
+  -prefix STRING                        The prefix of related output files. (Default: HybSuite)
+  -conda1 STRING                        The Conda environment for r, python, IQTREE, RAxML, RAxML-NG, ModelTest-NG, mafft, trimal, phyx, and pigz (for fastq.gz).
+  -conda2 STRING                        The Conda environment for HybPiper
+  -conda3 STRING                        The Conda environment for ParaGone
+
+
+======> Options for threads used for running individual softwares
+  -nt NUM                               No. cores/threads used for running Trimmomatic and MAFFT.(Default:10)
+  -nt_fasterq_dump NUM                  No. cores/threads used for running fasterq-dump.(Default:10)
+  -nt_pigz NUM                          No. cores/threads used for running pigz to turn fastq into fastq.gz.(Default:10)
+  -nt_trimmomatic NUM                   No. cores/threads used for running Trimmomatic-0.39. (Default:10)
+  -nt_hybpiper NUM                      No. cores/threads used for running HybPiper. (Default:10)
+  -nt_paragone NUM                      No. cores/threads used for running ParaGone. (Default:10)
+  -nt_mafft NUM                         No. cores/threads used for running mafft. (Default:10)
+  -nt_modeltest_ng NUM                  No. cores/threads used for running ModelTest-NG. (Default:10)
+  -nt_iqtree NUM                        No. cores/threads used for running IQ-TREE. (Default:10)
+  -nt_raxmlng NUM                       No. cores/threads used for running RAxML-NG. (Default:10)
+
+
+======> Options for downloading NGS data (Stage1)
+  -download_format fastq/fastq_gz       The format of your downloaded NGS data.
+                                        "fastq" for the format of fastq (files end with fastq)
+                                        "fastq_gz" for the format of fastq.gz (files end with fastq.gz)
+  -rm_sra TRUE/FALSE                    Choose whether to remove NGS data in sra format. (Default: FALSE)
+                                        "TRUE": Download sra files and then remove them.
+                                        "FALSE": Download sra files and then keep them.
+  -my_raw_data DIR                      The directory of your own NGS raw data (Absolute Path), required file suffixes:
+                                        two-pair-end: [*_1.fastq & *_2.fastq] or
+                                                      [*_1.fq & *_2.fq] or
+                                                      [*_1.fastq.gz & *_2.fastq.gz] or
+                                                      [*_1.fq.gz & *_2.fq.gz]
+                                        single-end: [*.fq] or
+                                                    [*.fastq] or
+                                                    [*.fq.gz] or
+                                                    [*.fastq.gz]
+  -run_HybPiperstats_again TRUE/FALSE   Choose whether to run 'HybPiper stats' again.(Default:FALSE)
+                                        (Prerequisite: It is not your first time to run HybSuite in the same directory specified by '-i')
+                                        If you set this option to TRUE, HybSuite will run 'HybPiper stats' again and recover original results.
+                                        If you set this option to FALSE(Default), HybSuite will skip running 'HybPiper stats' again and go straignt to the next step.
+  -rm_discarded_samples TRUE/FALSE      Choose whether to remove the folders of results generated by 'HybPiper assemble' belonging to abandoned species. (Default: FALSE)
+                                        (Prerequisite: It is not your first time to run HybSuite in the same directory specified by '-i')
+                                        (The abandoned species: The deleted names on your new lists of species names in the folder 00-Sp-list, which should be provided before running HybSuite again.)
+                                        If you set this option to TRUE, HybSuite will remove the result folders of deleted species when you run HybSuite again
+                                        If you set this option to FALSE(Default), HybSuite will not remove the result folders of deleted species and go straignt to the next step.
+
+
+======> Options for running Trimmomatic (Stage1)
+  -trimmomatic_leading_quality NUM      Cut bases off the start of a read, if below this threshold quality. (Default: 3)
+  -trimmomatic_trailing_quality NUM     Cut bases off the end of a read, if below this threshold quality. (Default: 3)
+  -trimmomatic_min_length NUM           Drop a read if it is below this specified length. (Default: 36)
+  -trimmomatic_sliding_window_s NUM     Size of the sliding window used by Trimmomatic; specifies the number of bases to average across. (Default: 4)
+  -trimmomatic_sliding_window_q NUM     The average quality required within the sliding window. (Default: 20)
+
+
+======> Options for running HybPiper (Stage2)
+  -hybpiper_m blast/diamonds
+  -hybpiper_tt dna/aa                   The type of your target file. (Default: dna)
+  -hybpiper_tr dna/aa                   The type of your retrived sequences. (Default: dna)
+  -hybpiper_rs gene/supercontig         The type of sequences you want to recover statistics for by using 'hybpyper stats'. (Default: gene)
+                                        
+
+
+======> Options for running ParaGone (Stage3)
+  -paragone_pool NUM                    Number of alignments to run concurrently. (Default: 1)
+  -paragone_tree iqtree/fasttree        Use FastTree or IQTREE to construct gene trees from alignments. (Default: fasttree)
+  -paragone_treeshrink_q_value          q value for TreeShrink; the quantile(s) to set threshold. (Default: 0.05)
+  -paragone_cutoff_value                Internal branch length cutoff cutting tree. (Default: 0.3)
+
+
+======> Options for running mafft (Stage3)
+  -mafft STRING                         Choose the parameter for running mafft. (Default: _____)
+                                        "Default" (not any settings): run 'mafft-linsi --adjustdirectionaccurately ...'
+                                        "auto": run 'mafft --auto ...'
+  -run_mafft_again TRUE/FALSE           Choose whether to run MAFFT again. (Default: FALSE)
+                                        (Prerequisite: It is not your first time to run HybSuite in the same directory specified by '-i')
+                                        If you set this option to TRUE, HybSuite will run MAFFT again and recover existed data.
+                                        If you set this option to FALSE(Default), HybSuite will skip running MAFFT again and go straight to the next step.
+  -replace_n TRUE/FALSE                 Choose whether to replace the character 'n' with '-' in your alignments. (Default: FALSE)
+                                        If you set this option to TRUE, HybSuite will replace the character 'n' with '-' in your alignments.
+                                        If you set this option to FALSE, HybSuite will not replace the character 'n' with '-' in your alignments.
+  -run_trimal_again TRUE/FALSE          Choose whether to run trimAL again to trim the alignment of each gene. (Default: TRUE)
+                                        If you set this option to TRUE, HybSuite will run trimAL again.
+                                        If you set this option to FALSE, HybSuite will not run trimAL again.
+                                        (A prerequisite for setting this option to TRUE: You have run HybSuite successfully in the same directory specified by '-i' and have run trimal successfully to trimed tageted your alignments)
+
+
+======> Options for running AMAS (Stage4)
+  -run_AMAS TRUE/FALSE                  Choose whether to run iqtree to construct phylogenetic trees. (Default: TRUE)
+
+
+======> Options for running IQ-TREE (Stage4)
+  -run_iqtree TRUE/FALSE                Choose whether to run iqtree to construct phylogenetic trees. (Default: TRUE)
+                                        "TRUE": HybSuite will run iqtree.
+                                        "FALSE": HybSuite will not run iqtree.
+  -iqtree_bb NUM                        No. replicates of bootstrap for running IQTREE. (Default:1000)
+
+
+======> Options for running RAxML-NG (Stage4)
+  -run_raxml_ng TRUE/FALSE              Choose whether to run RAxML-NG to construct phylogenetic trees. (Default: TRUE)
+                                        If you set this option to TRUE, HybSuite will run iqtree.
+                                        If you set this option to FALSE, HybSuite will not run iqtree.
+  -rng_bs_trees NUM                     No. replicates of bootstrap for running RAxML-NG. (Default:1000)
+  -rng_force TRUE/FALSE                 Choose whether to ignore threads warnings when running RAxML-NG. (Default: FALSE)
+                                        If you set this option to TRUE, HybSuite will ignore threads warnings when running raxml-ng.
+                                        If you set this option to FALSE, HybSuite will not ignore threads warnings when running raxml-ng.
+  -rng_constraint_tree DIR              The directory of your constraint tree for running RAxML-NG.
+                                        If you don't have or don't want to specify the constraint trees, just don't specify any parameters for this option.
+
+
+======> Options for running ASTRAL-Ⅲ (Stage4)
+  -run_Astral TRUE/FALSE                Choose whether to run ASTRAL-Ⅲ and Phyparts.
+  -run_Astral_gt_again TRUE/FALSE       Choose whether to skip the step of using raxmlHPC to construct single-gene trees before running ASTRAL-Ⅲ.
+                                        If you set this option to TRUE, HybSuite will skip the step of using raxmlHPC to construct single-gene trees.
+                                        If you set this option to FALSE, HybSuite will not skip the step of using raxmlHPC to construct single-gene trees.
+  -run_Astral_gtr_again TRUE/FALSE      Choose whether to use phyx or mad to reroot single-gene trees.
+                                        If you set this option to TRUE, HybSuite will reroot single-gene trees.
+                                        If you set this option to FALSE, HybSuite will not reroot single-gene trees.
+  -Astral_nt NUM                        No. cores/threads used for running IQTREE. (Default:10)
+
