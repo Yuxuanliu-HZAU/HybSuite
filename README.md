@@ -22,7 +22,9 @@ If you have any questions/problems/suggestions, please visit: [GitHub Repository
 
 ### Purpose
 
-HybSuite was designed for constructing phylogenetic trees from NGS (Next-Generation Sequencing) raw data by only one run. According to the user's aquirement, final trees can be contenated trees constructed by different softwares (IQ-TREE, RAxML, or RAxML-NG), or can be coalescent-based trees constructed by wAstral or ASTRAL-Ⅲ . 
+HybSuite was designed for constructing phylogenetic trees from NGS (Next-Generation Sequencing) raw data by only one run. According to the user's aquirement, final trees can be contenated trees constructed by different softwares ([IQ-TREE](https://github.com/iqtree/iqtree2), RAxML, or RAxML-NG), or can be coalescent-based trees constructed by wAstral or ASTRAL-Ⅲ . 
+
+### Pipline introduction
 
 The HybSuite pipeline starts with NGS (Next-Generation Sequencing) raw data (for example: RNA-seq, Targeted enrichment or WGS(Whole genome sequencing)), which can be downloaded automatically if the user provides the corresponding SRR or ERR numbers, or can be provided by the user if it exists. After which, Trimmomatic-0.39 will be used to remove the adapters and produce clean data. Then, the targeted bait capture will be executed via HybPiper. And then HybSuite will alternatively run 5 orthologs inference pipelines or directly retrieve sequences by HybPiper. Later 
 
