@@ -20,17 +20,20 @@
 If you have any questions/problems/suggestions, please visit: [GitHub Repository](https://github.com/Yuxuanliu-HZAU/HybSuite.git)  
 **Latest version**: 1.1.0
 
-### Purpose
+## Purpose
 
 HybSuite was designed for constructing phylogenetic trees from NGS (Next-Generation Sequencing) raw data by only one run. According to the user's aquirement, final trees can be contenated trees constructed by different softwares ([IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), or [RAxML-NG](https://github.com/amkozlov/raxml-ng), or can be coalescent-based trees constructed by [Aster](https://github.com/chaoszhang/ASTER/tree/master), including [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md) or [ASTRAL-Ⅳ](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md). Remember, all results(downloaded data, ortholog groups, alignments, trees) can be produced by only one run!
 Consequently, HybSuite can incredibly streamline the process of phylogenomic analysis, making it more accessible to researchers from diverse backgrounds.
 
-### Pipline introduction
+## Pipline introduction
 
 The HybSuite pipeline starts with NGS (Next-Generation Sequencing) raw data (for example: RNA-seq, Targeted enrichment or WGS(Whole genome sequencing)), which can be downloaded automatically if the user provides the corresponding SRR or ERR numbers, or can be provided by the user if it exists. After which, Trimmomatic-0.39 will be used to remove the adapters and produce clean data. Then, the targeted bait capture will be executed via HybPiper. And then HybSuite will alternatively run 5 orthologs inference pipelines or directly retrieve sequences by HybPiper. Later 
 
+---
+# INSTALLTION
 
-## 1.Before running HybSuite, you have to prepare:
+# PREPARATION
+## 1. Before running HybSuite, you have to prepare:
 
 ### (1) Necessary folders and text files:
 
