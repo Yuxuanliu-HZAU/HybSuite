@@ -41,13 +41,15 @@ git clone https://github.com/Yuxuanliu-HZAU/HybSuite.git
 ## Dependencies
 Running HybSuite highly relys on dependencies in your conda environment, if you want to run all of the HybSuite pipeline, the following dependencies should be installed in two different conda environments (we temporarily name them as conda1 and conda2, you can specify the conda name by yourself).
 
-- **Dependencies for conda1 environment**
+#### Dependencies for conda1 environment
+
 [phyx](https://github.com/FePhyFoFum/phyx), [MAFFT](https://github.com/GSLBiotech/mafft), [trimAl](https://github.com/inab/trimal), [IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), [RAxML-NG](https://github.com/amkozlov/raxml-ng), 
 
 It is advisable for you to install mamba first to tackle the dependencies discrepancy, the code for installing dependencies are recommended as follows:
 ```
 conda create -n conda1
 conda install conda-forge::mamba -y
+mamba install hybpiper -y
 mamba install phyx -y
 mamba install mafft -y
 mamba install trimal -y
@@ -66,17 +68,17 @@ mamba install raxml-ng -y
 
 - **TEXTFILES**:
 
-  - **Species names list (Including ingroup and outgroup)**:  
+- **Species names list (Including ingroup and outgroup)**:  
     According to your needs, you must provide at least one of the following two types of species names lists in the `<input directory>` specified by the parameter `-i`.  
     Set the filenames as follows:
     
-    - **Type1: `SRR_Spname.txt`** (Optional): The list of SRR numbers and their corresponding species names.  
+  - **Type1: `SRR_Spname.txt`** (Optional): The list of SRR numbers and their corresponding species names.  
       Format: first column is SRR number, second column is the species name (tab-separated).
     
-    - **Type2: `My_Spname.txt`** (Optional): The name list of new species sequenced by yourself and haven't been cleaned before (including ingroups and outgroups).  
+  - **Type2: `My_Spname.txt`** (Optional): The name list of new species sequenced by yourself and haven't been cleaned before (including ingroups and outgroups).  
       If provided, specify the directory of your new raw data in the format of fastq/fastq.gz with the option `-my_raw_data`.
 
-  - **Outgroup names list**:   
+- **Outgroup names list**:   
     Only include outgroup names.  
     **File**: `Outgroup.txt` (No number limitation).
 
@@ -84,14 +86,12 @@ mamba install raxml-ng -y
 
 Choose one of the following usage modes:
 
-- **Usage 1**: Run until constructing the NGS database (Stage1).  
-  **Command**:  
+- **Usage 1**: Run until constructing the NGS database (Stage1).   
   ```bash
   bash "/absolute/path/to/HybSuite.sh" --run_to_database [Options] ...
   ```
   
 - **Usage 2**: Run until finishing the HybPiper pipeline (Stages 1-2)
-  **Command:**
   ```bash
   bash "/absolute/path/to/HybSuite.sh" --run_to_hybpiper [Options] ...
   ```
@@ -102,13 +102,11 @@ Choose one of the following usage modes:
   bash "/absolute/path/to/HybSuite.sh" --run_to_alignments [Options] ...
   ```
 - **Usage 4**: Run until constructing trees (Stages 1-4)
-  **Command:**
   ```bash
   bash "/absolute/path/to/HybSuite.sh" --run_to_trees [Options] ...
   ```
 
 - **Usage 5: Run all stages (Stages 1-5)**
-  **Command**:
   ```bash
   bash "/absolute/path/to/HybSuite.sh" --run_all [Options] ...
   ```
