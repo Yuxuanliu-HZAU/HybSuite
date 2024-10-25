@@ -31,17 +31,17 @@ Consequently, HybSuite can incredibly streamline the process of phylogenomic ana
 The HybSuite pipeline starts with NGS (Next-Generation Sequencing) raw data (for example: RNA-seq, Targeted enrichment or WGS(Whole genome sequencing)), which can be downloaded automatically if the user provides the corresponding SRR or ERR numbers, or can be provided by the user if it exists. After which, Trimmomatic-0.39 will be used to remove the adapters and produce clean data. Then, the targeted bait capture will be executed via HybPiper. And then HybSuite will alternatively run 5 orthologs inference pipelines or directly retrieve sequences by HybPiper. Later 
 
 ---
-# INSTALLTION
+# PREPARATION
+## Installation
 
 HybSite is a shell script, so it is only availiable for Linux/Unix/WSL users, installing HybSuite is easy, you can directly clone the [github repository](https://github.com/Yuxuanliu-HZAU/HybSuite.git)
 ```
 git clone https://github.com/Yuxuanliu-HZAU/HybSuite.git
 ```
-# Dependencies
-
+## Dependencies
 Running HybSuite highly relys on dependencies in your conda environment, if you want to run all of the HybSuite pipeline, the following dependencies should be installed in two different conda environments (we temporarily name them as conda1 and conda2, you can specify the conda name by yourself).
 
-### conda1 environment
+- **Dependencies for conda1 environment**
 [phyx](https://github.com/FePhyFoFum/phyx), [MAFFT](https://github.com/GSLBiotech/mafft), [trimAl](https://github.com/inab/trimal), [IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), [RAxML-NG](https://github.com/amkozlov/raxml-ng), 
 
 It is advisable for you to install mamba first to tackle the dependencies discrepancy, the code for installing dependencies are recommended as follows:
@@ -56,7 +56,7 @@ mamba install raxml -y
 mamba install raxml-ng -y
 ```
 
-# PREPARATION
+
 ## 1. Before running HybSuite, you have to prepare:
 
 ### (1) Necessary folders and text files:
