@@ -22,7 +22,8 @@ If you have any questions/problems/suggestions, please visit: [GitHub Repository
 
 ### Purpose
 
-HybSuite was designed for constructing phylogenetic trees from NGS (Next-Generation Sequencing) raw data by only one run. According to the user's aquirement, final trees can be contenated trees constructed by different softwares ([IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), or [RAxML-NG](https://github.com/amkozlov/raxml-ng), or can be coalescent-based trees constructed by [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md) or ASTRAL- . 
+HybSuite was designed for constructing phylogenetic trees from NGS (Next-Generation Sequencing) raw data by only one run. According to the user's aquirement, final trees can be contenated trees constructed by different softwares ([IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), or [RAxML-NG](https://github.com/amkozlov/raxml-ng), or can be coalescent-based trees constructed by [Aster](https://github.com/chaoszhang/ASTER/tree/master), including [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md) or [ASTRAL-Ⅳ](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md). Remember, all results(downloaded data, ortholog groups, alignments, trees) can be produced by only one run!
+Consequently, HybSuite can incredibly streamline the process of phylogenomic analysis, making it more accessible to researchers from diverse backgrounds.
 
 ### Pipline introduction
 
