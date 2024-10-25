@@ -14,15 +14,15 @@
             /_/         NGS raw data ATGCTACTGATCCAACCT......  >>>>  Trees
 ```
 
-**Released on 10.20.2024 by The Sun Lab**  
+**Released on 10.20.2024 by the Sun Lab**  
 **Developed by**: Yuxuan Liu  
-**Contributors**: Miao Sun, Yiying Wang, Xueqin Wang, Liguo Zhang, Tao Xiong, Xiaotong Niu, Xinru Zhang, Xiaowen Ma, Tianxiang Li  
+**Contributors**: Miao Sun, Xueqin Wang, Liguo Zhang, Tao Xiong, Yiying Wang, Xiaotong Niu, Xinru Zhang, Xiaowen Ma, Mengmeng Wang, Yu Meng
 If you have any questions/problems/suggestions, please visit: [GitHub Repository](https://github.com/Yuxuanliu-HZAU/HybSuite.git)  
 **Latest version**: 1.1.0
 
 ### Purpose
 
-HybSuite was designed for constructing phylogenetic trees from NGS (Next-Generation Sequencing) raw data by only one run. According to the user's aquirement, final trees can be contenated trees constructed by different softwares ([IQ-TREE](https://github.com/iqtree/iqtree2), RAxML, or RAxML-NG), or can be coalescent-based trees constructed by wAstral or ASTRAL-Ⅲ . 
+HybSuite was designed for constructing phylogenetic trees from NGS (Next-Generation Sequencing) raw data by only one run. According to the user's aquirement, final trees can be contenated trees constructed by different softwares ([IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), or [RAxML-NG](https://github.com/amkozlov/raxml-ng), or can be coalescent-based trees constructed by [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md) or ASTRAL- . 
 
 ### Pipline introduction
 
