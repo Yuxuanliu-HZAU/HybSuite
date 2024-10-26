@@ -41,7 +41,7 @@ git clone https://github.com/Yuxuanliu-HZAU/HybSuite.git
 ## Dependencies
 Running HybSuite highly relys on dependencies in your conda environment, if you want to run all of the HybSuite pipeline, the following dependencies should be installed in two different conda environments (we temporarily name them as conda1 and conda2, you can specify the conda name by yourself).
 
-#### Dependencies for conda1 environment
+#### (1) Dependencies for conda1 environment
 
 [phyx](https://github.com/FePhyFoFum/phyx), [MAFFT](https://github.com/GSLBiotech/mafft), [trimAl](https://github.com/inab/trimal), [IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), [RAxML-NG](https://github.com/amkozlov/raxml-ng), 
 
@@ -66,7 +66,9 @@ install.packages("phytools")
 install.packages("ape")
 ```
 
-#### Dependencies for conda2 environment
+#### (2) Dependencies for conda2 environment
+ 
+ If you choose to run one of the ortholog inference algorithms MI/MO/RT/1to1, you should also create another conda environment and install [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone). (Since the discrepancy between ParaGone and other softwares is hard to resolve)
 ```
 conda create -n conda1
 conda install conda-forge::mamba -y
