@@ -26,7 +26,7 @@ HybSuite was designed for constructing phylogenetic trees from NGS (Next-Generat
 
 Consequently, HybSuite can incredibly streamline the process of phylogenomic analysis, making it more accessible to researchers from diverse backgrounds.
 
-## Pipline introduction
+## Pipeline introduction
 
 The HybSuite pipeline starts with NGS (Next-Generation Sequencing) raw data (for example: RNA-seq, Targeted enrichment or WGS(Whole genome sequencing)), which can be downloaded automatically if the user provides the corresponding SRR or ERR numbers, or can be provided by the user if it exists. After which, Trimmomatic-0.39 will be used to remove the adapters and produce clean data. Then, the targeted bait capture will be executed via HybPiper. And then HybSuite will alternatively run 5 orthologs inference pipelines or directly retrieve sequences by HybPiper. Later 
 
