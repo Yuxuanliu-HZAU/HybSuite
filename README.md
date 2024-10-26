@@ -70,7 +70,7 @@ install.packages("ape")
  
  If you choose to run one of the ortholog inference algorithms MI/MO/RT/1to1, you should also create another conda environment and install [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone). (Since the discrepancy between ParaGone and other softwares is hard to resolve)
 ```
-conda create -n conda1
+conda create -n conda2
 conda install conda-forge::mamba -y
 mamba install bioconda::paragone -y
 ```
