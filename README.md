@@ -49,15 +49,29 @@ It is advisable for you to install mamba first to tackle the dependencies discre
 ```
 conda create -n conda1
 conda install conda-forge::mamba -y
-mamba install hybpiper -y
-mamba install phyx -y
-mamba install mafft -y
-mamba install trimal -y
-mamba install iqtree -y
-mamba install raxml -y
-mamba install raxml-ng -y
+mamba install bioconda::hybpiper -y
+mamba install bioconda::phyx -y
+mamba install bioconda::newick_utils
+mamba install bioconda::mafft -y
+mamba install bioconda::trimal -y
+mamba install bioconda::iqtree -y
+mamba install bioconda::raxml -y
+mamba install bioconda::raxml-ng -y
+mamba install r
+```
+If you want to construct Coalescent-based trees, you also need to install R package ape and phytools.
+```
+R
+install.packages("phytools")
+install.packages("ape")
 ```
 
+#### Dependencies for conda2 environment
+```
+conda create -n conda1
+conda install conda-forge::mamba -y
+mamba install bioconda::paragone -y
+```
 
 ## 1. Before running HybSuite, you have to prepare:
 
