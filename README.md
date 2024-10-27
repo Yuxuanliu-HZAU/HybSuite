@@ -62,6 +62,8 @@ mamba install r
 If you want to construct Coalescent-based trees, you also need to install python module 'ete3', R package 'ape' and 'phytools'.
 ```
 pip install ete3
+```
+```
 R
 install.packages("phytools")
 install.packages("ape")
