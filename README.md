@@ -59,8 +59,9 @@ mamba install bioconda::raxml -y
 mamba install bioconda::raxml-ng -y
 mamba install r
 ```
-If you want to construct Coalescent-based trees, you also need to install R package ape and phytools.
+If you want to construct Coalescent-based trees, you also need to install python module 'ete3', R package 'ape' and 'phytools'.
 ```
+pip install ete3
 R
 install.packages("phytools")
 install.packages("ape")
