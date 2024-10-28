@@ -104,31 +104,32 @@ mamba install bioconda::paragone -y
 
 ## 2.HybSuite Usage Instructions:
 
-Choose one of the following usage modes:
+HybSuite ASTER currently has no GUI. You need to run it through the command-line. In a terminal/PowerShell, go to the directory (location) where you have downloaded HybSuite. \
+And then, choose one of the following usage modes to run:
 
 - **Usage 1**: Run until constructing the NGS database (Stage1).   
   ```bash
-  bash "/absolute/path/to/HybSuite.sh" --run_to_database [Options] ...
+  bash bin/HybSuite.sh --run_to_database [Options] ...
   ```
   
 - **Usage 2**: Run until finishing the HybPiper pipeline (Stages 1-2)
   ```bash
-  bash "/absolute/path/to/HybSuite.sh" --run_to_hybpiper [Options] ...
+  bash bin/HybSuite.sh --run_to_hybpiper [Options] ...
   ```
 
 - **Usage 3**: Run until producing alignments (Stages 1-3)
   **Command**:
   ```bash
-  bash "/absolute/path/to/HybSuite.sh" --run_to_alignments [Options] ...
+  bash bin/HybSuite.sh --run_to_alignments [Options] ...
   ```
 - **Usage 4**: Run until constructing trees (Stages 1-4)
   ```bash
-  bash "/absolute/path/to/HybSuite.sh" --run_to_trees [Options] ...
+  bash bin/HybSuite.sh --run_to_trees [Options] ...
   ```
 
 - **Usage 5: Run all stages (Stages 1-5)**
   ```bash
-  bash "/absolute/path/to/HybSuite.sh" --run_all [Options] ...
+  bash bin/HybSuite.sh --run_all [Options] ...
   ```
   
 # General Options
