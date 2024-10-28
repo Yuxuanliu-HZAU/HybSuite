@@ -104,8 +104,7 @@ mamba install bioconda::paragone -y
 
 ## 2.HybSuite Usage Instructions:
 
-HybSuite ASTER currently has no GUI. You need to run it through the command-line. In a terminal/PowerShell, go to the directory (location) where you have downloaded HybSuite. \
-And then, choose one of the following usage modes to run:
+HybSuite ASTER currently has no GUI. You need to run it through the command-line. In a terminal/PowerShell, go to the directory (location) where you have downloaded HybSuite. And then, choose one of the following usage modes to run:
 
 - **Usage 1**: Run until constructing the NGS database (Stage1).   
   ```bash
