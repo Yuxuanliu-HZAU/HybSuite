@@ -47,7 +47,8 @@ Running HybSuite highly relys on dependencies in your conda environment, if you 
 
 It is advisable for you to install mamba first to tackle the dependencies discrepancy, the code for installing dependencies are recommended as follows:
 ```
-conda create -n conda1
+conda create -n <conda1 environment>
+conda activate <conda1 environment>
 conda install conda-forge::mamba -y
 mamba install bioconda::hybpiper -y
 mamba install bioconda::phyx -y
