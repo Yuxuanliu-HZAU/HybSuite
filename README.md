@@ -97,9 +97,9 @@ You can directly run ./bin/Install_all_dependencies.sh to install all desired de
 bash ./bin/Install_all_dependencies.sh <conda1_environment> <conda2_environment>
 ```
 
-## 1. Files before running HybSuite:
+# HybSuite Pipeline Input
 
-### (1) Input folders and files:
+## 1.Input folders and files:
 
 - **INPUT FOLDER**: Containing necessary input `.txt` files.  
   The absolute directory (_path_) of the input folder (`<input directory>`) needs to be specified by the parameter `-i`.
@@ -119,7 +119,10 @@ bash ./bin/Install_all_dependencies.sh <conda1_environment> <conda2_environment>
     The outgroup species names in this analysis.  
     **File**: `Outgroup.txt` (Not limited).
 
-## 2.HybSuite Usage Instruction:
+# HybSuite Usage Instruction
+
+Full instructions on running the HybSuite pipeline, including a step-by-step tutorial using a small test dataset, are available on our wiki:
+https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial
 
 Because the ASTER module in HybSuite currently has no GUI, users need to run it through the command-line. Starting at the HybSuite directory in a terminal/PowerShell, and then run HybSuite under either of **five** modes outlined below:
 
@@ -147,7 +150,11 @@ Because the ASTER module in HybSuite currently has no GUI, users need to run it 
   ```bash
   bash ./bin/HybSuite.sh --run_all [Options] ...
   ```
-  
+
+# HybSuite Pipeline Output
+
+
+
 # General Options
 - **-h, --help**  
   Display this help message.
