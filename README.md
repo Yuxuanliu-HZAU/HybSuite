@@ -24,13 +24,13 @@ If you have any questions/issues/suggestions, please leave a message [here](http
 
 ## What is HybSuite
 
-HybSuite is a bash wrapper, and designed for reconstructing phylogenetic trees using NGS (Next-Generation Sequencing) raw data by only one run. According to the user's preference, final tree can be concatenated trees constructed by [IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), or [RAxML-NG](https://github.com/amkozlov/raxml-ng), or can be the coalescent-based species tree summarized by [ASTER](https://github.com/chaoszhang/ASTER/tree/master), including [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md) or [ASTRAL-Ⅳ](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md).  Please keep in mind that, all results (downloaded data, orthologous groups, alignments, trees) can be produced by one single run!
+HybSuite is a bash wrapper, and designed for reconstructing phylogenetic trees using NGS (Next-Generation Sequencing) raw data by only one single run. According to the user's preference, final tree can be concatenated trees constructed by [IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), or [RAxML-NG](https://github.com/amkozlov/raxml-ng), or can be the coalescent-based species tree summarized by [ASTER](https://github.com/chaoszhang/ASTER/tree/master), including [ASTRAL-III](https://github.com/smirarab/ASTRAL) or [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md). Please keep in mind that, all results (downloaded data, orthologous groups, alignments, trees) can be produced by one single run!
 
 Hence, HybSuite can incredibly streamline the process of phylogenomics analysis, making it more accessible to researchers from diverse research background.
 
 ## Pipeline introduction
 
-The HybSuite pipeline starts with NGS raw data (e.g., RNA-seq, Targeted enrichment or WGS (Whole genome sequencing)), which can be downloaded automatically if the user provides the corresponding accession numbers (ussually prefixed with SRR- or ERR-). After which, [Trimmomatic-0.39](https://github.com/usadellab/Trimmomatic) will be invoked to remove the adapters and produce clean data. Then, the targeted bait capture will be executed via [HybPiper](https://github.com/mossmatters/HybPiper). And then HybSuite will either alternatively run 5 orthologs inference pipelines or directly retrieve sequences by user's choice. 
+The HybSuite pipeline starts with NGS raw data (e.g. RNA-seq, Targeted enrichment or WGS (Whole genome sequencing)), which can be downloaded automatically if the user provides the corresponding accession numbers (usually prefixed with SRR- or ERR-). After which, [Trimmomatic-0.39](https://github.com/usadellab/Trimmomatic) will be invoked to remove the adapters and produce clean data. Then, the targeted bait capture will be executed via [HybPiper](https://github.com/mossmatters/HybPiper). And then HybSuite will either alternatively run 5 orthologs inference algorithum (including LS, MI, MO, RT, 1to1) , or RAPP pipeline (remove all putative paralogs from the results produced by HybPiper), or directly retrieve sequences by user's choice. 
 
 ---
 # PREPARATION
@@ -80,7 +80,7 @@ install.packages("ape")
 
 #### (2) Dependencies for `conda2` environment
  
- This environment is for the ortholog inference algorithms MI/MO/RT/1to1 (Yang and Smith, 2014) and [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone).   
+ This environment is for orthology inference algorithms MI/MO/RT/1to1 (Yang and Smith, 2014) and [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone).   
  _In most cases, the discrepancies between ParaGone and other packages are hard to resolve._  
  
 ```
@@ -88,6 +88,11 @@ conda create -n <conda2 environment>
 conda activate <conda2 environment>
 conda install conda-forge::mamba -y
 mamba install bioconda::paragone -y
+```
+
+You can directly run ./bin/Install_all_dependencies.sh to install all desired dependencies in `conda1` environment and `conda2` environment. 
+```
+bash ./bin/Install_all_dependencies.sh <conda1_environment> <conda2_environment>
 ```
 
 ## 1. Files before running HybSuite:
