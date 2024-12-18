@@ -121,7 +121,7 @@ bash ./bin/Install_all_dependencies.sh <conda1_environment> <conda2_environment>
 
 # HybSuite Usage Instruction
 
-Full instructions on running the HybSuite pipeline, including a step-by-step tutorial using a small test dataset, are available on our wiki:
+Full instructions on running the HybSuite pipeline, including a tutorial using a small test dataset, are available on our wiki:
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial
 
 Because the ASTER module in HybSuite currently has no GUI, users need to run it through the command-line. Starting at the HybSuite directory in a terminal/PowerShell, and then run HybSuite under either of **five** modes outlined below:
