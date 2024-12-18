@@ -31,7 +31,8 @@ Hence, HybSuite can incredibly streamline the process of phylogenomics analysis,
 ## Pipeline introduction
 
 The HybSuite pipeline starts with NGS raw data (e.g. RNA-seq, Targeted enrichment or WGS (Whole genome sequencing)), which can be downloaded automatically if the user provides the corresponding accession numbers (usually prefixed with SRR- or ERR-). After which, [Trimmomatic-0.39](https://github.com/usadellab/Trimmomatic) will be invoked to remove the adapters and produce clean data. Then, the targeted bait capture will be executed via [HybPiper](https://github.com/mossmatters/HybPiper). And then HybSuite will either alternatively run 5 orthologs inference algorithum (including LS, MI, MO, RT, 1to1) , or RAPP pipeline (remove all putative paralogs from the results produced by HybPiper), or directly retrieve sequences by user's choice. 
-![HybSuite workflow](https://github.com/Yuxuanliu-HZAU/HybSuite/tree/main/images)
+
+![](https://github.com/Yuxuanliu-HZAU/HybSuite/tree/main/images/HybSuite_pipeline.png)
 
 ---
 # PREPARATION
