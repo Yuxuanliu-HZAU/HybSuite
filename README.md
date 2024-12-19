@@ -61,10 +61,10 @@ HybSuite is highly relying on dependencies in the conda environment. If you want
 * [IQ-TREE](http://trimal.cgenomics.org/)
 * [RAxML](https://github.com/stamatak/standard-RAxML)  
 * [RAxML-NG](https://github.com/amkozlov/raxml-ng)
-* [R](https://www.r-project.org/about.html)≥3.2.0
+* [R](https://www.r-project.org/about.html)≥3.2.0, along with the R packages:
     * [ape](https://cran.r-project.org/web/packages/ape/index.html)
     * [phytools](https://cran.r-project.org/web/packages/phytools/index.html)
-* [Python](https://www.python.org/downloads/)
+* [Python](https://www.python.org/downloads/), along with the Python libraries:
     * [ete3](http://etetoolkit.org/)
     * [PyQt5](https://pypi.org/project/PyQt5/)
 
