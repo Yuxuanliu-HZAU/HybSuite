@@ -35,7 +35,10 @@ The HybSuite pipeline starts with NGS raw data (e.g. RNA-seq, Targeted enrichmen
 ![](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/main/images/HybSuite_pipeline.png)
 
 ---
-# Installation
+
+# Set up
+
+## How to install HybSuite
 
 HybSite is a shell script, so it is only available for Linux/Unix/WSL users, installing HybSuite is easy, you can directly clone the [github repository](https://github.com/Yuxuanliu-HZAU/HybSuite.git):
 ```
@@ -44,14 +47,12 @@ git clone https://github.com/Yuxuanliu-HZAU/HybSuite.git
 # Dependencies
 HybSuite is highly relying on dependencies in the conda environment. If you want to run all of the HybSuite pipeline, the following dependencies should be installed in two different conda environments (here temporarily name them as `conda1` and `conda2`, or by your choice).
 
-#### (1) Dependencies for `conda1` environment
+### (1) Dependencies for `conda1` environment
 
 [phyx](https://github.com/FePhyFoFum/phyx)  
 [MAFFT](https://github.com/GSLBiotech/mafft)  
-[trimAl](https://github.com/inab/trimal)  
-click [here](https://anaconda.org/bioconda/trimal) to install conda version
-[IQ-TREE](http://trimal.cgenomics.org/) 
-click [here](https://anaconda.org/bioconda/iqtree) to install conda version
+[trimAl](https://github.com/inab/trimal)
+[IQ-TREE](http://trimal.cgenomics.org/)
 [RAxML](https://github.com/stamatak/standard-RAxML)  
 [RAxML-NG](https://github.com/amkozlov/raxml-ng)  
 
@@ -81,7 +82,7 @@ install.packages("phytools")
 install.packages("ape")
 ```
 
-#### (2) Dependencies for `conda2` environment
+### (2) Dependencies for `conda2` environment
  
  This environment is for orthology inference algorithms MI/MO/RT/1to1 (Yang and Smith, 2014) and [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone).   
  _In most cases, the discrepancies between ParaGone and other packages are hard to resolve._  
@@ -92,6 +93,15 @@ conda activate <conda2 environment>
 conda install conda-forge::mamba -y
 mamba install bioconda::paragone -y
 ```
+
+For full installation instructions, including details on how to install all dependencies by running [Install_all_dependencies.sh](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/main/bin/Install_all_dependencies.sh), please see our wiki page:
+
+https://github.com/chrisjackson-pellicle/ParaGone/wiki/Installation
+
+
+Once all dependencies are installed you can download a test dataset [here](https://github.com/chrisjackson-pellicle/ParaGone/blob/main/test_dataset.tar.gz), extract the `*.tar.gz` file, and execute the `run_paragone_test_dataset.sh` script from the `test_dataset` directory for a demonstration of ParaGone.
+
+
 
 You can directly run ./bin/Install_all_dependencies.sh to install all desired dependencies in `conda1` environment and `conda2` environment. 
 ```
