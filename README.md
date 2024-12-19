@@ -35,22 +35,23 @@ The HybSuite pipeline starts with NGS raw data (e.g. RNA-seq, Targeted enrichmen
 ![](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/main/images/HybSuite_pipeline.png)
 
 ---
-# PREPARATION
-## Installation
+# Installation
 
 HybSite is a shell script, so it is only available for Linux/Unix/WSL users, installing HybSuite is easy, you can directly clone the [github repository](https://github.com/Yuxuanliu-HZAU/HybSuite.git):
 ```
 git clone https://github.com/Yuxuanliu-HZAU/HybSuite.git
 ```
-## Dependencies
+# Dependencies
 HybSuite is highly relying on dependencies in the conda environment. If you want to run all of the HybSuite pipeline, the following dependencies should be installed in two different conda environments (here temporarily name them as `conda1` and `conda2`, or by your choice).
 
-#### (1) Dependencies for `conda1` environment created by [mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)
+#### (1) Dependencies for `conda1` environment
 
 [phyx](https://github.com/FePhyFoFum/phyx)  
 [MAFFT](https://github.com/GSLBiotech/mafft)  
 [trimAl](https://github.com/inab/trimal)  
-[IQ-TREE](https://github.com/iqtree/iqtree2)  
+click [here](https://anaconda.org/bioconda/trimal) to install conda version
+[IQ-TREE](http://trimal.cgenomics.org/) 
+click [here](https://anaconda.org/bioconda/iqtree) to install conda version
 [RAxML](https://github.com/stamatak/standard-RAxML)  
 [RAxML-NG](https://github.com/amkozlov/raxml-ng)  
 
