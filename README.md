@@ -38,10 +38,10 @@ Hence, HybSuite can incredibly streamline the process of phylogenomics analysis,
   - **HRS pipeline** (**H**ybPiper **R**etrieved **S**equences)             
   > **Note:** Directly use sequence retrieved by running `hybpiper retrieve_sequences` via [HybPiper](https://github.com/mossmatters/HybPiper) for downstream analysis.
   - **RAPP pipeline** (**R**emove **A**ll **P**utative **P**aralogs)
-  > **Note:** This pipeline has two alternative way:    
+  > **Note:** This pipeline has two alternative ways:    
   > (1) Remove all loci where more than one putative paralog is detected in any species; this will remove all sequences for that locus across all species.    
   > (2) Remove all sequences from any sample where more than one putative paralog is detected.    
-  > Putative paralogs will be produced by running 'hybpiper paralog_retriever' via [HybPiper](https://github.com/mossmatters/HybPiper)
+  > Before this step, putative paralogs have been produced by running 'hybpiper paralog_retriever' via [HybPiper](https://github.com/mossmatters/HybPiper)
   - **LS algorithm** via [PhyloPyPruner](https://pypi.org/project/phylopypruner/)
   > **Note:** HybSuite implements LS algorithum via [PhyloPyPruner](https://pypi.org/project/phylopypruner/), following the approach of [(Kocot et al 2013)](https://journals.sagepub.com/doi/10.4137/EBO.S12813)
   - **MI algorithm** (**M**aximum **I**nclusion)
