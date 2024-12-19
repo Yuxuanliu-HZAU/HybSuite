@@ -198,9 +198,9 @@ if(sum(Outgroup %in% tree$tip.label) != 0){
   Outgroup <- Outgroup[Outgroup %in% tree$tip.label]
   # if outgroup present reroot use outgroup via phyx function 'pxrr'
   system(paste0("pxrr -t ", path, "/", gene, "/", "RAxML_bestTree.", gene, ".tre", " -r -g ", sample(Outgroup, size=1), " -o ", path2, "/", gene, "_rr.tre", sep=""))
-  print(paste0("[HybSuite-INFO]:    Done with rerooting ", gene, " gene tree using phyx...", sep=""))
+  cat(paste0("[HybSuite-INFO]:    Done with rerooting ", gene, " gene tree using phyx...\n", sep=""))
 } else {
   # otherwise use MAD see [Tria et al. (2017)](https://www.nature.com/articles/s41559-017-0193)
   cat(mad(tree), file=paste0(path2, "/", gene, "_rr.tre", sep=""))
-  print(paste0("[HybSuite-INFO]:    Done with rerooting ", gene, " gene tree using MAD...", sep=""))
+  cat(paste0("[HybSuite-INFO]:    Done with rerooting ", gene, " gene tree using MAD...\n", sep=""))
 }
