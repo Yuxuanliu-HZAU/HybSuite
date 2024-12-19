@@ -33,14 +33,25 @@ Hence, HybSuite can incredibly streamline the process of phylogenomics analysis,
 ## Pipeline introduction
 
 * The HybSuite pipeline starts with **NGS(Next-generation sequencing) raw data** (e.g. RNA-seq, Targeted enrichment or WGS (Whole genome sequencing)), which can be downloaded automatically if the user provides the corresponding accession numbers (usually prefixed with SRR- or ERR-).     
-* After which, [Trimmomatic-0.39](https://github.com/usadellab/Trimmomatic) will be invoked to remove the adapters and produce clean data. Then, the targeted bait capture will be executed via [HybPiper](https://github.com/mossmatters/HybPiper).     
-* HybSuite will then run one of the following methods to infer orthology groups:
-  - **MI algorithms** (**M**aximum **I**nclusion)
-  - **4 ortholog inference algorithms** (MI, MO, RT, 1to1) [(Yang and Smith 2014)](https://bitbucket.org/yangya/workspace/projects/PROJ) via [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone) or [PhyloPyPruner](https://pypi.org/project/phylopypruner/)
-  - **LS algorithm** via [PhyloPyPruner](https://pypi.org/project/phylopypruner/)
-  - **RAPP pipeline** (**R**emoves **A**ll **P**utative **P**aralogs)    
+* After which, [Trimmomatic-0.39](https://github.com/usadellab/Trimmomatic) will be invoked to remove the adapters and produce clean data. Then, the data assembly and targeted bait capture will be executed via [HybPiper](https://github.com/mossmatters/HybPiper).     
+* HybSuite will then run one or more of the following methods to infer orthology groups:
   - **HRS pipeline** (**H**ybPiper **R**etrieved **S**equences)             
-    Directly use sequence retrieved by running `hybpiper retrieve_sequences` via [HybPiper](https://github.com/mossmatters/HybPiper) for downstream analysis.
+  > **Note:** Directly use sequence retrieved by running `hybpiper retrieve_sequences` via [HybPiper](https://github.com/mossmatters/HybPiper) for downstream analysis.
+  - **RAPP pipeline** (**R**emove **A**ll **P**utative **P**aralogs)
+  > **Note:** This pipeline has two alternative way:    
+  > (1) Remove all loci where more than one putative paralog is detected in any species; this will remove all sequences for that locus across all species.    
+  > (2) Remove all sequences from any sample where more than one putative paralog is detected.    
+  > Putative paralogs will be produced by running 'hybpiper paralog_retriever' via [HybPiper](https://github.com/mossmatters/HybPiper)
+  - **LS algorithm** via [PhyloPyPruner](https://pypi.org/project/phylopypruner/)
+  > **Note:** HybSuite implements LS algorithum via [PhyloPyPruner](https://pypi.org/project/phylopypruner/), following the approach of [(Kocot et al 2013)](https://journals.sagepub.com/doi/10.4137/EBO.S12813)
+  - **MI algorithm** (**M**aximum **I**nclusion)
+  - **MO algorithm** (**M**onophyletic **O**utgroups)
+  - **RT algorithm** (**R**ooted **T**ree)
+  - **1to1 algorithm** (**1:1** orthologs)
+  > **Note:** HybSuite implements MI, MO, RT, 1to1 algorithums alternatively via [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone) or [PhyloPyPruner](https://pypi.org/project/phylopypruner/), following the approach of [(Yang and Smith 2014)](https://bitbucket.org/yangya/workspace/projects/PROJ)
+  
+     
+  
 * Nextly, Hybsuite will filter loci and species with a series of criterias, and trim alignments via [TrimAl](https://github.com/inab/trimal) to get final filtered and trimmed alignments, which are used to infer phylogenetic trees.    
 * Finally, HybSuite will help the user to construct phylogenetic trees by concatenated method or coalscent-based method according to the user's choices.
 * All essential arguments for the software options used in the pipeline can be specified directly when running HybSuite.
@@ -91,9 +102,12 @@ HybSuite is highly relying on dependencies in the conda environment. If you want
 For full dependencies installation instructions, including details on how to install all dependencies by running `./bin/Install_all_dependencies.sh`, please see our wiki page:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Installation
 
-# HybSuite Pipeline Input
+---
 
-## 1.Input folders and files:
+# How to run HybSuite
+## HybSuite Pipeline Input
+
+### 1.Input folders and files:
 
 - **INPUT FOLDER**: Containing necessary input `.txt` files.  
   The absolute directory (_path_) of the input folder (`<input directory>`) needs to be specified by the parameter `-i`.
@@ -145,7 +159,7 @@ Because the ASTER module in HybSuite currently has no GUI, users need to run it 
   bash ./bin/HybSuite.sh --run_all [Options] ...
   ```
 
-# HybSuite Pipeline Output
+## HybSuite Pipeline Output
 
 
 
