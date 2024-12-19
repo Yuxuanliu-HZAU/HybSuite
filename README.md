@@ -42,7 +42,7 @@ Hence, HybSuite can incredibly streamline the process of phylogenomics analysis,
   > (1) Remove all loci where more than one putative paralog is detected in any species; this will remove all sequences for that locus across all species.    
   > (2) Remove all sequences from any sample where more than one putative paralog is detected.    
   > Before this step, putative paralogs have been produced by running 'hybpiper paralog_retriever' via [HybPiper](https://github.com/mossmatters/HybPiper)
-  - **LS algorithm** via [PhyloPyPruner](https://pypi.org/project/phylopypruner/)
+  - **LS algorithm** (**L**argest **S**ubtree)
   > **Note:** HybSuite implements LS algorithum via [PhyloPyPruner](https://pypi.org/project/phylopypruner/), following the approach of [(Kocot et al 2013)](https://journals.sagepub.com/doi/10.4137/EBO.S12813)
   - **MI algorithm** (**M**aximum **I**nclusion)
   - **MO algorithm** (**M**onophyletic **O**utgroups)
@@ -94,7 +94,7 @@ HybSuite is highly relying on dependencies in the conda environment. If you want
 
 #### (2) Dependencies for `conda2` environment
  
-* [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone).   
+* [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone)   
  _In most cases, the discrepancies between ParaGone and other packages are hard to resolve, <br>
  so if you want to do orthology inference by MI/MO/RT/1to1 algorithms (Yang and Smith, 2014), you need to install ParaGone in `conda2` environment._  
  
