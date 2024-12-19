@@ -44,69 +44,39 @@ HybSite is a shell script, so it is only available for Linux/Unix/WSL users, ins
 ```
 git clone https://github.com/Yuxuanliu-HZAU/HybSuite.git
 ```
-# Dependencies
+More details can be found in our wiki page:    
+https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Installation
+
+## Dependencies
 HybSuite is highly relying on dependencies in the conda environment. If you want to run all of the HybSuite pipeline, the following dependencies should be installed in two different conda environments (here temporarily name them as `conda1` and `conda2`, or by your choice).
 
-### (1) Dependencies for `conda1` environment
+#### (1) Dependencies for `conda1` environment
 
-[phyx](https://github.com/FePhyFoFum/phyx)  
-[MAFFT](https://github.com/GSLBiotech/mafft)  
-[trimAl](https://github.com/inab/trimal)
-[IQ-TREE](http://trimal.cgenomics.org/)
-[RAxML](https://github.com/stamatak/standard-RAxML)  
-[RAxML-NG](https://github.com/amkozlov/raxml-ng)  
+* [HybPiper](https://github.com/mossmatters/HybPiper)
+* [Phyx](https://github.com/FePhyFoFum/phyx)
+* [Newick_Utilities](https://github.com/tjunier/newick_utils)
+* [MAFFT](https://github.com/GSLBiotech/mafft)  
+* [TrimAl](https://github.com/inab/trimal)
+* [ModelTest-NG](https://github.com/ddarriba/modeltest)
+* [IQ-TREE](http://trimal.cgenomics.org/)
+* [RAxML](https://github.com/stamatak/standard-RAxML)  
+* [RAxML-NG](https://github.com/amkozlov/raxml-ng)
+* [R](https://www.r-project.org/about.html)≥3.2.0
+    * [ape](https://cran.r-project.org/web/packages/ape/index.html)
+    * [phytools](https://cran.r-project.org/web/packages/phytools/index.html)
+* [Python](https://www.python.org/downloads/)
+    * [ete3](http://etetoolkit.org/)
+    * [PyQt5](https://pypi.org/project/PyQt5/)
 
-The scripts for installing dependencies are as follows:  
-```
-conda create -n <conda1 environment>
-conda activate <conda1 environment>
-conda install conda-forge::mamba -y
-mamba install bioconda::hybpiper -y
-mamba install bioconda::phyx -y
-mamba install bioconda::newick_utils
-mamba install bioconda::mafft -y
-mamba install bioconda::trimal -y
-mamba install bioconda::iqtree -y
-mamba install bioconda::raxml -y
-mamba install bioconda::raxml-ng -y
-mamba install r
-```
-If you are also desire for Coalescent-based trees, you need to install python module 'ete3', R package 'ape' and 'phytools'.
-```
-pip install ete3
-pip install PyQt5
-```
-```
-R
-install.packages("phytools")
-install.packages("ape")
-```
-
-### (2) Dependencies for `conda2` environment
+#### (2) Dependencies for `conda2` environment
  
- This environment is for orthology inference algorithms MI/MO/RT/1to1 (Yang and Smith, 2014) and [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone).   
- _In most cases, the discrepancies between ParaGone and other packages are hard to resolve._  
+* [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone).   
+ _In most cases, the discrepancies between ParaGone and other packages are hard to resolve, <br>
+ so if you want to do orthology inference by MI/MO/RT/1to1 algorithms (Yang and Smith, 2014), you need to install ParaGone in `conda2` environment._  
  
-```
-conda create -n <conda2 environment>
-conda activate <conda2 environment>
-conda install conda-forge::mamba -y
-mamba install bioconda::paragone -y
-```
-
-For full installation instructions, including details on how to install all dependencies by running [Install_all_dependencies.sh](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/main/bin/Install_all_dependencies.sh), please see our wiki page:
-
-https://github.com/chrisjackson-pellicle/ParaGone/wiki/Installation
-
-
-Once all dependencies are installed you can download a test dataset [here](https://github.com/chrisjackson-pellicle/ParaGone/blob/main/test_dataset.tar.gz), extract the `*.tar.gz` file, and execute the `run_paragone_test_dataset.sh` script from the `test_dataset` directory for a demonstration of ParaGone.
-
-
-
-You can directly run ./bin/Install_all_dependencies.sh to install all desired dependencies in `conda1` environment and `conda2` environment. 
-```
-bash ./bin/Install_all_dependencies.sh <conda1_environment> <conda2_environment>
-```
+## How to install the above dependencies?
+For full dependencies installation instructions, including details on how to install all dependencies by running `./bin/Install_all_dependencies.sh`, please see our wiki page:    
+https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Installation
 
 # HybSuite Pipeline Input
 
