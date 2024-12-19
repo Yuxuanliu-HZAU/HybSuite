@@ -22,15 +22,28 @@ If you have any questions/issues/suggestions, please leave a message [here](http
 
 **Latest version**: 1.1.0
 
+---
+
 ## What is HybSuite
 
-HybSuite is a bash wrapper, and designed for reconstructing phylogenetic trees using NGS (Next-Generation Sequencing) raw data by only one single run. According to the user's preference, final tree can be concatenated trees constructed by [IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), or [RAxML-NG](https://github.com/amkozlov/raxml-ng), or can be the coalescent-based species tree summarized by [ASTER](https://github.com/chaoszhang/ASTER/tree/master), including [ASTRAL-III](https://github.com/smirarab/ASTRAL) or [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md). Please keep in mind that, all results (downloaded data, orthologous groups, alignments, trees) can be produced by one single run!
+HybSuite is a bash wrapper, and designed for **reconstructing phylogenetic trees using NGS (Next-Generation Sequencing) raw data by only one single run**. According to the user's preference, final tree can be **concatenated trees** constructed by [IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), or [RAxML-NG](https://github.com/amkozlov/raxml-ng), or can be the **coalescent-based species tree** summarized by [ASTER](https://github.com/chaoszhang/ASTER/tree/master), including [ASTRAL-III](https://github.com/smirarab/ASTRAL) or [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md). Please keep in mind that, all results (downloaded data, orthologous groups, alignments, trees) can be produced by one single run!
 
 Hence, HybSuite can incredibly streamline the process of phylogenomics analysis, making it more accessible to researchers from diverse research background.
 
 ## Pipeline introduction
 
-The HybSuite pipeline starts with NGS raw data (e.g. RNA-seq, Targeted enrichment or WGS (Whole genome sequencing)), which can be downloaded automatically if the user provides the corresponding accession numbers (usually prefixed with SRR- or ERR-). After which, [Trimmomatic-0.39](https://github.com/usadellab/Trimmomatic) will be invoked to remove the adapters and produce clean data. Then, the targeted bait capture will be executed via [HybPiper](https://github.com/mossmatters/HybPiper). And then HybSuite will either alternatively run 5 orthologs inference algorithum (including LS, MI, MO, RT, 1to1) , or RAPP pipeline (remove all putative paralogs from the results produced by HybPiper), or directly retrieve sequences by user's choice. 
+* The HybSuite pipeline starts with **NGS(Next-generation sequencing) raw data** (e.g. RNA-seq, Targeted enrichment or WGS (Whole genome sequencing)), which can be downloaded automatically if the user provides the corresponding accession numbers (usually prefixed with SRR- or ERR-).     
+* After which, [Trimmomatic-0.39](https://github.com/usadellab/Trimmomatic) will be invoked to remove the adapters and produce clean data. Then, the targeted bait capture will be executed via [HybPiper](https://github.com/mossmatters/HybPiper).     
+* HybSuite will then run one of the following methods to infer orthology groups:
+  - **MI algorithms** (**M**aximum **I**nclusion)
+  - **4 ortholog inference algorithms** (MI, MO, RT, 1to1) [(Yang and Smith 2014)](https://bitbucket.org/yangya/workspace/projects/PROJ) via [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone) or [PhyloPyPruner](https://pypi.org/project/phylopypruner/)
+  - **LS algorithm** via [PhyloPyPruner](https://pypi.org/project/phylopypruner/)
+  - **RAPP pipeline** (**R**emoves **A**ll **P**utative **P**aralogs)    
+  - **HRS pipeline** (**H**ybPiper **R**etrieved **S**equences)             
+    Directly use sequence retrieved by running `hybpiper retrieve_sequences` via [HybPiper](https://github.com/mossmatters/HybPiper) for downstream analysis.
+* Nextly, Hybsuite will filter loci and species with a series of criterias, and trim alignments via [TrimAl](https://github.com/inab/trimal) to get final filtered and trimmed alignments, which are used to infer phylogenetic trees.    
+* Finally, HybSuite will help the user to construct phylogenetic trees by concatenated method or coalscent-based method according to the user's choices.
+* All essential arguments for the software options used in the pipeline can be specified directly when running HybSuite.
 
 ![](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/main/images/HybSuite_pipeline.png)
 
