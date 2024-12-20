@@ -114,7 +114,7 @@ The absolute path to the input folder (`<input directory>`) needs to be specifie
 
 ### 2.Textfiles in the input folder
 
-- **(1) Species names lists for two types of raw reads**:  
+- **(1) Species names lists for two sources of raw reads**:  
     The user can optionally provide at least one of the **two following types of species name lists** for two sources of raw reads in the `<input directory>` specified by `-i`:     
     
   - **Type1: `SRR_Spname.txt`** (optional)     
@@ -130,7 +130,7 @@ The absolute path to the input folder (`<input directory>`) needs to be specifie
   > **Format:** One species name per line, matching a raw data file (in **fastq** or **fastq.gz** format) located in the directory specified by the `-my_raw_data` option. **Both paired-end and single-end data are allowed**.     
   
 
-- **(2) Outgroup names list** (compulsory)   
+- **(2) Outgroup names list** (mandatory)   
 The outgroup species names in this analysis.  
   - **File**: **`Outgroup.txt`** (the number of outgroups is not limited).     
   > **Note:** Outgroup names in `Outgroup.txt` should exist in the `SRR_Spname.txt` or `My_Spname.txt`.
