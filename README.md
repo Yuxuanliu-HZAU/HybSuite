@@ -112,30 +112,31 @@ https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Installation
 Containing necessary input `.txt` files.  
 The absolute path to the input folder (`<input directory>`) needs to be specified by the parameter `-i`.
 
-### 2.The textfiles in the input folder
+### 2.Textfiles in the input folder
 
-- **(1) Species names list (Including ingroup and outgroup)**:  
-    The user can optionally provide at least one of the two types of species name lists in the `<input directory>` specified by `-i`, setting the filenames as follows:
+- **(1) Species names lists for two types of raw reads**:  
+    The user can optionally provide at least one of the **two following types of species name lists** for two sources of raw reads in the `<input directory>` specified by `-i`:     
     
   - **Type1: `SRR_Spname.txt`** (optional)     
   A list of SRA accession numbers (typically starting with SRR or ERR) and their corresponding species names.    
-  > **Note:** If the user want to use raw data from NCBI, this txtfile can be provided. It should be named `SRR_Spname.txt` and placed in the `<input directory>`.
-  > Don't change the name of this txtfile in the `<input directory>`!     
+  > **Note:** If the user want to use raw data from NCBI, this txtfile should be provided, named `SRR_Spname.txt`, and placed in the `<input directory>`.
+  > Do not change the name of this txtfile in the `<input directory>` when running HybSuite!     
   > **Format:** The first column contains the **SRA accession number**, and the second column contains **the corresponding species name** (**tab-separated**).
     
-  - **Type2: `My_Spname.txt`** (optional): A list of species names with existing raw data in your local directory.
-  > **Note:** If the user want to use existing raw data, this txtfile can be provided. It should be named `My_Spname.txt` and placed in the `<input directory>`.
-  > Don't change the name of this txtfile in the `<input directory>`!    
+  - **Type2: `My_Spname.txt`** (optional)     
+  A list of species names with existing raw data in your local directory.
+  > **Note:** If the user want to use existing raw data, this txtfile should be provided, named `My_Spname.txt`, and placed in the `<input directory>`.
+  > Do not change the filename of `My_Spname.txt` in the `<input directory>` when running HybSuite!    
   > **Format:** One species name per line, matching a raw data file (in **fastq** or **fastq.gz** format) located in the directory specified by the `-my_raw_data` option. **Both paired-end and single-end data are allowed**.     
   
 
-- **Outgroup names list**:   
-    The outgroup species names in this analysis.  
-  - **File**: `Outgroup.txt` (the number of outgroups is not limited).     
-  > **Note:** Outgroup names in `Outgroup.txt` should exist in the `SRR_Spname.txt` or `My_Spname.txt`
+- **(2) Outgroup names list** (compulsory)   
+The outgroup species names in this analysis.  
+  - **File**: **`Outgroup.txt`** (the number of outgroups is not limited).     
+  > **Note:** Outgroup names in `Outgroup.txt` should exist in the `SRR_Spname.txt` or `My_Spname.txt`.
   > **Format:** One species name per line.     
   
-### 3.existing raw reads
+### 3.Existing raw reads
 
 ### 4.Targeted file
 
