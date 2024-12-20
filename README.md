@@ -110,24 +110,32 @@ https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Installation
 
 ### 1.The input folder
 Containing necessary input `.txt` files.  
-The absolute directory (_path_) of the input folder (`<input directory>`) needs to be specified by the parameter `-i`.
+The absolute path to the input folder (`<input directory>`) needs to be specified by the parameter `-i`.
 
 ### 2.The textfiles in the input folder
 
-- **Species names list (Including ingroup and outgroup)**:  
-    The user will optionally provide at least one of the two types of species name lists in the `<input directory>` specified by `-i`, setting the filenames as follows:
+- **(1) Species names list (Including ingroup and outgroup)**:  
+    The user can optionally provide at least one of the two types of species name lists in the `<input directory>` specified by `-i`, setting the filenames as follows:
     
-  - **Type1: `SRR_Spname.txt`** (optional): The list of SRR number and their corresponding species name.  
-      Format: first column is SRR number, second column is the species name (tab-separated).
+  - **Type1: `SRR_Spname.txt`** (optional)     
+  A list of SRA accession numbers (typically starting with SRR or ERR) and their corresponding species names.    
+  > **Note:** If the user want to use raw data from NCBI, this txtfile can be provided. It should be named `SRR_Spname.txt` and placed in the `<input directory>`.
+  > Don't change the name of this txtfile in the `<input directory>`!     
+  > **Format:** The first column contains the **SRA accession number**, and the second column contains **the corresponding species name** (**tab-separated**).
     
-  - **Type2: `My_Spname.txt`** (optional): The name list of species sequenced by yourself and haven't been cleaned before (including ingroups and outgroups).  [names in raw sequence data file?]
-      If provided, specify the local directory of the raw data in fastq/fastq.gz format with the option `-my_raw_data`.
+  - **Type2: `My_Spname.txt`** (optional): A list of species names with existing raw data in your local directory.
+  > **Note:** If the user want to use existing raw data, this txtfile can be provided. It should be named `My_Spname.txt` and placed in the `<input directory>`.
+  > Don't change the name of this txtfile in the `<input directory>`!    
+  > **Format:** One species name per line, matching a raw data file (in **fastq** or **fastq.gz** format) located in the directory specified by the `-my_raw_data` option. **Both paired-end and single-end data are allowed**.     
+  
 
 - **Outgroup names list**:   
     The outgroup species names in this analysis.  
-    **File**: `Outgroup.txt` (Not limited).
-
-### 3.Existed raw reads
+  - **File**: `Outgroup.txt` (the number of outgroups is not limited).     
+  > **Note:** Outgroup names in `Outgroup.txt` should exist in the `SRR_Spname.txt` or `My_Spname.txt`
+  > **Format:** One species name per line.     
+  
+### 3.existing raw reads
 
 ### 4.Targeted file
 
