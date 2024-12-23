@@ -137,14 +137,15 @@ The outgroup species names in this analysis.
   > **Format:** One species name per line.     
   
 ### 3.Existing raw reads
-If `My_Spname.txt` was provided in the `<input directory>`, the user should specify the local directory of the raw data in fastq/fastq.gz format with the option `-my_raw_data`
-> **Format:** Every raw data file's name (without suffix) should correspond with the species name in `My_Spname.txt`.    
-> For example, If species `Rosa_chinensis` exists in `My_Spname.txt`, the filename of its existing raw data should be:    
-> - for paired-end data: `Rosa_chinensis_1.fq.gz` and `Rosa_chinensis_2.fq.gz`     
-> - for single-end data: `Rosa_chinensis.fq.gz`     
-> _Tips:_ The suffix can be `fq.gz`/`.fq`/`.fastq.gz`/`.fastq`.    
+If `My_Spname.txt` is provided in the `<input directory>`, the user should specify the local directory of the raw data in fastq/fastq.gz format with the option `-my_raw_data`     
+> **Note:** Every raw data file's name (without suffix) should correspond with the species name in `My_Spname.txt`. **Paired-end and single-end data are both allowed**.    
+> For example, if species `Rosa_chinensis` exists in `My_Spname.txt`, the filename of its existing raw data should be:    
+> - for **paired-end data**: `Rosa_chinensis_1.fq.gz` and `Rosa_chinensis_2.fq.gz`     
+> - for **single-end data**: `Rosa_chinensis.fq.gz`
+> - The suffix can be **`fq.gz` or `.fq` or `.fastq.gz` or `.fastq`.**    
 
-### 4.Targeted file
+### 4.Target sequences
+The requested format of target sequences is the same as the one for [HybPiper](https://github.com/mossmatters/HybPiper), you can check more details [here](https://github.com/mossmatters/HybPiper#target-sequences) to edit your target file and please use `-t` to specify the directory of the target file.
 
 ## HybSuite Usage Instruction
 
