@@ -137,6 +137,12 @@ The outgroup species names in this analysis.
   > **Format:** One species name per line.     
   
 ### 3.Existing raw reads
+If `My_Spname.txt` was provided in the `<input directory>`, the user should specify the local directory of the raw data in fastq/fastq.gz format with the option `-my_raw_data`
+> **Format:** Every raw data file's name (without suffix) should correspond with the species name in `My_Spname.txt`.    
+> For example, If species `Rosa_chinensis` exists in `My_Spname.txt`, the filename of its existing raw data should be:    
+> `Rosa_chinensis_1.fq.gz` and `Rosa_chinensis_2.fq.gz` (for paired-end data)    
+> `Rosa_chinensis.fq.gz` (for single-end data)    
+> _Tips:_ The suffix can be `fq.gz`/`.fq`/`.fastq.gz`/`.fastq`.    
 
 ### 4.Targeted file
 
