@@ -77,7 +77,7 @@ HybSuite is highly relying on dependencies in the conda environment. If you want
 
 #### (1) Dependencies for `conda1` environment
 
-* [HybPiper](https://github.com/mossmatters/HybPiper)≥2.1.8 (with the available command "hybpiper filter_by_length")
+* [HybPiper](https://github.com/mossmatters/HybPiper)≥2.1.8 (with the available command `hybpiper filter_by_length`)
 * [Phyx](https://github.com/FePhyFoFum/phyx)
 * [Newick_Utilities](https://github.com/tjunier/newick_utils)
 * [MAFFT](https://github.com/GSLBiotech/mafft)  
