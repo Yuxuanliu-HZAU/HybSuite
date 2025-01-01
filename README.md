@@ -15,7 +15,7 @@
 ```
 
 **Released on 10.20.2024 by [the Sun Lab](https://github.com/SunLab-MiaoPu)**  
-**Developed by**: Yuxuan Liu  
+**Developed by**: [Yuxuan Liu](https://github.com/Yuxuanliu-HZAU)  
 **Contributed by**: [Miao Sun](https://github.com/Cactusolo), Xueqin Wang, Liguo Zhang, Tao Xiong, Yiying Wang, Xiaotong Niu, Xinru Zhang, Xiaowen Ma, Mengmeng Wang, Yu Meng  
 
 If you have any questions/issues/suggestions, please leave a message [here](https://github.com/Yuxuanliu-HZAU/HybSuite/issues).  
