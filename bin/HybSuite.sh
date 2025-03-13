@@ -4942,7 +4942,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
     #############################################
     #01：Constructing single gene trees
     #############################################
-    if [ "${skip_gene_trees_for_coalescent}" != "TRUE" ]; then
+    if [ "${skip_genetree_for_coalescent}" != "TRUE" ]; then
     if [ -d "${o}/08-Coalescent-based_trees/${ortho_method}" ]; then
       rm -rf "${o}/08-Coalescent-based_trees/${ortho_method}"
     fi
