@@ -79,9 +79,75 @@ ensure_mamba() {
         printf "${GREEN}Mamba installed${NC}\n"
     fi
 }
-set +u
-eval "$(conda shell.bash hook)"
-set -u
+
+conda_activate() {
+    local conda="$1"
+
+    # Check whether conda is available
+    if ! command -v conda &>/dev/null; then
+        echo "Conda command not found. Please install Conda or ensure it's in your PATH."
+        exit 1
+    fi
+
+    # Secure access to the current conda environment (compatible with set-u)
+    local current_env="${CONDA_DEFAULT_ENV:-}"
+
+    # Defines the function to load the conda hook
+    load_conda_hook() {
+        local current_shell=$(basename "$SHELL")
+        case "$current_shell" in
+            bash)
+                eval "$(conda shell.bash hook)"
+                echo "Bash shell detected. Conda hook loaded."
+                ;;
+            zsh)
+                eval "$(conda shell.zsh hook)"
+                echo "Zsh shell detected. Conda hook loaded."
+                ;;
+            sh)
+                eval "$(conda shell.sh hook)"
+                echo "Sh shell detected. Conda hook loaded."
+                ;;
+            fish)
+                eval "(conda shell.fish hook)"
+                echo "Fish shell detected. Conda hook loaded."
+                ;;
+            *)
+                echo "Unsupported shell: $current_shell"
+                exit 1
+                ;;
+        esac
+    }
+	# main logic
+    if [ "$current_env" = "$conda" ]; then
+        echo "${log_mode}" "Already in conda environment ${conda}. Skipping activation."
+        echo ""
+        return 0
+    fi
+
+    # Situations where an environment needs to be activated
+    echo "Activating conda environment: ${conda}"
+
+    # Turn off Strict mode temporarily
+    set +u
+    load_conda_hook
+
+    # Execute activation command
+    conda activate "${conda}"
+    echo "conda activate ${conda}"
+
+    # Verify activation result
+    current_env="${CONDA_DEFAULT_ENV:-}"
+    if [ "$current_env" = "$conda" ]; then
+        echo "${log_mode}" "Successfully activated ${conda} environment"
+        echo "${log_mode}" ""
+    else
+        echo "Failed to activate ${conda} environment"
+        echo "Current environment: ${current_env:-none}"
+        echo ""
+        exit 1
+    fi
+}
 # Install packages using environment's mamba
 install_packages() {
     env_name="$1"
@@ -105,7 +171,7 @@ install_packages() {
             printf "\nInstalling %s (channel: %s) in %s..." "$package" "$channel" "$env_name"
             cmd="mamba install -y $channel"
           fi
-          conda activate "${env_name}"
+          conda_activate "${env_name}"
           eval "${cmd}:${package}" >> "$INSTALL_LOG" 2>&1 && 
           printf "${GREEN}Success${NC}\n" || 
           fatal_error "Failed to install $dep in $env_name"
