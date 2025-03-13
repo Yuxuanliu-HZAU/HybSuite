@@ -16,6 +16,7 @@ Key features:
 5. Offers flexible visualization options including value display and grid customization
 
 Both the seq_lengths.tsv file and heatmap generation are optional outputs.
+Part of HybSuite
 """
 
 import sys
