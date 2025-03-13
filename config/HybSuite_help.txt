@@ -54,8 +54,10 @@ Usage 5: Run until finishing stage 1-4
   -t <FILE>                            Target file for HybPiper (Absolute path)
   -eas_dir <DIR>                       Pre-assembled data (by HybPiper) directory (Default: <output_dir>/01-Assembled_data)
   -prefix <STRING>                     Prefix for output files (Default: HybSuite)
-  -skip_stage <STR>                    Skip specific stages (Format: "1,3")
+  -skip_stage <STR>                    Skip specific stages (Format: "0123" or "012")
                                        0="HybSuite checking" 1="Stage 1", 2="Stage 2", 3="Stage 3", 4="Stage 4"
+  -skip_genetree_for_coalescent <STR>  Whether to skip constructing single-gene trees for ASTRAL/wASTRAL when running stage 5
+                                       TRUE="Skip", FALSE="NO skipping"         
   -conda1 <ENV>                        Conda environment for core tools
   -conda2 <ENV>                        Conda environment for ParaGone (Default: base)
   -h/--help                            Show help message
@@ -212,4 +214,3 @@ HybSuite.sh --run_to_stage2 \
   -conda1 hybsuite_env \
   -my_raw_data /seq/raw_data \
   -nt 8
-
