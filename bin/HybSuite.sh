@@ -435,6 +435,76 @@ if [ -s "${t}" ]; then
 fi
 #################===========================================================================
 
+#################===========================================================================
+conda_activate_0() {
+    local conda="$1"
+
+    # Check whether conda is available
+    if ! command -v conda &>/dev/null; then
+        stage0_error "Conda command not found. Please install Conda or ensure it's in your PATH."
+        exit 1
+    fi
+
+    # Secure access to the current conda environment (compatible with set-u)
+    local current_env="${CONDA_DEFAULT_ENV:-}"
+
+    # Defines the function to load the conda hook
+    load_conda_hook() {
+        local current_shell=$(basename "$SHELL")
+        case "$current_shell" in
+            bash)
+                eval "$(conda shell.bash hook)"
+                stage0_info "Bash shell detected. Conda hook loaded."
+                ;;
+            zsh)
+                eval "$(conda shell.zsh hook)"
+                stage0_info "Zsh shell detected. Conda hook loaded."
+                ;;
+            sh)
+                eval "$(conda shell.sh hook)"
+                stage0_info "Sh shell detected. Conda hook loaded."
+                ;;
+            fish)
+                eval "(conda shell.fish hook)"
+                stage0_info "Fish shell detected. Conda hook loaded."
+                ;;
+            *)
+                stage0_error "Unsupported shell: $current_shell"
+                exit 1
+                ;;
+        esac
+    }
+	# main logic
+    if [ "$current_env" = "$conda" ]; then
+        stage0_info "Already in conda environment ${conda}. Skipping activation."
+        stage0_blank ""
+        return 0
+    fi
+
+    # Situations where an environment needs to be activated
+    stage0_info "Activating conda environment: ${conda}"
+
+    # Turn off Strict mode temporarily
+    set +u
+    load_conda_hook
+
+    # Execute activation command
+    conda activate "${conda}"
+    stage0_info "conda activate ${conda}"
+
+    # Verify activation result
+    current_env="${CONDA_DEFAULT_ENV:-}"
+    if [ "$current_env" = "$conda" ]; then
+        stage0_info "Successfully activated ${conda} environment"
+        stage0_blank ""
+    else
+        stage0_error "Failed to activate ${conda} environment"
+        stage0_info ""
+        exit 1
+    fi
+}
+#################===========================================================================
+
 ############################################################################################
 # Preparation
 ############################################################################################
@@ -516,7 +586,7 @@ if [ "${skip_checking}" != "TRUE" ]; then
   ######################################################
   ### Step 2: Check the <input directory> and files ####
   ######################################################
-  stage0_info " => Step 2: Check the <input directory> and files" 
+  stage0_info "=> Step 2: Check the <input directory> and files" 
   stage0_info "Checking if the input directory and files are prepared correctly..."
   if [ ! -s "${t}" ] && [ "${run_to_stage1}" != "true" ]; then
     stage0_info "Check result:"
@@ -590,14 +660,14 @@ if [ "${skip_checking}" != "TRUE" ]; then
   while IFS= read -r line || [ -n "$line" ]; do
     if [ -s "./My_Spname.txt" ]; then
       if grep -qF "$line" "./My_Spname.txt"; then
-        stage0_info "Well done! Outgroup species '$line' found in ${i}/My_Spname.txt"
+        break
       fi
     elif [ -s "./SRR_Spname.txt" ]; then
       if grep -qF "$line" "./NCBI_Spname_list.txt"; then
-        stage0_info "Well done! Outgroup species '$line' found in ${i}/SRR_Spname.txt"
+        break
       fi
     elif [ "${other_seqs}" != "_____" ] && grep -qF "^$line$" "${i}"/Other_seqs_Spname.txt; then
-      stage0_info "Well done! The sequence of outgroup species '$line' found in ${other_seqs}"
+      break
     else
       stage0_error "Your My_Spname.txt and SRR_Spname.txt do not contain any outgroup species."
       stage0_error "Please add your outgroup species names from ${i}/Outgroup.txt to either ${i}/SRR_Spname.txt or ${i}/My_Spname.txt."
@@ -618,8 +688,9 @@ if [ "${skip_checking}" != "TRUE" ]; then
   ###################################
   ### Step 3: Check dependencies ####
   ###################################
-  stage0_info " => Step 3: Check dependencies" 
+  stage0_info "=> Step 3: Check dependencies" 
   stage0_info "Verifying required software in all conda environments..."
+  conda_activate_0 "${conda1}"
   # sra-tools
   check_sra() {
     stage0_info "To download NGS raw data, 'sra-tools' must be installed in your conda environment ${conda1}."
@@ -731,7 +802,8 @@ if [ "${skip_checking}" != "TRUE" ]; then
   check_paragone() {
     if ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "$one_to_one" = "TRUE" ]) && [ "${run_paragone}" = "TRUE" ]; then
       stage0_blank ""
-	  if [ "${run_paragone}" = "TRUE" ] && [ "${conda2}" = "_____" ]; then
+      conda_activate_0 "${conda2}"
+      if [ "${run_paragone}" = "TRUE" ] && [ "${conda2}" = "_____" ]; then
         stage0_error "You didn't specify the conda environment for paragone via -conda2 option"
         stage0_error "HybSuite exits."
         stage0_blank ""
@@ -754,6 +826,7 @@ if [ "${skip_checking}" != "TRUE" ]; then
     fi
   }
 
+  conda_activate_0 "${conda1}"
   check_modeltest_ng() {
     if [ "${run_modeltest_ng}" != "TRUE" ]; then
       stage0_blank ""
@@ -819,7 +892,7 @@ if [ "${skip_checking}" != "TRUE" ]; then
       stage0_blank ""
       stage0_info "To run raxml-ng, 'raxml-ng' must be installed in your conda environment ${conda1}."
       stage0_info "Checking RAxML-NG..."
-      if ! conda list -n "${conda1}" 2>/dev/null | grep -q "^raxml-ng\b"; then
+      if ! conda list -n "${conda1}" 2>/dev/null | grep -qE "\braxml-ng\b"; then
         stage0_error "'raxml-ng' is not found in the conda environment ${conda1}."
         stage0_error "Please install 'raxml-ng' in the conda environment ${conda1}."
         stage0_error "Recommended Command:"
@@ -876,33 +949,6 @@ if [ "${skip_checking}" != "TRUE" ]; then
       stage0_blank ""
       stage0_info "To construct phylogenetic trees via coalescence-based methods, 'phytools' must be installed in ${conda1} environment."
       stage0_info "Checking R package 'phytools' in ${conda1} environment..."
-      current_shell=$(basename "$SHELL")
-      case "$current_shell" in
-        bash)
-          eval "$(conda shell.bash hook)"
-          stage0_info "Bash shell detected. Conda hook loaded."
-          ;;
-        zsh)
-          eval "$(conda shell.zsh hook)"
-          echo "Zsh shell detected. Conda hook loaded."
-          ;;
-        sh)
-          eval "$(conda shell.sh hook)"
-          echo "Sh shell detected. Conda hook loaded."
-          ;;
-        fish)
-          eval "(conda shell.fish hook)"
-          echo "Fish shell detected. Conda hook loaded."
-        ;;
-      esac
-      conda activate "${conda1}"
-      if [ "$CONDA_DEFAULT_ENV" != "${conda1}" ]; then
-        stage0_error "Failed to check R package 'phytools' in ${conda1} environment."
-        stage0_error "HybSuite cannot activate conda environment ${conda1}."
-        stage0_error "HybSuite exits."
-        stage0_blank ""
-        exit 1
-      fi
       if Rscript -e "if (!requireNamespace('phytools', quietly = TRUE)) { quit(status = 1) }"; then
         stage0_info "PASS"
         stage0_blank ""
@@ -1136,9 +1182,7 @@ if [ "${skip_checking}" != "TRUE" ]; then
   #################################################
   ### Step 4: Validate All Arguments #############
   #################################################
-  stage0_info " => Step 4: Validating all arguments" 
-  stage0_info "Validating arguments ..."
-
+  stage0_info "=> Step 4: Validating all arguments"
   if [ "${eas_dir}" != "${o}/01-Assembled_data" ]; then
     if [ ! -e "$(dirname "${eas_dir}")" ]; then
       stage0_info "Verification result:"
@@ -1230,7 +1274,7 @@ if [ "${other_seqs}" != "_____" ]; then
 fi
 
 if [ "${skip_checking}" != "TRUE" ]; then
-  stage0_info " => Step 5: Check Species Checklists"
+  stage0_info "=> Step 5: Check Species Checklists"
   all_sp_num=$(grep -c '_' < ./All_Spname_list.txt)
   all_genus_num=$(awk -F '_' '{print $1}' ./All_Spname_list.txt|sort|uniq|grep -o '[A-Z]' | wc -l )
   awk -F '_' '{print $1}' ./All_Spname_list.txt|sort|uniq > ./All_Genus_name_list.txt
@@ -1284,7 +1328,7 @@ if [ "${skip_checking}" != "TRUE" ]; then
   ################################################
   ### Step 6: Check '-OI' and '-tree' options ####
   ################################################
-  stage0_info " => Step 6: Check '-OI' and '-tree' options"
+  stage0_info "=> Step 6: Check '-OI' and '-tree' options"
   stage0_info "According to your command:"
   
   stage0_info "The chosen Ortholog Inference methods:  "
@@ -1334,7 +1378,7 @@ if [ "${skip_checking}" != "TRUE" ]; then
   ######################################
   ### Step 7: Check the target file ####
   ######################################
-  stage0_info " => Step 7: Check the target sequence file"
+  stage0_info "=> Step 7: Check the target sequence file"
   if [ "${run_to_stage1}" = "true" ]; then
     stage0_info "PASS"
   else
@@ -1356,7 +1400,7 @@ if [ "${skip_checking}" != "TRUE" ]; then
   ######################################
   ### Step 8: Check threads ############
   ######################################
-  stage0_info " => Step 8 : Check threads"
+  stage0_info "=> Step 8 : Check threads"
   # Get available CPU cores (compatibility modification)
     if command -v nproc >/dev/null 2>&1; then
         available_cores=$(nproc)
@@ -1439,7 +1483,7 @@ if [ "${skip_checking}" != "TRUE" ]; then
   #Read the answer entered by the user
   stage0_info "All in all, the final results will be outputted to ${o}/"
   stage0_blank ""
-  stage0_info " => According to the above feedbacks,"
+  stage0_info "=> According to the above feedbacks,"
   stage0_info "proceed to run HybSuite? ([y]/n)"
   read answer
   answer_HybSuite=$(echo "$answer" | tr '[:upper:]' '[:lower:]')
@@ -2068,14 +2112,14 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                   # Check if failed
                   if [ ! -s "${d}/01-Downloaded_raw_data/01-Raw-reads_sra/${srr}/${srr}.sra" ]; then
                       record_failed_sample "$spname"
-                      exit 1
+                      continue
                   fi
 
                   # fasterq-dump
                   fasterq-dump ${d}/01-Downloaded_raw_data/01-Raw-reads_sra/${srr}/${srr}.sra -e ${nt_fasterq_dump} -p -O ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/ > /dev/null 2>&1
                   if [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_1.fastq" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_2.fastq" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}.fastq" ]; then
                       record_failed_sample "$spname"
-                      exit 1
+                      continue
                   fi
 
                   # pigz for single-ended
@@ -2083,7 +2127,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       pigz -p ${nt_pigz} ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}.fastq > /dev/null 2>&1
                       if [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}.fastq.gz" ]; then
                           record_failed_sample "$spname"
-                          exit 1
+                          continue
                       fi
                   fi
 
@@ -2093,7 +2137,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       pigz -p ${nt_pigz} ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_2.fastq > /dev/null 2>&1
                       if [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_1.fastq.gz" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_2.fastq.gz" ]; then
                           record_failed_sample "$spname"
-                          exit 1
+                          continue
                       fi
                   fi
 
@@ -2118,14 +2162,14 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                   # Check if failed
                   if [ ! -s "${d}/01-Downloaded_raw_data/01-Raw-reads_sra/${srr}/${srr}.sra" ]; then
                       record_failed_sample "$spname"
-                      exit 1
+                      continue
                   fi
 
                   # fasterq-dump
                   fasterq-dump ${d}/01-Downloaded_raw_data/01-Raw-reads_sra/${srr}/${srr}.sra -e ${nt_fasterq_dump} -p -O ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/ > /dev/null 2>&1
                   if [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_1.fastq" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_2.fastq" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}.fastq" ]; then
                       record_failed_sample "$spname"
-                      exit 1
+                      continue
                   fi
 
                   #rename the files
@@ -2205,7 +2249,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       MINLEN:${trimmomatic_min_length} > /dev/null 2>&1
                   if [ ! -s "${d}/02-Downloaded_clean_data/${spname}_1_clean.paired.fq.gz" ] || [ ! -s "${d}/02-Downloaded_clean_data/${spname}_2_clean.paired.fq.gz" ]; then
                       record_failed_sample "$spname"
-                      exit 1
+                      continue
                   fi
               fi
           fi
@@ -2227,7 +2271,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
 
                   if [ ! -s "${d}/02-Downloaded_clean_data/${spname}_clean.single.fq.gz" ]; then
                       record_failed_sample "$spname"
-                      exit 1
+                      continue
                   fi
               fi
           fi
@@ -2284,7 +2328,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       MINLEN:${trimmomatic_min_length} > /dev/null 2>&1
                   if [ ! -s "${d}/02-Downloaded_clean_data/${sample}_1_clean.paired.fq.gz" ] || [ ! -s "${d}/02-Downloaded_clean_data/${sample}_2_clean.paired.fq.gz" ]; then
                       record_failed_sample "$sample"
-                      exit 1
+                      continue
                   fi
               fi
           fi
@@ -2306,7 +2350,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
 
                   if [ ! -s "${d}/02-Downloaded_clean_data/${sample}_clean.single.fq.gz" ]; then
                       record_failed_sample "$sample"
-                      exit 1
+                      continue
                   fi
               fi
           fi
@@ -2618,7 +2662,7 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
         # Update failed sample list
         if ! grep -q "${add_sp}" "${o}"/02-All_paralogs/01-Original_paralogs/*_paralogs_all.fasta; then
             record_failed_sample "$add_sp"
-            exit 1
+            continue
         fi
         # Update finish count
         update_finish_count "$add_sp" "$stage2_logfile"
@@ -2872,7 +2916,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
           # Update failed sample list
           if ! grep -q "${add_sp}" "${o}"/03-Orthology_inference/HRS/01-Original_HRS_sequences/*.FNA; then
             record_failed_sample "$add_sp"
-            exit 1
+            continue
           fi
           # Update finish count
           update_finish_count "$add_sp" "$stage3_logfile"
@@ -3094,7 +3138,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
           # Update failed sample list
           if ! grep -q "${add_sp}" "${o}"/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/*.FNA; then
             record_failed_sample "$add_sp"
-            exit 1
+            continue
           fi
           # Update finish count
           update_finish_count "$add_sp" "$stage3_logfile"
@@ -3397,7 +3441,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
         # Update failed count
         if [ ! -s "./${filename}.trimmed.aln.fasta" ] || [ ! -s "./${filename}.trimmed.aln.fasta.tre" ]; then
           record_failed_sample "$genename"
-          exit 1
+          continue
         fi
         # Update finish count
         update_finish_count "$genename" "$stage3_logfile"
@@ -3518,7 +3562,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
     
     #Preparation: conda
     stage3_info "${log_mode}" "Preparation: Activate conda environment ${conda2}"
-    conda_activate "stage1" "${conda2}"
+    conda_activate "stage3" "${conda2}"
     
     # Preparation: remove existed files
     if [ -d "${o}/03-Orthology_inference/ParaGone" ]; then
@@ -3792,6 +3836,7 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       # Update failed count
       if [ ! -s "${o}/04-Alignments/HRS/${file_name}.trimmed.aln.fasta" ]; then
         record_failed_sample "$file_name"
+		continue
       fi
       
       # Update finish count
@@ -3904,6 +3949,7 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       # Update failed count
       if [ ! -s "${o}/04-Alignments/RLWP/${file_name}.trimmed.aln.fasta" ]; then
         record_failed_sample "$file_name"
+		continue
       fi
       
       # Update finish count
@@ -4974,6 +5020,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
         run_raxml_sg "${ortho_method}" "${Genename}"
         if [ ! -s "${o}/08-Coalescent-based_trees/${ortho_method}/01-Gene_trees/${Genename}/RAxML_bestTree.${Genename}.tre" ]; then
           record_failed_sample "$line"
+		  continue
         else
           update_finish_count "$Genename" "$stage5_logfile"
         fi
@@ -5033,7 +5080,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
       eval "${cmd}" > /dev/null 2>&1
       if [ ! -s "${o}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees/${Genename}_rr.tre" ]; then
         record_failed_sample "$Genename"
-        exit 1
+        continue
       else
         update_finish_count "$Genename" "$stage5_logfile"
         echo ${Genename} >> "${o}/08-Coalescent-based_trees/${ortho_method}/Final_genes_for_coalscent_list.txt"
