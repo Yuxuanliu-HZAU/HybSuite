@@ -3,6 +3,7 @@
 Script for generating paralog statistics and visualization.
 Can generate TSV format table with paralog counts and/or create heatmap visualization.
 Supports multi-threading for faster processing.
+Part of HybSuite
 """
 
 import argparse
