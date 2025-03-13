@@ -117,9 +117,9 @@ Usage 5: Run until finishing stage 1-4
                                        Sequences (all putative paralogs) shorter than this percentage of the maximum length will be filtered
   -max_length_ratio <0-1>              Minimum length ratio relative to the longest sequence per locus (Default: 0)
                                        Sequences (all putative paralogs) shorter than this percentage of the maximum length will be filtered
-  -min_taxon_coverage <0-1>            Minimum taxon coverage (Default: 0)
+  -min_sample_coverage <0-1>           Minimum sample coverage (Default: 0)
                                        For all putative paralogs in stage 2, HRS and RLWP sequences in stage 3:
-                                       Loci lower than this taxon coverage will be filtered
+                                       Loci lower than this sample coverage will be filtered
   -min_locus_coverage <0-1>            Minimum locus coverage for filtered paralogs, and HRS and RLWP sequences (Default: 0)
                                        For all putative paralogs in stage 2, and orthogroups in stage 3:
                                        Taxa (samples) with lower than this locus coverage will be filtered
@@ -214,3 +214,4 @@ HybSuite.sh --run_to_stage2 \
   -conda1 hybsuite_env \
   -my_raw_data /seq/raw_data \
   -nt 8
+
