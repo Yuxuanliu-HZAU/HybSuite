@@ -4249,7 +4249,7 @@ conda_activate "stage5" "${conda1}"
 ###################################################################################################
 #1. ModelTest-NG (Optional)
 #Preparation
-if [ "${run_modeltest_ng}" = "TRUE" ] && [ "${run_astral}" != "TRUE" ] && [ "${run_wastral}" != "TRUE" ]; then
+if [ "${run_modeltest_ng}" = "TRUE" ] && ([ "${run_iqtree}" = "TRUE" ] || [ "${run_raxml}" = "TRUE" ] || [ "${run_raxml_ng}" = "TRUE" ]); then
   stage5_info_main "Optional step: Model Test"
   define_threads "modeltest_ng" "stage5_logfile"
 
