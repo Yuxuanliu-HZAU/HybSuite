@@ -2105,14 +2105,14 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                   # Check if failed
                   if [ ! -s "${d}/01-Downloaded_raw_data/01-Raw-reads_sra/${srr}/${srr}.sra" ]; then
                       record_failed_sample "$spname"
-                      continue
+                      break
                   fi
 
                   # fasterq-dump
                   fasterq-dump ${d}/01-Downloaded_raw_data/01-Raw-reads_sra/${srr}/${srr}.sra -e ${nt_fasterq_dump} -p -O ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/ > /dev/null 2>&1
                   if [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_1.fastq" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_2.fastq" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}.fastq" ]; then
                       record_failed_sample "$spname"
-                      continue
+                      break
                   fi
 
                   # pigz for single-ended
@@ -2120,7 +2120,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       pigz -p ${nt_pigz} ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}.fastq > /dev/null 2>&1
                       if [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}.fastq.gz" ]; then
                           record_failed_sample "$spname"
-                          continue
+                          break
                       fi
                   fi
 
@@ -2130,7 +2130,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       pigz -p ${nt_pigz} ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_2.fastq > /dev/null 2>&1
                       if [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_1.fastq.gz" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_2.fastq.gz" ]; then
                           record_failed_sample "$spname"
-                          continue
+                          break
                       fi
                   fi
 
@@ -2155,14 +2155,14 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                   # Check if failed
                   if [ ! -s "${d}/01-Downloaded_raw_data/01-Raw-reads_sra/${srr}/${srr}.sra" ]; then
                       record_failed_sample "$spname"
-                      continue
+                      break
                   fi
 
                   # fasterq-dump
                   fasterq-dump ${d}/01-Downloaded_raw_data/01-Raw-reads_sra/${srr}/${srr}.sra -e ${nt_fasterq_dump} -p -O ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/ > /dev/null 2>&1
                   if [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_1.fastq" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_2.fastq" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}.fastq" ]; then
                       record_failed_sample "$spname"
-                      continue
+                      break
                   fi
 
                   #rename the files
@@ -2242,7 +2242,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       MINLEN:${trimmomatic_min_length} > /dev/null 2>&1
                   if [ ! -s "${d}/02-Downloaded_clean_data/${spname}_1_clean.paired.fq.gz" ] || [ ! -s "${d}/02-Downloaded_clean_data/${spname}_2_clean.paired.fq.gz" ]; then
                       record_failed_sample "$spname"
-                      continue
+                      break
                   fi
               fi
           fi
@@ -2264,7 +2264,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
 
                   if [ ! -s "${d}/02-Downloaded_clean_data/${spname}_clean.single.fq.gz" ]; then
                       record_failed_sample "$spname"
-                      continue
+                      break
                   fi
               fi
           fi
@@ -2321,7 +2321,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       MINLEN:${trimmomatic_min_length} > /dev/null 2>&1
                   if [ ! -s "${d}/02-Downloaded_clean_data/${sample}_1_clean.paired.fq.gz" ] || [ ! -s "${d}/02-Downloaded_clean_data/${sample}_2_clean.paired.fq.gz" ]; then
                       record_failed_sample "$sample"
-                      continue
+                      break
                   fi
               fi
           fi
@@ -2343,7 +2343,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
 
                   if [ ! -s "${d}/02-Downloaded_clean_data/${sample}_clean.single.fq.gz" ]; then
                       record_failed_sample "$sample"
-                      continue
+                      break
                   fi
               fi
           fi
@@ -2575,6 +2575,29 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
     stage2_blank_main ""
   fi
   grep '>' ${t} | awk -F'-' '{print $NF}' | sort | uniq > "${o}/00-logs_and_reports/reports/Ref_gene_name_list.txt"
+  # Recovered_locus_num_for_samples.tsv
+  echo -e "Sample\tRecovered_locus_num" > "${eas_dir}/Recovered_locus_num_for_samples.tsv"
+  while IFS= read -r Spname || [ -n "$Spname" ]; do
+    if [ -s "${eas_dir}/${Spname}/genes_with_seqs.txt" ]; then
+        echo -e "$Spname\t$(wc -l < "${eas_dir}/${Spname}/genes_with_seqs.txt")" >> "${eas_dir}/Recovered_locus_num_for_samples.tsv"
+    else
+        echo -e "$Spname\t0" >> "${eas_dir}/Recovered_locus_num_for_samples.tsv"
+    fi
+  done < "${eas_dir}/Assembled_data_namelist.txt"
+  
+  # Recovered_sample_num_for_loci.tsv
+  echo -e "Locus\tRecovered_sample_num" > "${eas_dir}/Recovered_sample_num_for_loci.tsv"
+  while IFS= read -r locus || [ -n "$locus" ]; do
+    count=0
+    while IFS= read -r Spname || [ -n "$Spname" ]; do
+        if [ -s "${eas_dir}/${Spname}/genes_with_seqs.txt" ]; then
+            if grep -qE "^$locus\b" "${eas_dir}/${Spname}/genes_with_seqs.txt"; then
+                count=$((count + 1))
+            fi
+        fi
+    done < "${eas_dir}/Assembled_data_namelist.txt"
+    echo -e "$locus\t$count" >> "${eas_dir}/Recovered_sample_num_for_loci.tsv"
+  done < "${o}/00-logs_and_reports/reports/Ref_gene_name_list.txt"
 
   ############################################################################################
   #Stage2-Step2: Recovering all original paralogs via HybPiper ###################################
@@ -2642,20 +2665,23 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
         # Update start count
         update_start_count "$add_sp" "$stage2_logfile"
         while IFS= read -r add_gene || [ -n "$add_gene" ]; do
-          sed -e "s|^.*[gene=${add_gene}].*$|>${add_gene} single_hit|g" "${file}" > "${add_sp}_${add_gene}_single_hit.fa"
-          sed -e "s|>${add_gene}.*$|>${add_gene} single_hit|g" "${file}" > "${add_sp}_${add_gene}_single_hit.fa"
-          awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
-          "${add_sp}_${add_gene}_single_hit.fa" >> "${o}/02-All_paralogs/01-Original_paralogs/${add_gene}_paralogs_all.fasta" 
-          awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
-          "${add_sp}_${add_gene}_single_hit.fa" >> "${o}/00-logs_and_reports/reports/Other_single_hit_seqs/${add_gene}.fasta"
-          sed -i "s|${add_gene}|${add_sp}|g;/^$/d" "${o}/02-All_paralogs/01-Original_paralogs/${add_gene}_paralogs_all.fasta" > /dev/null
-          sed -i "s|${add_gene}|${add_sp}|g;/^$/d" "${o}/00-logs_and_reports/reports/Other_single_hit_seqs/${add_gene}.fasta" > /dev/null
+          if grep -qE ">$add_gene |\[gene=$add_gene\]" "${other_seqs}/${add_sp}.fasta"; then
+		    file="${add_sp}.fasta"
+			sed -e "s|^.*[gene=${add_gene}].*$|>${add_gene} single_hit|g" "${file}" > "${add_sp}_${add_gene}_single_hit.fa"
+			sed -e "s|>${add_gene}.*$|>${add_gene} single_hit|g" "${file}" > "${add_sp}_${add_gene}_single_hit.fa"
+			awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
+			"${add_sp}_${add_gene}_single_hit.fa" >> "${o}/02-All_paralogs/01-Original_paralogs/${add_gene}_paralogs_all.fasta" 
+			awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
+			"${add_sp}_${add_gene}_single_hit.fa" >> "${o}/00-logs_and_reports/reports/Other_single_hit_seqs/${add_gene}.fasta"
+			sed -i "s|${add_gene}|${add_sp}|g;/^$/d" "${o}/02-All_paralogs/01-Original_paralogs/${add_gene}_paralogs_all.fasta"
+			sed -i "s|${add_gene}|${add_sp}|g;/^$/d" "${o}/00-logs_and_reports/reports/Other_single_hit_seqs/${add_gene}.fasta"
+		  fi
         done < "${o}/00-logs_and_reports/reports/Ref_gene_name_list.txt"
         find . -type f -name "*.fa" -exec rm -f {} +
         # Update failed sample list
         if ! grep -q "${add_sp}" "${o}"/02-All_paralogs/01-Original_paralogs/*_paralogs_all.fasta; then
             record_failed_sample "$add_sp"
-            continue
+            break
         fi
         # Update finish count
         update_finish_count "$add_sp" "$stage2_logfile"
@@ -2896,20 +2922,20 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
           # Update start count
           update_start_count "$add_sp" "$stage3_logfile"
           while IFS= read -r add_gene || [ -n "$add_gene" ]; do
-            sed -e "s|^.*[gene=${add_gene}].*$|>${add_gene} single_hit|g" "${file}" > "${add_sp}_${add_gene}_single_hit.fa"
-            sed -e "s|>${add_gene}.*$|>${add_gene} single_hit|g" "${file}" > "${add_sp}_${add_gene}_single_hit.fa" 
-            awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
-            "${add_sp}_${add_gene}_single_hit.fa" >> "${o}/00-logs_and_reports/reports/Other_single_hit_seqs/${add_gene}.fasta"
-            sed -i "s|${add_gene} |${add_sp} |g;/^$/d" "${o}/00-logs_and_reports/reports/Other_single_hit_seqs/${add_gene}.fasta" > /dev/null 2>&1
-            awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
-            "${add_sp}_${add_gene}_single_hit.fa" >> "${o}/03-Orthology_inference/HRS/01-Original_HRS_sequences/${add_gene}.FNA"
-            sed -i "s|${add_gene} |${add_sp} |g;/^$/d" "${o}/03-Orthology_inference/HRS/01-Original_HRS_sequences/${add_gene}.FNA" > /dev/null 2>&1
+            if grep -qE ">$add_gene |\[gene=$add_gene\]" "${other_seqs}/${add_sp}.fasta"; then
+				file="${add_sp}.fasta"
+				sed -e "s|^.*[gene=${add_gene}].*$|>${add_gene} single_hit|g" "${file}" > "${add_sp}_${add_gene}_single_hit.fa"
+				sed -e "s|>${add_gene}.*$|>${add_gene} single_hit|g" "${file}" > "${add_sp}_${add_gene}_single_hit.fa" 
+				awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
+				"${add_sp}_${add_gene}_single_hit.fa" >> "${o}/03-Orthology_inference/HRS/01-Original_HRS_sequences/${add_gene}.FNA"
+				sed -i "s|${add_gene} |${add_sp} |g;/^$/d" "${o}/03-Orthology_inference/HRS/01-Original_HRS_sequences/${add_gene}.FNA"
+			fi
           done < "${o}/00-logs_and_reports/reports/Ref_gene_name_list.txt"
           find . -type f -name "*.fa" -exec rm -f {} +
           # Update failed sample list
           if ! grep -q "${add_sp}" "${o}"/03-Orthology_inference/HRS/01-Original_HRS_sequences/*.FNA; then
             record_failed_sample "$add_sp"
-            continue
+            break
           fi
           # Update finish count
           update_finish_count "$add_sp" "$stage3_logfile"
@@ -2984,13 +3010,13 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
       stage3_info "${log_mode}" "The information of filtered out taxa with low locus coverage has been written to:"
       stage3_info "${log_mode}" "${o}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_samples_with_low_locus_coverage_info.tsv"
     else
-      stage3_error "Fail to filter out taxa with low locus coverage."
+      stage3_info "No taxon was filtered out."
     fi
     if [ -s "${o}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_loci_with_low_sample_coverage_info.tsv" ]; then
       stage3_info "${log_mode}" "The information of filtered out loci with low sample coverage has been written to:"
       stage3_info "${log_mode}" "${o}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_loci_with_low_sample_coverage_info.tsv"
     else
-      stage3_error "Fail to filter out loci with low sample coverage."
+      stage3_info "No locus was filtered out."
     fi
     stage3_info_main "Finish"
     stage3_blank "${log_mode}" ""
@@ -3118,20 +3144,20 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
           # Update start count
           update_start_count "$add_sp" "$stage3_logfile"
           while IFS= read -r add_gene || [ -n "$add_gene" ]; do
-            sed -e "s|^.*[gene=${add_gene}].*$|>${add_gene} single_hit|g" "${file}" > "${add_sp}_${add_gene}_single_hit.fa"
-            sed -e "s|>${add_gene}.*$|>${add_gene} single_hit|g" "${file}" > "${add_sp}_${add_gene}_single_hit.fa" 
-            awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
-            "${add_sp}_${add_gene}_single_hit.fa" >> "${o}/00-logs_and_reports/reports/Other_single_hit_seqs/${add_gene}.fasta"
-            sed -i "s|${add_gene} |${add_sp} |g;/^$/d" "${o}/00-logs_and_reports/reports/Other_single_hit_seqs/${add_gene}.fasta" > /dev/null 2>&1
-            awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
-            "${add_sp}_${add_gene}_single_hit.fa" >> "${o}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/${add_gene}.fasta"
-            sed -i "s|${add_gene} |${add_sp} |g;/^$/d" "${o}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/${add_gene}.fasta" > /dev/null 2>&1
+            if grep -qE ">$add_gene |\[gene=$add_gene\]" "${other_seqs}/${add_sp}.fasta"; then
+				file="${add_sp}.fasta"
+				sed -e "s|^.*[gene=${add_gene}].*$|>${add_gene} single_hit|g" "${file}" > "${add_sp}_${add_gene}_single_hit.fa"
+				sed -e "s|>${add_gene}.*$|>${add_gene} single_hit|g" "${file}" > "${add_sp}_${add_gene}_single_hit.fa"
+				awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
+				"${add_sp}_${add_gene}_single_hit.fa" >> "${o}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/${add_gene}.FNA"
+				sed -i "s|${add_gene} |${add_sp} |g;/^$/d" "${o}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/${add_gene}.FNA" > /dev/null 2>&1
+			fi
           done < "${o}/00-logs_and_reports/reports/Ref_gene_name_list.txt"
           find . -type f -name "*.fa" -exec rm -f {} +
           # Update failed sample list
           if ! grep -q "${add_sp}" "${o}"/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/*.FNA; then
             record_failed_sample "$add_sp"
-            continue
+            break
           fi
           # Update finish count
           update_finish_count "$add_sp" "$stage3_logfile"
@@ -3434,7 +3460,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
         # Update failed count
         if [ ! -s "./${filename}.trimmed.aln.fasta" ] || [ ! -s "./${filename}.trimmed.aln.fasta.tre" ]; then
           record_failed_sample "$genename"
-          continue
+          break
         fi
         # Update finish count
         update_finish_count "$genename" "$stage3_logfile"
@@ -3829,7 +3855,7 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       # Update failed count
       if [ ! -s "${o}/04-Alignments/HRS/${file_name}.trimmed.aln.fasta" ]; then
         record_failed_sample "$file_name"
-		continue
+		break
       fi
       
       # Update finish count
@@ -3942,7 +3968,7 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       # Update failed count
       if [ ! -s "${o}/04-Alignments/RLWP/${file_name}.trimmed.aln.fasta" ]; then
         record_failed_sample "$file_name"
-		continue
+		break
       fi
       
       # Update finish count
@@ -5013,7 +5039,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
         run_raxml_sg "${ortho_method}" "${Genename}"
         if [ ! -s "${o}/08-Coalescent-based_trees/${ortho_method}/01-Gene_trees/${Genename}/RAxML_bestTree.${Genename}.tre" ]; then
           record_failed_sample "$line"
-		  continue
+		  break
         else
           update_finish_count "$Genename" "$stage5_logfile"
         fi
@@ -5073,7 +5099,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
       eval "${cmd}" > /dev/null 2>&1
       if [ ! -s "${o}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees/${Genename}_rr.tre" ]; then
         record_failed_sample "$Genename"
-        continue
+        break
       else
         update_finish_count "$Genename" "$stage5_logfile"
         echo ${Genename} >> "${o}/08-Coalescent-based_trees/${ortho_method}/Final_genes_for_coalscent_list.txt"
