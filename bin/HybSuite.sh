@@ -1257,11 +1257,7 @@ if [ -s "./My_Spname.txt" ]; then
     # If no NCBI data, use only custom data
     cp ./My_Spname.txt ./All_Spname_list.txt
   else
-    sed -e '$a\' "./NCBI_Spname_list.txt" > "./NCBI_Spname_list2.txt"
-    sed -e '$a\' ./My_Spname.txt > ./My_Spname2.txt
-    cat ./NCBI_Spname_list2.txt ./My_Spname2.txt | sed '/^$/d' > ./All_Spname_list.txt
-    rm ./NCBI_Spname_list2.txt
-    rm ./My_Spname2.txt
+    awk '1' "./NCBI_Spname_list.txt" ./My_Spname.txt | sed '/^$/d' > ./All_Spname_list.txt
   fi
 fi
 
@@ -1289,9 +1285,6 @@ if [ "${skip_checking}" != "TRUE" ]; then
   if [ -s "${i}/Other_seqs_Spname.txt" ]; then
     Other_sp_num=$(grep -c '_' < ./Other_seqs_Spname.txt)
     Other_genus_num=$(awk -F '_' '{print $1}' ./Other_seqs_Spname.txt|sort|uniq|grep -o '[A-Z]'|wc -l)
-  fi
-  if [ -s "./NCBI_Spname_list.txt" ]; then
-    rm ./NCBI_Spname_list.txt
   fi
 fi
 
@@ -2434,7 +2427,8 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
 
   #################===========================================================================
   # (2) Change working directory and conda environment
-  cd ${o}/01-Assembled_data
+  mkdir -p "${eas_dir}"
+  cd "${eas_dir}"
   stage2_info_main "<<<======= Stage 2 Data assembly and filtered paralogs recovering =======>>>"
   conda_activate "stage2" "${conda1}"
   # (3) Define log file
@@ -2469,7 +2463,6 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
 
   #################===========================================================================
   stage2_info_main "Step 1: Assembling data using 'hybpiper assemble'..."
-  mkdir -p "${o}/01-Assembled_data/"
   cd "${eas_dir}"
   #################===========================================================================
   if [ -s "${eas_dir}/Assembled_data_namelist.txt" ]; then
