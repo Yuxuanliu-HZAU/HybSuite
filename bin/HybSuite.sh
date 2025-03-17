@@ -251,9 +251,11 @@ if echo "${OI}" | grep -q "7"; then
 fi
 if echo "${OI}" | grep -q "a"; then
   run_phylopypruner="TRUE"
+  run_paragone="FALSE"
 fi
 if echo "${OI}" | grep -q "b"; then
   run_paragone="TRUE"
+  run_phylopypruner="FALSE"
 fi
 if [ "${OI}" = "all" ]; then
   HRS="TRUE"
@@ -361,7 +363,6 @@ define_threads() {
         if [ $free_threads -lt 1 ]; then
             free_threads=1
         fi
-
         if (( $(echo "$current_load > 1" | bc -l) )); then
             recommended_threads=$(( free_threads / 2 ))
         else
@@ -998,7 +999,7 @@ if [ "${skip_checking}" != "TRUE" ]; then
   }
 
   check_py_phylopypruner() {
-    if ([ "$LS" = "TRUE" ] || [ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "$one_to_one" = "TRUE" ]) && [ "${run_phylopypruner}" = "TRUE" ]; then
+  if [ "$LS" = "TRUE" ] || { ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "$one_to_one" = "TRUE" ]) && [ "${run_phylopypruner}" = "TRUE" ]; }; then
       stage0_blank ""
       stage0_info "To run LS/MO/MI/RT/1to1 via PhyloPyPruner, 'phylopypruner' must be installed in ${conda1} environment."
       stage0_info "Checking Python package 'phylopypruner' in ${conda1} environment..."
@@ -1996,10 +1997,136 @@ work_dir="${o}/00-logs_and_reports/logs"
         exit 1
     fi
 }
+  #################===========================================================================
+  
+  #################===========================================================================
+  # Function: Running MAFFT and TrimAl
+  run_mafft() {
+      local input=$1
+      local output=$2
+      local algorithm=$3
+      local adjustdirection=$4
+      local threads=$5
+      local mafft_cmd
+      
+      case "${algorithm}" in
+          "auto")
+              mafft_cmd="mafft --auto"
+              ;;
+          "linsi")
+              # L-INS-i supports gap parameters
+              mafft_cmd="mafft-linsi --op 3 --ep 0.123"
+              ;;
+          "ginsi")
+              mafft_cmd="mafft-ginsi"
+              ;;
+          "einsi")
+              mafft_cmd="mafft-einsi"
+              ;;
+          *)
+              stage3_error "Unknown MAFFT algorithm: ${algorithm}"
+              return 1
+              ;;
+      esac
 
-  stage0_blank ""
-  # preparation: conda
-  # source conda
+      mafft_cmd="${mafft_cmd} --quiet"
+      mafft_cmd="${mafft_cmd} --thread ${threads}"
+
+      if [ "${algorithm}" = "linsi" ] && [ "${adjustdirection}" = "TRUE" ]; then
+          mafft_cmd="${mafft_cmd} --adjustdirectionaccurately"
+      fi
+
+      mafft_cmd="${mafft_cmd} ${input} > ${output}"
+
+      eval "${mafft_cmd}" 2>/dev/null
+
+      if [ -s "${output}" ]; then
+          return 0
+      else
+          stage3_error "MAFFT alignment failed"
+          return 1
+      fi
+  }
+
+  run_trimal() {
+      local input_file=$1
+      local output_file=$2
+      local trimal_mode=$3
+      local gap_threshold=$4
+      local sim_threshold=$5
+      local cons=$6
+      local block=$7
+      local res_overlap=$8
+      local seq_overlap=$9
+      local w=${10}
+      local gw=${11}
+      local sw=${12}
+      local trimal_cmd="trimal"
+
+      trimal_cmd="${trimal_cmd} -in ${input_file} -out ${output_file}"
+
+      case "${trimal_mode}" in
+          "nogaps")
+              trimal_cmd="${trimal_cmd} -nogaps"
+              ;;
+          "noallgaps")
+              trimal_cmd="${trimal_cmd} -noallgaps"
+              ;;
+          "gappyout")
+              trimal_cmd="${trimal_cmd} -gappyout"
+              ;;
+          "strict")
+              trimal_cmd="${trimal_cmd} -strict"
+              ;;
+          "strictplus")
+              trimal_cmd="${trimal_cmd} -strictplus"
+              ;;
+          "automated1")
+              trimal_cmd="${trimal_cmd} -automated1"
+              ;;
+          *)
+              stage3_error "Invalid trimal mode: ${trimal_mode}. Please choose from nogaps, noallgaps, gappyout, strict, strictplus, automated1."
+              return 1
+              ;;
+      esac
+
+      if [ "${gap_threshold}" != "_____" ]; then
+          trimal_cmd="${trimal_cmd} -gt ${gap_threshold}"
+      fi
+
+      if [ "${sim_threshold}" != "_____" ]; then
+          trimal_cmd="${trimal_cmd} -st ${sim_threshold}"
+      fi
+
+      if [ "${cons}" != "_____" ]; then
+          trimal_cmd="${trimal_cmd} -cons ${cons}"
+      fi
+
+      if [ "${block}" != "_____" ]; then
+        trimal_cmd="${trimal_cmd} -block ${block}"
+      fi
+
+      if [ "${res_overlap}" != "_____" ]; then
+      trimal_cmd="${trimal_cmd} -resoverlap ${res_overlap}"
+      fi
+
+      if [ "${seq_overlap}" != "_____" ]; then
+          trimal_cmd="${trimal_cmd} -seqoverlap ${seq_overlap}"
+      fi
+
+      if [ "${w}" != "_____" ]; then
+          trimal_cmd="${trimal_cmd} -w ${window_size}"
+      fi
+
+      if [ "${gw}" != "_____" ]; then
+          trimal_cmd="${trimal_cmd} -gw ${gw}"
+      fi
+
+      if [ "${sw}" != "_____" ]; then
+          trimal_cmd="${trimal_cmd} -sw ${sw}"
+      fi
+      eval "${trimal_cmd}" 2>/dev/null
+  }
   #################===========================================================================
 
 if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${skip_stage1234}" != "TRUE" ]; then
@@ -2105,14 +2232,14 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                   # Check if failed
                   if [ ! -s "${d}/01-Downloaded_raw_data/01-Raw-reads_sra/${srr}/${srr}.sra" ]; then
                       record_failed_sample "$spname"
-                      break
+                      exit 1
                   fi
 
                   # fasterq-dump
                   fasterq-dump ${d}/01-Downloaded_raw_data/01-Raw-reads_sra/${srr}/${srr}.sra -e ${nt_fasterq_dump} -p -O ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/ > /dev/null 2>&1
                   if [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_1.fastq" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_2.fastq" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}.fastq" ]; then
                       record_failed_sample "$spname"
-                      break
+                      exit 1
                   fi
 
                   # pigz for single-ended
@@ -2120,7 +2247,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       pigz -p ${nt_pigz} ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}.fastq > /dev/null 2>&1
                       if [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}.fastq.gz" ]; then
                           record_failed_sample "$spname"
-                          break
+                          exit 1
                       fi
                   fi
 
@@ -2130,7 +2257,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       pigz -p ${nt_pigz} ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_2.fastq > /dev/null 2>&1
                       if [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_1.fastq.gz" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_2.fastq.gz" ]; then
                           record_failed_sample "$spname"
-                          break
+                          exit 1
                       fi
                   fi
 
@@ -2155,14 +2282,14 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                   # Check if failed
                   if [ ! -s "${d}/01-Downloaded_raw_data/01-Raw-reads_sra/${srr}/${srr}.sra" ]; then
                       record_failed_sample "$spname"
-                      break
+                      exit 1
                   fi
 
                   # fasterq-dump
                   fasterq-dump ${d}/01-Downloaded_raw_data/01-Raw-reads_sra/${srr}/${srr}.sra -e ${nt_fasterq_dump} -p -O ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/ > /dev/null 2>&1
                   if [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_1.fastq" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}_2.fastq" ] && [ ! -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${srr}.fastq" ]; then
                       record_failed_sample "$spname"
-                      break
+                      exit 1
                   fi
 
                   #rename the files
@@ -2242,7 +2369,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       MINLEN:${trimmomatic_min_length} > /dev/null 2>&1
                   if [ ! -s "${d}/02-Downloaded_clean_data/${spname}_1_clean.paired.fq.gz" ] || [ ! -s "${d}/02-Downloaded_clean_data/${spname}_2_clean.paired.fq.gz" ]; then
                       record_failed_sample "$spname"
-                      break
+                      exit 1
                   fi
               fi
           fi
@@ -2264,7 +2391,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
 
                   if [ ! -s "${d}/02-Downloaded_clean_data/${spname}_clean.single.fq.gz" ]; then
                       record_failed_sample "$spname"
-                      break
+                      exit 1
                   fi
               fi
           fi
@@ -2321,7 +2448,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       MINLEN:${trimmomatic_min_length} > /dev/null 2>&1
                   if [ ! -s "${d}/02-Downloaded_clean_data/${sample}_1_clean.paired.fq.gz" ] || [ ! -s "${d}/02-Downloaded_clean_data/${sample}_2_clean.paired.fq.gz" ]; then
                       record_failed_sample "$sample"
-                      break
+                      exit 1
                   fi
               fi
           fi
@@ -2343,7 +2470,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
 
                   if [ ! -s "${d}/02-Downloaded_clean_data/${sample}_clean.single.fq.gz" ]; then
                       record_failed_sample "$sample"
-                      break
+                      exit 1
                   fi
               fi
           fi
@@ -2681,7 +2808,7 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
         # Update failed sample list
         if ! grep -q "${add_sp}" "${o}"/02-All_paralogs/01-Original_paralogs/*_paralogs_all.fasta; then
             record_failed_sample "$add_sp"
-            break
+            exit 1
         fi
         # Update finish count
         update_finish_count "$add_sp" "$stage2_logfile"
@@ -2853,6 +2980,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
     fi
   }
   stage3_logfile="${o}/00-logs_and_reports/logs/Stage3_Orthology_inference_${current_time}.log"
+  conda_activate "stage3" "${conda1}"
   stage3_info_main "<<<======= Stage 3 Orthology inference =======>>>"
   #################===========================================================================
 
@@ -2935,7 +3063,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
           # Update failed sample list
           if ! grep -q "${add_sp}" "${o}"/03-Orthology_inference/HRS/01-Original_HRS_sequences/*.FNA; then
             record_failed_sample "$add_sp"
-            break
+            exit 1
           fi
           # Update finish count
           update_finish_count "$add_sp" "$stage3_logfile"
@@ -3157,7 +3285,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
           # Update failed sample list
           if ! grep -q "${add_sp}" "${o}"/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/*.FNA; then
             record_failed_sample "$add_sp"
-            break
+            exit 1
           fi
           # Update finish count
           update_finish_count "$add_sp" "$stage3_logfile"
@@ -3291,135 +3419,8 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
   ############################################################################################
   #Stage3-Optional method: LS/MI/MO/RT/1to1 for PhyloPyPruner ################################
   ############################################################################################
-  run_mafft() {
-      local input=$1
-      local output=$2
-      local algorithm=$3
-      local adjustdirection=$4
-      local threads=$5
-      local mafft_cmd
-      
-      case "${algorithm}" in
-          "auto")
-              mafft_cmd="mafft --auto"
-              ;;
-          "linsi")
-              # L-INS-i supports gap parameters
-              mafft_cmd="mafft-linsi --op 3 --ep 0.123"
-              ;;
-          "ginsi")
-              mafft_cmd="mafft-ginsi"
-              ;;
-          "einsi")
-              mafft_cmd="mafft-einsi"
-              ;;
-          *)
-              stage3_error "Unknown MAFFT algorithm: ${algorithm}"
-              return 1
-              ;;
-      esac
-
-      mafft_cmd="${mafft_cmd} --quiet"
-      mafft_cmd="${mafft_cmd} --thread ${threads}"
-
-      if [ "${algorithm}" = "linsi" ] && [ "${adjustdirection}" = "TRUE" ]; then
-          mafft_cmd="${mafft_cmd} --adjustdirectionaccurately"
-      fi
-
-      mafft_cmd="${mafft_cmd} ${input} > ${output}"
-
-      eval "${mafft_cmd}" 2>/dev/null
-
-      if [ -s "${output}" ]; then
-          return 0
-      else
-          stage3_error "MAFFT alignment failed"
-          return 1
-      fi
-  }
-
-  run_trimal() {
-      local input_file=$1
-      local output_file=$2
-      local trimal_mode=$3
-      local gap_threshold=$4
-      local sim_threshold=$5
-      local cons=$6
-      local block=$7
-      local res_overlap=$8
-      local seq_overlap=$9
-      local w=${10}
-      local gw=${11}
-      local sw=${12}
-      local trimal_cmd="trimal"
-
-      trimal_cmd="${trimal_cmd} -in ${input_file} -out ${output_file}"
-
-      case "${trimal_mode}" in
-          "nogaps")
-              trimal_cmd="${trimal_cmd} -nogaps"
-              ;;
-          "noallgaps")
-              trimal_cmd="${trimal_cmd} -noallgaps"
-              ;;
-          "gappyout")
-              trimal_cmd="${trimal_cmd} -gappyout"
-              ;;
-          "strict")
-              trimal_cmd="${trimal_cmd} -strict"
-              ;;
-          "strictplus")
-              trimal_cmd="${trimal_cmd} -strictplus"
-              ;;
-          "automated1")
-              trimal_cmd="${trimal_cmd} -automated1"
-              ;;
-          *)
-              stage3_error "Invalid trimal mode: ${trimal_mode}. Please choose from nogaps, noallgaps, gappyout, strict, strictplus, automated1."
-              return 1
-              ;;
-      esac
-
-      if [ "${gap_threshold}" != "_____" ]; then
-          trimal_cmd="${trimal_cmd} -gt ${gap_threshold}"
-      fi
-
-      if [ "${sim_threshold}" != "_____" ]; then
-          trimal_cmd="${trimal_cmd} -st ${sim_threshold}"
-      fi
-
-      if [ "${cons}" != "_____" ]; then
-          trimal_cmd="${trimal_cmd} -cons ${cons}"
-      fi
-
-      if [ "${block}" != "_____" ]; then
-        trimal_cmd="${trimal_cmd} -block ${block}"
-      fi
-
-      if [ "${res_overlap}" != "_____" ]; then
-      trimal_cmd="${trimal_cmd} -resoverlap ${res_overlap}"
-      fi
-
-      if [ "${seq_overlap}" != "_____" ]; then
-          trimal_cmd="${trimal_cmd} -seqoverlap ${seq_overlap}"
-      fi
-
-      if [ "${w}" != "_____" ]; then
-          trimal_cmd="${trimal_cmd} -w ${window_size}"
-      fi
-
-      if [ "${gw}" != "_____" ]; then
-          trimal_cmd="${trimal_cmd} -gw ${gw}"
-      fi
-
-      if [ "${sw}" != "_____" ]; then
-          trimal_cmd="${trimal_cmd} -sw ${sw}"
-      fi
-      eval "${trimal_cmd}" 2>/dev/null
-  }
-
-  #4. phylopypruner (optional)
-  if [ "$LS" = "TRUE" ] || { ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ]) && [ "${run_phylopypruner}" = "TRUE" ]; }; then
+  #1. phylopypruner (optional)
+  if [ "$LS" = "TRUE" ] || { ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ]) && [ "${run_phylopypruner}" = "TRUE" ] && [ "${run_paragone}" != "TRUE" ]; }; then
     if [ -d "${o}/03-Orthology_inference/PhyloPyPruner/" ]; then
       rm -r "${o}/03-Orthology_inference/PhyloPyPruner/"
     fi
@@ -3446,9 +3447,6 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
       {
         # Update start count
         update_start_count "$genename" "$stage3_logfile"
-        #grep '>' "${file}"|sed 's/>//g' > ${genename}_sqlist.txt
-        #awk -F' ' '{print $1}' ${genename}_sqlist.txt > ${genename}_splist.txt
-        #awk '{print $0 "\t" NR}' ${genename}_splist.txt > ${genename}_sp_id_list.txt
         sed -i "s/ single_hit/@single_hit/g;s/ multi/@multi/g;s/ NODE_/@NODE_/g;s/\.[0-9]\+@NODE_/@NODE_/g;s/\.main@NODE_/@NODE_/g" "${file}"
         # Run MAFFT
         run_mafft "${file}" "${filename}.aln.fasta" "${mafft_algorithm}" "${mafft_adjustdirection}" "${nt_mafft}"
@@ -3460,7 +3458,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
         # Update failed count
         if [ ! -s "./${filename}.trimmed.aln.fasta" ] || [ ! -s "./${filename}.trimmed.aln.fasta.tre" ]; then
           record_failed_sample "$genename"
-          break
+          exit 1
         fi
         # Update finish count
         update_finish_count "$genename" "$stage3_logfile"
@@ -3575,7 +3573,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
   #Stage3-Optional method: MO/MI/RT/1to1 for ParaGone ########################################
   ############################################################################################
   #ParaGone (optional)
-  if ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ]) && [ "${run_paragone}" = "TRUE" ]; then
+  if ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ]) && [ "${run_paragone}" = "TRUE" ] && [ "${run_phylopypruner}" = "FALSE" ]; then
     stage3_blank "${log_mode}" ""
     stage3_info "${log_mode}" "Optional Part: Run ParaGone (MO/MI/RT/1to1) ... "
     
@@ -3616,20 +3614,20 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
       local paragone_minimum_taxa=$7
       local paragone_min_tips=$8
       local MO=$9
-      local MI=$10
-      local RT=$11
-      local one_to_one=$12
-      local oi_tree=$13
-      local mafft_algorithm=$14
-      local trimal_mode=$15
-      local trimal_gapthreshold=$16
-      local trimal_simthreshold=$17
-      local trimal_cons=$18
-      local trimal_resoverlap=$19
-      local trimal_seqoverlap=$20
-      local trimal_w=$21
-      local trimal_gw=$22
-      local trimal_sw=$23
+      local MI=${10}
+      local RT=${11}
+      local one_to_one=${12}
+      local oi_tree=${13}
+      local mafft_algorithm=${14}
+      local trimal_mode=${15}
+      local trimal_gapthreshold=${16}
+      local trimal_simthreshold=${17}
+      local trimal_cons=${18}
+      local trimal_resoverlap=${19}
+      local trimal_seqoverlap=${20}
+      local trimal_w=${21}
+      local trimal_gw=${22}
+      local trimal_sw=${23}
       
       stage3_blank "${log_mode}" ""
       log_info="====>> Running ParaGone via "
@@ -3647,7 +3645,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
       fi
       log_info="${log_info} ... ====>>"
 
-      paragone_cmd="paragone full_pipeline "${input_dir}"${outgroup_args} --pool ${paragone_pool} --threads ${nt_paragone} --treeshrink_q_value ${paragone_treeshrink_q_value} --cut_deep_paralogs_internal_branch_length_cutoff ${paragone_cutoff_value} --minimum_taxa ${paragone_minimum_taxa} --min_tips ${paragone_min_tips} --keep_intermediate_files --mafft_algorithm ${mafft_algorithm} --trimal_${trimal_mode}"
+      paragone_cmd="paragone full_pipeline ${input_dir}${outgroup_args} --pool ${paragone_pool} --threads ${nt_paragone} --treeshrink_q_value ${paragone_treeshrink_q_value} --cut_deep_paralogs_internal_branch_length_cutoff ${paragone_cutoff_value} --minimum_taxa ${paragone_minimum_taxa} --min_tips ${paragone_min_tips} --keep_intermediate_files --mafft_algorithm ${mafft_algorithm} --trimal_${trimal_mode}"
 
       if [ "${oi_tree}" = "fasttree" ]; then
         paragone_cmd="${paragone_cmd} --use_fasttree"
@@ -3760,6 +3758,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
     run_paragone "${o}/02-All_paralogs/03-Filtered_paralogs" "${paragone_pool}" "${nt_paragone}" \
     "${outgroup_args}" "${paragone_treeshrink_q_value}" "${paragone_cutoff_value}" "${paragone_minimum_taxa}" "${paragone_min_tips}" \
     "${MO}" "${MI}" "${RT}" "${one_to_one}" "${oi_tree}" "${mafft_algorithm}" "${trimal_mode}" "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_resoverlap}" "${trimal_seqoverlap}" "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
+    conda_activate "stage3" "${conda1}"
   fi
 
   ############################################################################################
@@ -3821,6 +3820,7 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
     fi
   }
   stage4_logfile="${o}/00-logs_and_reports/logs/Stage4_Sequence_alignment_trimming_and_supermatrix_construction_${current_time}.log"
+  conda_activate "stage4" "${conda1}"
   stage4_info_main "<<<======= Stage 4 Sequence Alignment, Trimming, and Supermatrix Construction =======>>>"
   #################===========================================================================
 
@@ -3846,6 +3846,8 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       fi
       {
       file_name=$(basename "${file}" .FNA)
+      # Update start count
+      update_start_count "$file_name" "$stage3_logfile"
       sed -e 's/ single_hit//g;s/ multi_hit_stitched_contig_comprising_.*_hits//g' "${file}" > "${o}/04-Alignments/HRS/${file_name}.fasta"
       run_mafft "${o}/04-Alignments/HRS/${file_name}.fasta" "${o}/04-Alignments/HRS/${file_name}.aln.fasta" "${mafft_algorithm}" "${mafft_adjustdirection}" "${nt_mafft}"
       run_trimal "${o}/04-Alignments/HRS/${file_name}.aln.fasta" "${o}/04-Alignments/HRS/${file_name}.trimmed.aln.fasta" "${trimal_mode}" \
@@ -3855,7 +3857,7 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       # Update failed count
       if [ ! -s "${o}/04-Alignments/HRS/${file_name}.trimmed.aln.fasta" ]; then
         record_failed_sample "$file_name"
-		break
+		    exit 1
       fi
       
       # Update finish count
@@ -3959,6 +3961,8 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       fi
       {
       file_name=$(basename "${file}" .FNA)
+      # Update start count
+      update_start_count "$file_name" "$stage3_logfile"
       sed -e 's/ single_hit//g;s/ multi_hit_stitched_contig_comprising_.*_hits//g' "${file}" > "${o}/04-Alignments/RLWP/${file_name}.fasta"
       run_mafft "${o}/04-Alignments/RLWP/${file_name}.fasta" "${o}/04-Alignments/RLWP/${file_name}.aln.fasta" "${mafft_algorithm}" "${mafft_adjustdirection}" "${nt_mafft}"
       run_trimal "${o}/04-Alignments/RLWP/${file_name}.aln.fasta" "${o}/04-Alignments/RLWP/${file_name}.trimmed.aln.fasta" "${trimal_mode}" \
@@ -3968,7 +3972,7 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       # Update failed count
       if [ ! -s "${o}/04-Alignments/RLWP/${file_name}.trimmed.aln.fasta" ]; then
         record_failed_sample "$file_name"
-		break
+		    exit 1
       fi
       
       # Update finish count
@@ -4054,15 +4058,12 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
   ###################################################################################################
   #Stage4-Optional step: Extracting PhyloPyPruner output, constructing supermatrix for orthogroups ##
   ###################################################################################################
-  if [ "${LS}" = "TRUE" ] || [ "${MI}" = "TRUE" ] || [ "${MO}" = "TRUE" ] || [ "${RT}" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ] && [ "${run_phylopypruner}" = "TRUE" ]; then
+  if [ "$LS" = "TRUE" ] || { ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "$one_to_one" = "TRUE" ]) && [ "${run_phylopypruner}" = "TRUE" ] && [ "${run_paragone}" != "TRUE" ]; }; then
     stage4_info_main "Optional step: Extracting PhyloPyPruner output, constructing supermatrix for orthogroups ..."
 
     stage4_ortho_phylopypruner () {
       local ortho_method=$1
       local output_dir=$2
-      local prefix=$3
-      local nt=$4
-      local min_sample_coverage=$5
 
       stage4_info_main "====>> ${ortho_method} ====>>"
       stage4_info_main "01-Extracting PhyloPyPruner ${ortho_method} output sequences ..."
@@ -4106,6 +4107,9 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       stage4_info_main "04-Concatenating ${ortho_method} orthogroups into the supermatrix ..."
       stage4_cmd "${log_mode}" "pxcat -s ${o}/04-Alignments/${ortho_method}/*.trimmed.aln.fasta -p ${o}/05-Supermatrix/${ortho_method}/partition.txt -o ${o}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta"
       pxcat -s "${o}/04-Alignments/${ortho_method}/"*.trimmed.aln.fasta -p ${o}/05-Supermatrix/${ortho_method}/partition.txt -o ${o}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta
+      if [ -s "${o}/04-Alignments/${ortho_method}/phyx.logfile" ]; then
+        rm "${o}/04-Alignments/${ortho_method}/phyx.logfile"
+      fi
 
       stage4_info_main "05-Running AMAS.py to check the ${ortho_method} supermatrix ..."
       stage4_cmd "${log_mode}" "python3 ${script_dir}/../dependencies/AMAS-master/amas/AMAS.py summary -f fasta -d dna -i ${o}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta -o ${o}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv"
@@ -4117,19 +4121,19 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
     }
 
     if [ "${LS}" = "TRUE" ]; then
-      stage4_ortho_phylopypruner "LS" "Output_LS" "${prefix}" "${nt}" "${min_sample_coverage}"
+      stage4_ortho_phylopypruner "LS" "Output_LS"
     fi
-    if [ "${MI}" = "TRUE" ]; then
-      stage4_ortho_phylopypruner "MI" "Output_MI" "${prefix}" "${nt}" "${min_sample_coverage}"
+    if [ "${MI}" = "TRUE" ] && [ "${run_paragone}" = "FALSE" ]; then
+      stage4_ortho_phylopypruner "MI" "Output_MI"
     fi
-    if [ "${MO}" = "TRUE" ]; then
-      stage4_ortho_phylopypruner "MO" "Output_MO" "${prefix}" "${nt}" "${min_sample_coverage}"
+    if [ "${MO}" = "TRUE" ] && [ "${run_paragone}" = "FALSE" ]; then
+      stage4_ortho_phylopypruner "MO" "Output_MO"
     fi
-    if [ "${RT}" = "TRUE" ]; then
-      stage4_ortho_phylopypruner "RT" "Output_RT" "${prefix}" "${nt}" "${min_sample_coverage}"
+    if [ "${RT}" = "TRUE" ] && [ "${run_paragone}" = "FALSE" ]; then
+      stage4_ortho_phylopypruner "RT" "Output_RT"
     fi
-    if [ "${one_to_one}" = "TRUE" ]; then
-      stage4_ortho_phylopypruner "1to1" "Output_1to1" "${prefix}" "${nt}" "${min_sample_coverage}"
+    if [ "${one_to_one}" = "TRUE" ] && [ "${run_paragone}" = "FALSE" ]; then
+      stage4_ortho_phylopypruner "1to1" "Output_1to1"
     fi
   fi
   stage4_blank_main ""
@@ -4137,26 +4141,27 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
   ###################################################################################################
   #Stage4-Optional step: Extracting ParaGone output, constructing supermatrix for orthogroups #######
   ###################################################################################################
-  if [ "${MO}" = "TRUE" ] || [ "${MI}" = "TRUE" ] || [ "${RT}" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ] && [ "${run_paragone}" = "TRUE" ]; then
+  if [ "${MO}" = "TRUE" ] || [ "${MI}" = "TRUE" ] || [ "${RT}" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ] && [ "${run_paragone}" = "TRUE" ] && [ "${run_phylopypruner}" != "TRUE" ]; then
     stage4_info_main "Optional step: Extracting ParaGone output, constructing supermatrix for orthogroups ..."
     stage4_ortho_paragone () {
       local ortho_method=$1
       local output_dir=$2
-      local prefix=$3
-      local nt=$4
-      local min_sample_coverage=$5
       
       stage4_info_main "01-Extracting ParaGone ${ortho_method} output sequences ..."
+      if [ -d "${o}/04-Alignments/${ortho_method}" ]; then
+        rm -rf "${o}/04-Alignments/${ortho_method}"
+      fi
       mkdir -p "${o}/04-Alignments/${ortho_method}" "${o}/05-Supermatrix/${ortho_method}"
       cp "${o}/03-Orthology_inference/ParaGone/${output_dir}/"*.fasta "${o}/04-Alignments/${ortho_method}/"
       cd "${o}/04-Alignments/${ortho_method}/"
-      for file in "${o}/04-Alignments/${ortho_method}/"*_paralogs_all.trimmed.aln_pruned.fasta; do
-        new_filename="${file/.selected_stripped.aln.trimmed.fasta/.trimmed.aln.fasta}"
+      for file in "${o}/04-Alignments/${ortho_method}/"*; do
+      # Use sed to replace the second occurrence of "ortho." or "ortho<number>." with "aln.trimmed.fasta"
+        new_filename=$(echo "${file}" | sed -E 's/selected_stripped.aln.trimmed.fasta/trimmed.aln.fasta/')
         mv "${file}" "${new_filename}"
       done
       
       stage4_info_main "02-Removing ${ortho_method} orthogroups with <${min_sample_coverage} sample coverage ..."
-      stage4_cmd "${log_mode}" "python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py -i ${o}/04-Alignments/${ortho_method}/ -c ${min_sample_coverage} --removed_samples_info ${o}/04-Alignments/${ortho_method}/Removed_alignments_with_low_sample_coverage.txt -t ${nt}"
+      stage4_cmd "${log_mode}" "python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py -i ${o}/04-Alignments/${ortho_method}/ --min_sample_coverage ${min_sample_coverage} --removed_samples_info ${o}/04-Alignments/${ortho_method}/Removed_alignments_with_low_sample_coverage.txt -t ${nt}"
       stage4_02="python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py -i ${o}/04-Alignments/${ortho_method}/ --min_sample_coverage ${min_sample_coverage} --removed_samples_info ${o}/04-Alignments/${ortho_method}/Removed_alignments_with_low_sample_coverage.txt -t ${nt}"
       if [ "${log_mode}" = "full" ]; then
         eval "${stage4_02}"
@@ -4167,7 +4172,7 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       stage4_info_main "03-Removing ${ortho_method} orthogroups with no parsimony informative sites ..."
       stage4_cmd "${log_mode}" "python3 ${script_dir}/../dependencies/AMAS-master/amas/AMAS.py summary -f fasta -d dna -i ${o}/04-Alignments/${ortho_method}/*.trimmed.aln.fasta -o ${o}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv"
       python3 ${script_dir}/../dependencies/AMAS-master/amas/AMAS.py \
-      summary -f fasta -d dna -i "${o}/04-Alignments/${ortho_method}/*.trimmed.aln.fasta" -o "${o}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > /dev/null 2>&1
+      summary -f fasta -d dna -i "${o}/04-Alignments/${ortho_method}/"*.trimmed.aln.fasta -o "${o}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > /dev/null 2>&1
       awk '$9==0 {print $1}' "${o}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > "${o}/05-Supermatrix/${ortho_method}/Removed_alignments_for_concatenation_list.txt"
       awk '$9!=0 {print $1}' "${o}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > "${o}/05-Supermatrix/${ortho_method}/Final_alignments_for_concatenation_list.txt"
       awk '$9!=0 {print $0}' "${o}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > "${o}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_final.tsv"
@@ -4177,7 +4182,10 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
 
       stage4_info_main "04-Concatenating ${ortho_method} orthogroups into the supermatrix ..."
       stage4_cmd "${log_mode}" "pxcat -s ${o}/04-Alignments/${ortho_method}/*.trimmed.aln.fasta -p ${o}/05-Supermatrix/${ortho_method}/partition.txt -o ${o}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta"
-      pxcat -s "${o}/04-Alignments/${ortho_method}/*.trimmed.aln.fasta" -p "${o}/05-Supermatrix/${ortho_method}/partition.txt" -o "${o}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta"
+      pxcat -s "${o}/04-Alignments/${ortho_method}/"*.trimmed.aln.fasta -p "${o}/05-Supermatrix/${ortho_method}/partition.txt" -o "${o}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta"
+      if [ -s "${o}/04-Alignments/${ortho_method}/phyx.logfile" ]; then
+        rm "${o}/04-Alignments/${ortho_method}/phyx.logfile"
+      fi
 
       stage4_info_main "05-Running AMAS.py to check the ${ortho_method} supermatrix ..."
       stage4_cmd "${log_mode}" "python3 ${script_dir}/../dependencies/AMAS-master/amas/AMAS.py summary -f fasta -d dna -i ${o}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta -o ${o}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv"
@@ -4187,17 +4195,17 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       rm "${o}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv"
     }
 
-    if [ "${MO}" = "TRUE" ]; then
-      stage4_ortho_paragone "MO" "26_MO_final_alignments_trimmed" "MO" "${nt}" "${min_sample_coverage}"
+    if [ "${MO}" = "TRUE" ] && [ "${run_phylopypruner}" = "FALSE" ]; then
+      stage4_ortho_paragone "MO" "26_MO_final_alignments_trimmed"
     fi
-    if [ "${MI}" = "TRUE" ]; then
-      stage4_ortho_paragone "MI" "27_MI_final_alignments_trimmed" "MI" "${nt}" "${min_sample_coverage}"
+    if [ "${MI}" = "TRUE" ] && [ "${run_phylopypruner}" = "FALSE" ]; then
+      stage4_ortho_paragone "MI" "27_MI_final_alignments_trimmed"
     fi
-    if [ "${RT}" = "TRUE" ]; then
-      stage4_ortho_paragone "RT" "28_RT_final_alignments_trimmed" "RT" "${nt}" "${min_sample_coverage}"
+    if [ "${RT}" = "TRUE" ] && [ "${run_phylopypruner}" = "FALSE" ]; then
+      stage4_ortho_paragone "RT" "28_RT_final_alignments_trimmed"
     fi
-    if [ "${one_to_one}" = "TRUE" ]; then
-      stage4_ortho_paragone "1to1" "HybSuite_1to1_final_alignments_trimmed" "1to1" "${nt}" "${min_sample_coverage}"
+    if [ "${one_to_one}" = "TRUE" ] && [ "${run_phylopypruner}" = "FALSE" ]; then
+      stage4_ortho_paragone "1to1" "HybSuite_1to1_final_alignments_trimmed"
     fi
   fi
   stage4_blank "${log_mode}" ""
@@ -4265,9 +4273,8 @@ stage5_blank() {
 }
 stage5_logfile="${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_tree_inference_${current_time}.log"
 
-stage5_info_main "<<<======= Stage 5 Phylogenetic tree inference =======>>>"
-#(2) activate conda environment
 conda_activate "stage5" "${conda1}"
+stage5_info_main "<<<======= Stage 5 Phylogenetic tree inference =======>>>"
 ################===========================================================================
 
 ###################################################################################################
@@ -5039,7 +5046,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
         run_raxml_sg "${ortho_method}" "${Genename}"
         if [ ! -s "${o}/08-Coalescent-based_trees/${ortho_method}/01-Gene_trees/${Genename}/RAxML_bestTree.${Genename}.tre" ]; then
           record_failed_sample "$line"
-		  break
+		      exit 1
         else
           update_finish_count "$Genename" "$stage5_logfile"
         fi
@@ -5099,7 +5106,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
       eval "${cmd}" > /dev/null 2>&1
       if [ ! -s "${o}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees/${Genename}_rr.tre" ]; then
         record_failed_sample "$Genename"
-        break
+        exit 1
       else
         update_finish_count "$Genename" "$stage5_logfile"
         echo ${Genename} >> "${o}/08-Coalescent-based_trees/${ortho_method}/Final_genes_for_coalscent_list.txt"
