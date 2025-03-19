@@ -1311,13 +1311,11 @@ if [ "${skip_checking}" != "TRUE" ]; then
   fi
   if [ -s "${i}/Other_seqs_Spname.txt" ]; then
     stage0_info "Your other single-copy genes data: ${Other_sp_num} species from ${Other_genus_num} genera."
+    rm "${i}"/Other_seqs_Spname.txt
   else
     stage0_info "Your other single-copy genes data: Other single-copy gene alignments not provided."
   fi
   stage0_blank ""
-  if [ "${other_seqs}" != "_____" ]; then
-    rm "${i}"/Other_seqs_Spname.txt
-  fi
   
   ################################################
   ### Step 6: Check '-OI' and '-tree' options ####
@@ -3005,7 +3003,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
     --hybpiper_dir "${eas_dir}" \
     --sample_names ${eas_dir}/Assembled_data_namelist.txt \
     --fasta_dir ${o}/03-Orthology_inference/HRS/01-Original_HRS_sequences/ > /dev/null 2>&1
-    if find "${o}/03-Orthology_inference/HRS/01-Original_HRS_sequences/" -type f -name "*.FNA" -size +0c | grep -q . 2>/dev/null; then
+    if find "${o}/03-Orthology_inference/HRS/01-Original_HRS_sequences/" -type f -name "*.FNA" -size +0c -quit 2>/dev/null; then
       stage3_info_main "Finish"
       stage3_blank "${log_mode}" ""
     else
@@ -3226,7 +3224,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
     --hybpiper_dir "${eas_dir}" \
     --sample_names ${eas_dir}/Assembled_data_namelist.txt \
     --fasta_dir ${o}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/ > /dev/null 2>&1
-    if find "${o}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/" -type f -name "*.FNA" -size +0c | grep -q . 2>/dev/null; then
+    if find "${o}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/" -type f -name "*.FNA" -size +0c -quit 2>/dev/null; then
       stage3_info "${log_mode}" "Successfully retrieving sequences by running 'hybpiper retrieve_sequences'. "
       stage3_blank "${log_mode}" ""
     else
@@ -3475,13 +3473,13 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
       display_process_log "$stage3_logfile" "stage3" "Failed to run MAFFT for paralog files:"
     fi
     stage3_blank_main ""
-    if ! find ./ -type f -name '*trimmed.aln.fasta' -size +0c | grep -q . >/dev/null; then
+    if ! find ./ -type f -name '*trimmed.aln.fasta' -size +0c -quit 2>/dev/null; then
       stage3_error "Fail to run MAFFT and TrimAl."
       stage3_error "HybSuite exits."
       stage3_blank_main ""
       exit 1
     fi
-    if ! find ./ -type f -name '*trimmed.aln.fasta.tre' -size +0c | grep -q . >/dev/null; then
+    if ! find ./ -type f -name '*trimmed.aln.fasta.tre' -size +0c -quit 2>/dev/null; then
       stage3_error "Fail to run FastTree."
       stage3_error "HybSuite exits."
       stage3_blank_main ""
@@ -4694,11 +4692,11 @@ fi
 ###################################################################################################
 #Preparation
 if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
-  stage5_info_main "Optional step: Constructing coalescent-based trees (ASTRAL or wASTRAL)."
+  stage5_info_main "Optional step: Constructing coalescent-based trees using ASTRAL/wASTRAL."
   counter=1
   while IFS= read -r line || [ -n "$line" ]; do
-  eval "og${counter}=\"${line}\""
-  counter=$((counter + 1))
+    eval "og${counter}=\"${line}\""
+    counter=$((counter + 1))
   done < ${i}/Outgroup.txt
   
   x=1
