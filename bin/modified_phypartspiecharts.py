@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """
+modified_phypartspiecharts.py
 PhyPartsPieCharts - Generate pie chart representation of gene tree conflict.
 
 This script generates the "Pie Chart" representation of gene tree conflict from
@@ -58,6 +59,8 @@ class PhyPartsConfig:
     colors: Dict[str, str] = None
     no_ladderize: bool = False
     to_csv: bool = False
+    vt_line_width: float = 0
+    italic_names: bool = True
 
     def __post_init__(self):
         # Default color scheme
@@ -261,7 +264,8 @@ class PhyPartsPieCharts:
         nstyle["size"] = 0
         for n in self.plot_tree.traverse():
             n.set_style(nstyle)
-            n.img_style["vt_line_width"] = 0
+            # Use custom line width if specified, otherwise keep default (0)
+            n.img_style["vt_line_width"] = self.config.vt_line_width
 
         return ts
 
@@ -288,7 +292,7 @@ class PhyPartsPieCharts:
             faces.add_face_to_node(concord_text, node, 0, position="branch-top")
             faces.add_face_to_node(conflict_text, node, 0, position="branch-bottom")
         else:
-            F = faces.TextFace(node.name, fsize=20)
+            F = faces.TextFace(node.name, fsize=20, fstyle='italic' if self.config.italic_names else 'normal')
             faces.add_face_to_node(F, node, 0, position="aligned")
 
     @staticmethod
@@ -315,6 +319,16 @@ def main():
     parser.add_argument("--top_conflict_color", help="Color for top conflict sections (default: green)")
     parser.add_argument("--other_conflict_color", help="Color for other conflict sections (default: red)")
     parser.add_argument("--no_signal_color", help="Color for no signal sections (default: dark gray)")
+    
+    # Add line width argument with user-friendly name
+    parser.add_argument("--line_width", type=float, default=0,
+                       help="Width of tree branches (default: 0)",
+                       dest="vt_line_width")
+
+    # Add italic names control
+    parser.add_argument("--no_italic", action="store_false",
+                       help="Display species names in normal font style (default: italic)",
+                       dest="italic_names")
 
     args = parser.parse_args()
     
