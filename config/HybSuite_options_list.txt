@@ -90,5 +90,5 @@ wastral_R	4
 wastral_S	4
 run_sortadate	FALSE
 sortadate_genes_num	25
-log_mode	simple
+log_mode	cmd
 skip_genetree_for_coalescent	FALSE
