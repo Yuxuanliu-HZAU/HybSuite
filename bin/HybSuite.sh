@@ -4230,7 +4230,7 @@ fi
 
 
 ############################################################################################
-# Stage 5: Phylogenetic tree inference #####################################################
+# Stage 5: Phylogenetic trees inference ####################################################
 ############################################################################################
 if [ -d "${o}/06-ModelTest-NG" ]; then
     rm -rf "${o}/06-ModelTest-NG"
@@ -4240,19 +4240,19 @@ mkdir -p "${o}/06-ModelTest-NG"
 # 0.Preparation
 # (1) Function: Output information to log file
 stage5_info_main() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_tree_inference_${current_time}.log"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
 }
 stage5_error() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_tree_inference_${current_time}.log"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
 }
 stage5_blank_main() {
-  echo "$1" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_tree_inference_${current_time}.log"
+  echo "$1" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
 }
 stage5_info() {
   local log_mode="$1"
   local message="$2"
   if [ "${log_mode}" = "full" ]; then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $message" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_tree_inference_${current_time}.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $message" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
   fi
 }
 stage5_cmd() {
@@ -4266,13 +4266,13 @@ stage5_blank() {
   local log_mode="$1"
   local message="$2"
   if [ "${log_mode}" = "full" ]; then
-    echo "$message" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_tree_inference_${current_time}.log"
+    echo "$message" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
   fi
 }
-stage5_logfile="${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_tree_inference_${current_time}.log"
+stage5_logfile="${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
 
 conda_activate "stage5" "${conda1}"
-stage5_info_main "<<<======= Stage 5 Phylogenetic tree inference =======>>>"
+stage5_info_main "<<<======= Stage 5 Phylogenetic trees inference =======>>>"
 ################===========================================================================
 
 ###################################################################################################
@@ -5231,7 +5231,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
 fi
 ############################################################################################
 # End of Stage 5
-stage5_info_main "Successfully finishing the stage 5: Phylogenetic tree inference."
+stage5_info_main "Successfully finishing the stage 5: Phylogenetic trees inference."
 stage5_info "${log_mode}" "The resulting files have been saved in ${o}/06-Modeltest-NG/ or ${o}/07-Concatenation-based_trees or 08-Coalescent-based_trees."
 
 # Clean up environment
