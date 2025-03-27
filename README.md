@@ -70,84 +70,13 @@ git clone https://github.com/Yuxuanliu-HZAU/HybSuite.git
 More details can be found in our wiki page:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Installation
 
-## Dependencies
-HybSuite is highly relying on dependencies in the conda environment. If you want to run all of the HybSuite pipeline, the following dependencies should be installed in two different conda environments (here temporarily name them as `conda1` and `conda2`, or by your choice).
-
-#### (1) Dependencies for `conda1` environment
-
-* [HybPiper](https://github.com/mossmatters/HybPiper)≥2.1.8 (with the available command `hybpiper filter_by_length`)
-* [Phyx](https://github.com/FePhyFoFum/phyx)
-* [Newick_Utilities](https://github.com/tjunier/newick_utils)
-* [MAFFT](https://github.com/GSLBiotech/mafft)  
-* [TrimAl](https://github.com/inab/trimal)
-* [ModelTest-NG](https://github.com/ddarriba/modeltest)
-* [IQ-TREE](http://trimal.cgenomics.org/)
-* [RAxML](https://github.com/stamatak/standard-RAxML)  
-* [RAxML-NG](https://github.com/amkozlov/raxml-ng)
-* [R](https://www.r-project.org/about.html)≥3.2.0, along with the R packages:
-    * [ape](https://cran.r-project.org/web/packages/ape/index.html)
-    * [phytools](https://cran.r-project.org/web/packages/phytools/index.html)
-* [Python](https://www.python.org/downloads/)≥3.9, along with the Python libraries:
-    * [ete3](http://etetoolkit.org/)
-    * [PyQt5](https://pypi.org/project/PyQt5/)
-
-#### (2) Dependencies for `conda2` environment
- 
-* [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone)   
- _In most cases, the discrepancies between ParaGone and other packages are hard to resolve, <br>
- so if you want to do orthology inference by MI/MO/RT/1to1 algorithms (Yang and Smith, 2014), you need to install ParaGone in `conda2` environment._  
- 
-## How to install the above dependencies?
-For full dependencies installation instructions, including details on how to install all dependencies by running `./bin/Install_all_dependencies.sh`, please see our wiki page:    
-https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Installation
-
 ---
 
 # How to run HybSuite
-## HybSuite Pipeline Input
 
-### 1.The input folder
-Containing necessary input `.txt` files.  
-The absolute path to the input folder (`<input directory>`) needs to be specified by the parameter `-i`.
+## HybSuite Input and Usage Instruction
 
-### 2.Textfiles in the input folder
-
-- **(1) Species names lists for two sources of raw reads**:  
-    The user can optionally provide at least one of the **two following types of species name lists** for two sources of raw reads in the `<input directory>` specified by `-i`:     
-    
-  - **Type1: `SRR_Spname.txt`** (optional)     
-  A list of SRA accession numbers (typically starting with SRR or ERR) and their corresponding species names.    
-  > **Note:** If the user want to use raw data from NCBI, this txtfile should be provided, named `SRR_Spname.txt`, and placed in the `<input directory>`.
-  > Do not change the name of this txtfile in the `<input directory>` when running HybSuite!     
-  > **Format:** The first column contains the **SRA accession number**, and the second column contains **the corresponding species name** (**tab-separated**).
-    
-  - **Type2: `My_Spname.txt`** (optional)     
-  A list of species names with existing raw data in your local directory.
-  > **Note:** If the user want to use existing raw data, this txtfile should be provided, named `My_Spname.txt`, and placed in the `<input directory>`.
-  > Do not change the filename of `My_Spname.txt` in the `<input directory>` when running HybSuite!    
-  > **Format:** One species name per line, matching a raw data file (in **fastq** or **fastq.gz** format) located in the directory specified by the `-my_raw_data` option. **Both paired-end and single-end data are allowed**.     
-  
-
-- **(2) Outgroup names list** (mandatory)   
-The outgroup species names in this analysis.  
-  - **File**: **`Outgroup.txt`** (the number of outgroups is not limited).     
-  > **Note:** Outgroup names in `Outgroup.txt` should exist in the `SRR_Spname.txt` or `My_Spname.txt`.
-  > **Format:** One species name per line.     
-  
-### 3.Existing raw reads
-If `My_Spname.txt` is provided in the `<input directory>`, the user should specify the local directory of the raw data in fastq/fastq.gz format with the option `-my_raw_data`     
-> **Note:** Every raw data file's name (without suffix) should correspond with the species name in `My_Spname.txt`. **Paired-end and single-end data are both allowed**.    
-> For example, if species `Rosa_chinensis` exists in `My_Spname.txt`, the filename of its existing raw data should be:    
-> - for **paired-end data**: `Rosa_chinensis_1.fq.gz` and `Rosa_chinensis_2.fq.gz`     
-> - for **single-end data**: `Rosa_chinensis.fq.gz`
-> - The suffix can be **`fq.gz` or `.fq` or `.fastq.gz` or `.fastq`.**    
-
-### 4.Target sequences
-The requested format of target sequences is the same as the one for [HybPiper](https://github.com/mossmatters/HybPiper), you can check more details [here](https://github.com/mossmatters/HybPiper#target-sequences) to edit your target file and please use `-t` to specify the directory of the target file.
-
-## HybSuite Usage Instruction
-
-Full instructions on running the HybSuite pipeline, including a tutorial using a small test dataset, are available on our wiki:
+Full instructions on running the HybSuite pipeline, including pipeline input preparation and parameters configuration, are available on our wiki:
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial
 
 ## HybSuite Pipeline Output
