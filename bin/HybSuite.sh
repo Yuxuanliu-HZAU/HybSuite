@@ -510,26 +510,26 @@ conda_activate_0() {
 # Preparation
 ############################################################################################
 
-mkdir -p "${o}/00-logs_and_reports/logs"
+mkdir -p "${o}/00-logs_and_checklists/logs"
 #################===========================================================================
 # Function: Output information to log file
 stage0_info() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_reports/logs/HybSuite_Checking_${current_time}.log"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_checklists/logs/HybSuite_Checking_${current_time}.log"
 }
 stage0_error() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${o}/00-logs_and_reports/logs/HybSuite_Checking_${current_time}.log"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${o}/00-logs_and_checklists/logs/HybSuite_Checking_${current_time}.log"
 }
 stage0_warning() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [WARNING] $1" | tee -a "${o}/00-logs_and_reports/logs/HybSuite_Checking_${current_time}.log"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [WARNING] $1" | tee -a "${o}/00-logs_and_checklists/logs/HybSuite_Checking_${current_time}.log"
 }
 stage0_attention() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ATTENTION] $1" | tee -a "${o}/00-logs_and_reports/logs/HybSuite_Checking_${current_time}.log"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ATTENTION] $1" | tee -a "${o}/00-logs_and_checklists/logs/HybSuite_Checking_${current_time}.log"
 }
 stage0_cmd() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $1" | tee -a "${o}/00-logs_and_reports/logs/HybSuite_Checking_${current_time}.log"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $1" | tee -a "${o}/00-logs_and_checklists/logs/HybSuite_Checking_${current_time}.log"
 }
 stage0_blank() {
-  echo "$1" | tee -a "${o}/00-logs_and_reports/logs/HybSuite_Checking_${current_time}.log"
+  echo "$1" | tee -a "${o}/00-logs_and_checklists/logs/HybSuite_Checking_${current_time}.log"
 }
 #################===========================================================================
 
@@ -1506,7 +1506,7 @@ fi
 #Create Folders：
 ###01 Create the desired folder
 stage0_info "<<<======= Preparation: Create desired folders and define functions =======>>>"
-mkdir -p "${o}/00-logs_and_reports/species_checklists"
+mkdir -p "${o}/00-logs_and_checklists/checklists"
 stage0_info "Finish"
 if [ -s "${i}/SRR_Spname.txt" ]; then
   sed -i '/^$/d' "${i}/SRR_Spname.txt"
@@ -1517,15 +1517,15 @@ fi
 
 #Move the species checklists.
 if [ -s "${i}/NCBI_SRR_list.txt" ]; then
-  mv ${i}/NCBI_SRR_list.txt ${o}/00-logs_and_reports/species_checklists/
+  mv ${i}/NCBI_SRR_list.txt ${o}/00-logs_and_checklists/checklists/
 fi
 
 if [ -s "${i}/All_Spname_list.txt" ]; then
-  mv ${i}/All_Spname_list.txt ${o}/00-logs_and_reports/species_checklists/
+  mv ${i}/All_Spname_list.txt ${o}/00-logs_and_checklists/checklists/
 fi
 
 if [ -s "${i}/NCBI_Spname_list.txt" ]; then
-  mv ${i}/NCBI_Spname_list.txt ${o}/00-logs_and_reports/species_checklists/
+  mv ${i}/NCBI_Spname_list.txt ${o}/00-logs_and_checklists/checklists/
 fi
 
 # set the process
@@ -1543,7 +1543,7 @@ if [ "${process}" != "all" ]; then
 fi
 
 # Define working directory (for stage 1-4)
-work_dir="${o}/00-logs_and_reports/logs"
+work_dir="${o}/00-logs_and_checklists/logs"
 
   #################===========================================================================
   # Function: Record skipped samples
@@ -2133,43 +2133,43 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
   ############################################################################################
 
   #################===========================================================================
-  mkdir -p "${o}/00-logs_and_reports/logs" "${o}/00-logs_and_reports/reports" "${o}/00-logs_and_reports/logs" "${d}/01-Downloaded_raw_data/01-Raw-reads_sra" "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz" "${d}/02-Downloaded_clean_data" "${d}/03-My_clean_data"
+  mkdir -p "${o}/00-logs_and_checklists/logs" "${o}/00-logs_and_checklists/checklists" "${d}/01-Downloaded_raw_data/01-Raw-reads_sra" "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz" "${d}/02-Downloaded_clean_data" "${d}/03-My_clean_data"
   #################===========================================================================
 
   #################===========================================================================
   # Function: Output information to log file
   stage1_info_main() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage1_NGS_dataset_construction_${current_time}.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_checklists/logs/Stage1_NGS_dataset_construction_${current_time}.log"
   }
   stage1_info() {
     local log_mode="$1"
     local message="$2"
     if [ "${log_mode}" = "full" ]; then
-      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $message" | tee -a "${o}/00-logs_and_reports/logs/Stage1_NGS_dataset_construction_${current_time}.log"
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $message" | tee -a "${o}/00-logs_and_checklists/logs/Stage1_NGS_dataset_construction_${current_time}.log"
     fi
   }
   stage1_error() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage1_NGS_dataset_construction_${current_time}.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${o}/00-logs_and_checklists/logs/Stage1_NGS_dataset_construction_${current_time}.log"
   }
   stage1_cmd() {
     local log_mode="$1"
     local message="$2"
     
     if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
-      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $message" >> "${o}/00-logs_and_reports/logs/HybSuite_cmd_${current_time}.log"
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $message" >> "${o}/00-logs_and_checklists/logs/HybSuite_cmd_${current_time}.log"
     fi
   }
   stage1_blank_main() {
-    echo "$1" | tee -a "${o}/00-logs_and_reports/logs/Stage1_NGS_dataset_construction_${current_time}.log"
+    echo "$1" | tee -a "${o}/00-logs_and_checklists/logs/Stage1_NGS_dataset_construction_${current_time}.log"
   }
   stage1_blank() {
     local log_mode="$1"
     local message="$2"
     if [ "${log_mode}" = "full" ]; then
-      echo "$message" | tee -a "${o}/00-logs_and_reports/logs/Stage1_NGS_dataset_construction_${current_time}.log"
+      echo "$message" | tee -a "${o}/00-logs_and_checklists/logs/Stage1_NGS_dataset_construction_${current_time}.log"
     fi
   }
-  stage1_logfile="${o}/00-logs_and_reports/logs/Stage1_NGS_dataset_construction_${current_time}.log"
+  stage1_logfile="${o}/00-logs_and_checklists/logs/Stage1_NGS_dataset_construction_${current_time}.log"
   stage1_info_main "<<<======= Stage 1 NGS dataset construction=======>>>"
   #################===========================================================================
 
@@ -2515,37 +2515,37 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
   # 0.Preparation
   # (1) Function: Output information to log file
   stage2_info_main() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_checklists/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
   }
   stage2_info() {
     local log_mode="$1"
     local message="$2"
     if [ "${log_mode}" = "full" ]; then
-      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $message" | tee -a "${o}/00-logs_and_reports/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $message" | tee -a "${o}/00-logs_and_checklists/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
     fi
   }
   stage2_error() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${o}/00-logs_and_checklists/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
   }
   stage2_cmd_main() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $1" | tee -a "${o}/00-logs_and_checklists/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
   }
   stage2_cmd() {
     local log_mode="$1"
     local message="$2"
     
     if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
-      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $message" >> "${o}/00-logs_and_reports/logs/HybSuite_cmd_${current_time}.log"
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $message" >> "${o}/00-logs_and_checklists/logs/HybSuite_cmd_${current_time}.log"
     fi
   }
   stage2_blank_main() {
-    echo "$1" | tee -a "${o}/00-logs_and_reports/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
+    echo "$1" | tee -a "${o}/00-logs_and_checklists/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
   }
   stage2_blank() {
     local log_mode="$1"
     local message="$2"
     if [ "${log_mode}" = "full" ]; then
-      echo "$message" | tee -a "${o}/00-logs_and_reports/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
+      echo "$message" | tee -a "${o}/00-logs_and_checklists/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
     fi
   }
   #################===========================================================================
@@ -2557,7 +2557,7 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
   stage2_info_main "<<<======= Stage 2 Data assembly and filtered paralogs recovering =======>>>"
   conda_activate "stage2" "${conda1}"
   # (3) Define log file
-  stage2_logfile="${o}/00-logs_and_reports/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
+  stage2_logfile="${o}/00-logs_and_checklists/logs/Stage2_Data_assembly_and_filtered_paralogs_recovering_${current_time}.log"
   # (4) Define threads
   define_threads "hybpiper" "${stage2_logfile}"
   stage2_blank "${log_mode}" ""
@@ -2571,13 +2571,13 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
   # (7) Process namelist based on input files
   if [ -s "${i}/SRR_Spname.txt" ] && [ ! -s "${i}/My_Spname.txt" ]; then
     # When only SRR data exists, use NCBI species list directly
-    cp "${o}/00-logs_and_reports/species_checklists/NCBI_Spname_list.txt" "${eas_dir}/Assembled_data_namelist.txt"
+    cp "${o}/00-logs_and_checklists/checklists/NCBI_Spname_list.txt" "${eas_dir}/Assembled_data_namelist.txt"
   elif [ -s "${i}/My_Spname.txt" ] && [ ! -s "${i}/SRR_Spname.txt" ]; then
     # When only custom data exists, use My_Spname directly
     cp "${i}/My_Spname.txt" "${eas_dir}/Assembled_data_namelist.txt"
   elif [ -s "${i}/My_Spname.txt" ] && [ -s "${i}/SRR_Spname.txt" ]; then
     # When both types of data exist, merge the lists
-    cat "${o}/00-logs_and_reports/species_checklists/NCBI_Spname_list.txt" "${i}/My_Spname.txt" | sed '/^$/d' > "${eas_dir}/Assembled_data_namelist.txt"
+    cat "${o}/00-logs_and_checklists/checklists/NCBI_Spname_list.txt" "${i}/My_Spname.txt" | sed '/^$/d' > "${eas_dir}/Assembled_data_namelist.txt"
   fi
   #################===========================================================================
 
@@ -2699,7 +2699,7 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
     fi
     stage2_blank_main ""
   fi
-  grep '>' ${t} | awk -F'-' '{print $NF}' | sort | uniq > "${o}/00-logs_and_reports/reports/Ref_gene_name_list.txt"
+  grep '>' ${t} | awk -F'-' '{print $NF}' | sort | uniq > "${o}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt"
   # Recovered_locus_num_for_samples.tsv
   echo -e "Sample\tRecovered_locus_num" > "${eas_dir}/Recovered_locus_num_for_samples.tsv"
   while IFS= read -r Spname || [ -n "$Spname" ]; do
@@ -2722,7 +2722,7 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
         fi
     done < "${eas_dir}/Assembled_data_namelist.txt"
     echo -e "$locus\t$count" >> "${eas_dir}/Recovered_sample_num_for_loci.tsv"
-  done < "${o}/00-logs_and_reports/reports/Ref_gene_name_list.txt"
+  done < "${o}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt"
 
   ############################################################################################
   #Stage2-Step2: Recovering all original paralogs via HybPiper ###################################
@@ -2763,26 +2763,26 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
       stage2_info_main "====>> Adding other sequences with single copy orthologs (${process} in parallel) ====>>"
       
       # 01-Remove the existing single copy orthologs
-      if ls ${o}/00-logs_and_reports/reports/Other_single_hit_seqs/*.fasta 1> /dev/null 2>&1; then
-        rm ${o}/00-logs_and_reports/reports/Other_single_hit_seqs/*.fasta
+      if ls ${o}/00-logs_and_checklists/checklists/Other_single_hit_seqs/*.fasta 1> /dev/null 2>&1; then
+        rm ${o}/00-logs_and_checklists/checklists/Other_single_hit_seqs/*.fasta
       fi
-      mkdir -p ${o}/00-logs_and_reports/reports/Other_single_hit_seqs/
+      mkdir -p ${o}/00-logs_and_checklists/checklists/Other_single_hit_seqs/
       cd "${other_seqs}"
       
       # 02-Create a species name list for the other single copy orthologs
-      > ${o}/00-logs_and_reports/species_checklists/Other_seqs_Spname_list.txt
+      > ${o}/00-logs_and_checklists/checklists/Other_seqs_Spname_list.txt
       total_sps=$(ls *.fasta | wc -l)
       for fasta_file in *.fasta; do
         spname="${fasta_file%.fasta}"
-        echo "${spname}" >> ${o}/00-logs_and_reports/species_checklists/Other_seqs_Spname_list.txt
+        echo "${spname}" >> ${o}/00-logs_and_checklists/checklists/Other_seqs_Spname_list.txt
       done
 
       # 03-Initialize parallel environment
-      init_parallel_env "$work_dir" "$total_sps" "$process" "${o}/00-logs_and_reports/species_checklists/Other_seqs_Spname_list.txt" || exit 1
+      init_parallel_env "$work_dir" "$total_sps" "$process" "${o}/00-logs_and_checklists/checklists/Other_seqs_Spname_list.txt" || exit 1
       
       # 04-Run the main loop
       while IFS= read -r add_sp || [ -n "$add_sp" ]; do
-        total_genes=$(awk 'END {print NR}' "${o}/00-logs_and_reports/reports/Ref_gene_name_list.txt")
+        total_genes=$(awk 'END {print NR}' "${o}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt")
         if [ "${process}" != "all" ]; then
               read -u1000
         fi
@@ -2797,11 +2797,11 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
 			awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
 			"${add_sp}_${add_gene}_single_hit.fa" >> "${o}/02-All_paralogs/01-Original_paralogs/${add_gene}_paralogs_all.fasta" 
 			awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
-			"${add_sp}_${add_gene}_single_hit.fa" >> "${o}/00-logs_and_reports/reports/Other_single_hit_seqs/${add_gene}.fasta"
+			"${add_sp}_${add_gene}_single_hit.fa" >> "${o}/00-logs_and_checklists/checklists/Other_single_hit_seqs/${add_gene}.fasta"
 			sed -i "s|${add_gene}|${add_sp}|g;/^$/d" "${o}/02-All_paralogs/01-Original_paralogs/${add_gene}_paralogs_all.fasta"
-			sed -i "s|${add_gene}|${add_sp}|g;/^$/d" "${o}/00-logs_and_reports/reports/Other_single_hit_seqs/${add_gene}.fasta"
+			sed -i "s|${add_gene}|${add_sp}|g;/^$/d" "${o}/00-logs_and_checklists/checklists/Other_single_hit_seqs/${add_gene}.fasta"
 		  fi
-        done < "${o}/00-logs_and_reports/reports/Ref_gene_name_list.txt"
+        done < "${o}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt"
         find . -type f -name "*.fa" -exec rm -f {} +
         # Update failed sample list
         if ! grep -q "${add_sp}" "${o}"/02-All_paralogs/01-Original_paralogs/*_paralogs_all.fasta; then
@@ -2814,7 +2814,7 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
               echo >&1000
         fi
         } &
-      done < "${o}/00-logs_and_reports/species_checklists/Other_seqs_Spname_list.txt"
+      done < "${o}/00-logs_and_checklists/checklists/Other_seqs_Spname_list.txt"
       wait
       echo
       # Display processing log
@@ -2945,39 +2945,39 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
   # 0.Preparation
   # (1) Function: Output information to log file
   stage3_info_main() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage3_Orthology_inference_${current_time}.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_checklists/logs/Stage3_Orthology_inference_${current_time}.log"
   }
   stage3_info() {
     local log_mode="$1"
     local message="$2"
     if [ "${log_mode}" = "full" ]; then
-      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $message" | tee -a "${o}/00-logs_and_reports/logs/Stage3_Orthology_inference_${current_time}.log"
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $message" | tee -a "${o}/00-logs_and_checklists/logs/Stage3_Orthology_inference_${current_time}.log"
     fi
   }
   stage3_error() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage3_Orthology_inference_${current_time}.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${o}/00-logs_and_checklists/logs/Stage3_Orthology_inference_${current_time}.log"
   }
   stage3_cmd_main() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage3_Orthology_inference_${current_time}.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $1" | tee -a "${o}/00-logs_and_checklists/logs/Stage3_Orthology_inference_${current_time}.log"
   }
   stage3_cmd() {
     local log_mode="$1"
     local message="$2"
     if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
-      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $message" >> "${o}/00-logs_and_reports/logs/HybSuite_cmd_${current_time}.log"
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $message" >> "${o}/00-logs_and_checklists/logs/HybSuite_cmd_${current_time}.log"
     fi
   }
   stage3_blank_main() {
-    echo "$1" | tee -a "${o}/00-logs_and_reports/logs/Stage3_Orthology_inference_${current_time}.log"
+    echo "$1" | tee -a "${o}/00-logs_and_checklists/logs/Stage3_Orthology_inference_${current_time}.log"
   }
   stage3_blank() {
     local log_mode="$1"
     local message="$2"
     if [ "${log_mode}" = "full" ]; then
-      echo "$message" | tee -a "${o}/00-logs_and_reports/logs/Stage3_Orthology_inference_${current_time}.log"
+      echo "$message" | tee -a "${o}/00-logs_and_checklists/logs/Stage3_Orthology_inference_${current_time}.log"
     fi
   }
-  stage3_logfile="${o}/00-logs_and_reports/logs/Stage3_Orthology_inference_${current_time}.log"
+  stage3_logfile="${o}/00-logs_and_checklists/logs/Stage3_Orthology_inference_${current_time}.log"
   conda_activate "stage3" "${conda1}"
   stage3_info_main "<<<======= Stage 3 Orthology inference =======>>>"
   #################===========================================================================
@@ -3020,27 +3020,27 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
       stage3_info_main "====>> Adding other sequences (HRS) (${process} in parallel) ====>>"
     #################=========================================================================== 
       # 01-Remove the existing single copy orthologs
-      if ls ${o}/00-logs_and_reports/reports/Other_single_hit_seqs/*.fasta 1> /dev/null 2>&1; then
-        rm ${o}/00-logs_and_reports/reports/Other_single_hit_seqs/*.fasta
+      if ls ${o}/00-logs_and_checklists/checklists/Other_single_hit_seqs/*.fasta 1> /dev/null 2>&1; then
+        rm ${o}/00-logs_and_checklists/checklists/Other_single_hit_seqs/*.fasta
       fi
-      mkdir -p "${o}/00-logs_and_reports/reports/Other_single_hit_seqs/"
+      mkdir -p "${o}/00-logs_and_checklists/checklists/Other_single_hit_seqs/"
 
       cd "${other_seqs}"
       
       # 02-Create a species name list for the other single copy orthologs
-      > "${o}/00-logs_and_reports/species_checklists/Other_seqs_Spname_list.txt"
+      > "${o}/00-logs_and_checklists/checklists/Other_seqs_Spname_list.txt"
       total_sps=$(ls *.fasta | wc -l)
       for fasta_file in *.fasta; do
         spname="${fasta_file%.fasta}"
-        echo "${spname}" >> "${o}/00-logs_and_reports/species_checklists/Other_seqs_Spname_list.txt"
+        echo "${spname}" >> "${o}/00-logs_and_checklists/checklists/Other_seqs_Spname_list.txt"
       done
 
       # 03-Initialize parallel environment
-      init_parallel_env "$work_dir" "$total_sps" "$process" "${o}/00-logs_and_reports/species_checklists/Other_seqs_Spname_list.txt" || exit 1
+      init_parallel_env "$work_dir" "$total_sps" "$process" "${o}/00-logs_and_checklists/checklists/Other_seqs_Spname_list.txt" || exit 1
       
       # 04-Run the main loop
       while IFS= read -r add_sp || [ -n "$add_sp" ]; do
-        total_genes=$(awk 'END {print NR}' "${o}/00-logs_and_reports/reports/Ref_gene_name_list.txt")
+        total_genes=$(awk 'END {print NR}' "${o}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt")
         if [ "${process}" != "all" ]; then
           read -u1000
         fi
@@ -3056,7 +3056,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
 				"${add_sp}_${add_gene}_single_hit.fa" >> "${o}/03-Orthology_inference/HRS/01-Original_HRS_sequences/${add_gene}.FNA"
 				sed -i "s|${add_gene} |${add_sp} |g;/^$/d" "${o}/03-Orthology_inference/HRS/01-Original_HRS_sequences/${add_gene}.FNA"
 			fi
-          done < "${o}/00-logs_and_reports/reports/Ref_gene_name_list.txt"
+          done < "${o}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt"
           find . -type f -name "*.fa" -exec rm -f {} +
           # Update failed sample list
           if ! grep -q "${add_sp}" "${o}"/03-Orthology_inference/HRS/01-Original_HRS_sequences/*.FNA; then
@@ -3069,7 +3069,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
             echo >&1000
           fi
         } &
-      done < "${o}/00-logs_and_reports/species_checklists/Other_seqs_Spname_list.txt"
+      done < "${o}/00-logs_and_checklists/checklists/Other_seqs_Spname_list.txt"
       wait
       echo
       # Display processing log
@@ -3242,27 +3242,27 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
       stage3_info_main "====>> Adding other sequences (RLWP) (${process} in parallel) ====>>"
     #################=========================================================================== 
       # 01-Remove the existing single copy orthologs
-      if ls ${o}/00-logs_and_reports/reports/Other_single_hit_seqs/*.fasta 1> /dev/null 2>&1; then
-        rm ${o}/00-logs_and_reports/reports/Other_single_hit_seqs/*.fasta
+      if ls ${o}/00-logs_and_checklists/checklists/Other_single_hit_seqs/*.fasta 1> /dev/null 2>&1; then
+        rm ${o}/00-logs_and_checklists/checklists/Other_single_hit_seqs/*.fasta
       fi
-      mkdir -p ${o}/00-logs_and_reports/reports/Other_single_hit_seqs/
+      mkdir -p ${o}/00-logs_and_checklists/checklists/Other_single_hit_seqs/
 
       cd "${other_seqs}"
       
       # 02-Create a species name list for the other single copy orthologs
-      > ${o}/00-logs_and_reports/species_checklists/Other_seqs_Spname_list.txt
+      > ${o}/00-logs_and_checklists/checklists/Other_seqs_Spname_list.txt
       total_sps=$(ls *.fasta | wc -l)
       for fasta_file in *.fasta; do
         spname="${fasta_file%.fasta}"
-        echo "${spname}" >> ${o}/00-logs_and_reports/species_checklists/Other_seqs_Spname_list.txt
+        echo "${spname}" >> ${o}/00-logs_and_checklists/checklists/Other_seqs_Spname_list.txt
       done
 
       # 03-Initialize parallel environment
-      init_parallel_env "$work_dir" "$total_sps" "$process" "${o}/00-logs_and_reports/species_checklists/Other_seqs_Spname_list.txt" || exit 1
+      init_parallel_env "$work_dir" "$total_sps" "$process" "${o}/00-logs_and_checklists/checklists/Other_seqs_Spname_list.txt" || exit 1
       
       # 04-Run the main loop
       while IFS= read -r add_sp || [ -n "$add_sp" ]; do
-        total_genes=$(awk 'END {print NR}' "${o}/00-logs_and_reports/reports/Ref_gene_name_list.txt")
+        total_genes=$(awk 'END {print NR}' "${o}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt")
         if [ "${process}" != "all" ]; then
           read -u1000
         fi
@@ -3278,7 +3278,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
 				"${add_sp}_${add_gene}_single_hit.fa" >> "${o}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/${add_gene}.FNA"
 				sed -i "s|${add_gene} |${add_sp} |g;/^$/d" "${o}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/${add_gene}.FNA" > /dev/null 2>&1
 			fi
-          done < "${o}/00-logs_and_reports/reports/Ref_gene_name_list.txt"
+          done < "${o}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt"
           find . -type f -name "*.fa" -exec rm -f {} +
           # Update failed sample list
           if ! grep -q "${add_sp}" "${o}"/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/*.FNA; then
@@ -3291,7 +3291,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
             echo >&1000
           fi
         } &
-      done < "${o}/00-logs_and_reports/species_checklists/Other_seqs_Spname_list.txt"
+      done < "${o}/00-logs_and_checklists/checklists/Other_seqs_Spname_list.txt"
       wait
       echo
       # Display processing log
@@ -3787,37 +3787,37 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
   # 0.Preparation
   # (1) Function: Output information to log file
   stage4_info_main() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage4_Sequence_alignment_trimming_and_supermatrix_construction_${current_time}.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_checklists/logs/Stage4_Sequence_alignment_trimming_and_supermatrix_construction_${current_time}.log"
   }
   stage4_blank_main() {
-    echo "$1" | tee -a "${o}/00-logs_and_reports/logs/Stage4_Sequence_alignment_trimming_and_supermatrix_construction_${current_time}.log"
+    echo "$1" | tee -a "${o}/00-logs_and_checklists/logs/Stage4_Sequence_alignment_trimming_and_supermatrix_construction_${current_time}.log"
   }
   stage4_info() {
     local log_mode="$1"
     local message="$2"
     if [ "${log_mode}" = "full" ]; then
-      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $message" | tee -a "${o}/00-logs_and_reports/logs/Stage4_Sequence_alignment_trimming_and_supermatrix_construction_${current_time}.log"
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $message" | tee -a "${o}/00-logs_and_checklists/logs/Stage4_Sequence_alignment_trimming_and_supermatrix_construction_${current_time}.log"
     fi
   }
   stage4_error() {
-      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $message" | tee -a "${o}/00-logs_and_reports/logs/Stage4_Sequence_alignment_trimming_and_supermatrix_construction_${current_time}.log"
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $message" | tee -a "${o}/00-logs_and_checklists/logs/Stage4_Sequence_alignment_trimming_and_supermatrix_construction_${current_time}.log"
   }
   stage4_cmd() {
     local log_mode="$1"
     local message="$2"
     
     if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
-      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $message" >> "${o}/00-logs_and_reports/logs/HybSuite_cmd_${current_time}.log"
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $message" >> "${o}/00-logs_and_checklists/logs/HybSuite_cmd_${current_time}.log"
     fi
   }
   stage4_blank() {
     local log_mode="$1"
     local message="$2"
     if [ "${log_mode}" = "full" ]; then
-      echo "$message" | tee -a "${o}/00-logs_and_reports/logs/Stage4_Sequence_alignment_trimming_and_supermatrix_construction_${current_time}.log"
+      echo "$message" | tee -a "${o}/00-logs_and_checklists/logs/Stage4_Sequence_alignment_trimming_and_supermatrix_construction_${current_time}.log"
     fi
   }
-  stage4_logfile="${o}/00-logs_and_reports/logs/Stage4_Sequence_alignment_trimming_and_supermatrix_construction_${current_time}.log"
+  stage4_logfile="${o}/00-logs_and_checklists/logs/Stage4_Sequence_alignment_trimming_and_supermatrix_construction_${current_time}.log"
   conda_activate "stage4" "${conda1}"
   stage4_info_main "<<<======= Stage 4 Sequence Alignment, Trimming, and Supermatrix Construction =======>>>"
   #################===========================================================================
@@ -4240,36 +4240,36 @@ mkdir -p "${o}/06-ModelTest-NG"
 # 0.Preparation
 # (1) Function: Output information to log file
 stage5_info_main() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${o}/00-logs_and_checklists/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
 }
 stage5_error() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${o}/00-logs_and_checklists/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
 }
 stage5_blank_main() {
-  echo "$1" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
+  echo "$1" | tee -a "${o}/00-logs_and_checklists/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
 }
 stage5_info() {
   local log_mode="$1"
   local message="$2"
   if [ "${log_mode}" = "full" ]; then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $message" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $message" | tee -a "${o}/00-logs_and_checklists/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
   fi
 }
 stage5_cmd() {
   local log_mode="$1"
   local message="$2"
   if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $message" >> "${o}/00-logs_and_reports/logs/HybSuite_cmd_${current_time}.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $message" >> "${o}/00-logs_and_checklists/logs/HybSuite_cmd_${current_time}.log"
   fi
 }
 stage5_blank() {
   local log_mode="$1"
   local message="$2"
   if [ "${log_mode}" = "full" ]; then
-    echo "$message" | tee -a "${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
+    echo "$message" | tee -a "${o}/00-logs_and_checklists/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
   fi
 }
-stage5_logfile="${o}/00-logs_and_reports/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
+stage5_logfile="${o}/00-logs_and_checklists/logs/Stage5_Phylogenetic_trees_inference_${current_time}.log"
 
 conda_activate "stage5" "${conda1}"
 stage5_info_main "<<<======= Stage 5 Phylogenetic trees inference =======>>>"
@@ -4746,8 +4746,8 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
     stage5_info_main "Running ASTRAL-Ⅲ ..."
     java -jar ${script_dir}/../dependencies/ASTRAL-master/Astral/astral.5.7.8.jar \
     -i "${input_combined_tree}" \
-    -o "${output_astral_prefix}.tre" 2> ${o}/00-logs_and_reports/logs/ASTRAL_${prefix}_${ortho_method}.log
-    stage5_cmd "${log_mode}" "java -jar ${script_dir}/../dependencies/ASTRAL-master/Astral/astral.5.7.8.jar -i ${input_combined_tree} -o ${output_astral_prefix}.tre 2> ${o}/00-logs_and_reports/logs/${prefix}_${ortho_method}_ASTRAL.log"
+    -o "${output_astral_prefix}.tre" 2> ${o}/00-logs_and_checklists/logs/ASTRAL_${prefix}_${ortho_method}.log
+    stage5_cmd "${log_mode}" "java -jar ${script_dir}/../dependencies/ASTRAL-master/Astral/astral.5.7.8.jar -i ${input_combined_tree} -o ${output_astral_prefix}.tre 2> ${o}/00-logs_and_checklists/logs/${prefix}_${ortho_method}_ASTRAL.log"
     if [ -s "${output_astral_prefix}.tre" ]; then
       stage5_info_main "Succeed to run ASTRAL-Ⅲ."
     else
@@ -4771,22 +4771,22 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
     # if the number of species is less than 2000, run wastral
     if [ $(wc -l < "${gene_list}") -lt 2000 ]; then
       # 01-run wastral
-      stage5_cmd "${log_mode}" "bin/wastral --mode ${wastral_mode} -t ${nt_wastral} -r ${wastral_R} -s ${wastral_S} -o ${output_wastral_prefix}.tre ${input_combined_tree} 2> ${o}/00-logs_and_reports/logs/wASTRAL_${prefix}_${ortho_method}.log"
+      stage5_cmd "${log_mode}" "bin/wastral --mode ${wastral_mode} -t ${nt_wastral} -r ${wastral_R} -s ${wastral_S} -o ${output_wastral_prefix}.tre ${input_combined_tree} 2> ${o}/00-logs_and_checklists/logs/wASTRAL_${prefix}_${ortho_method}.log"
       bin/wastral --mode "${wastral_mode}" -t "${nt_wastral}" \
       -r "${wastral_R}" -s "${wastral_S}" \
       -o "${output_wastral_prefix}.tre" \
-      "${input_combined_tree}" 2> "${o}/00-logs_and_reports/logs/wASTRAL_${prefix}_${ortho_method}.log"
+      "${input_combined_tree}" 2> "${o}/00-logs_and_checklists/logs/wASTRAL_${prefix}_${ortho_method}.log"
       # 02-Add bootstrap value by wastral
       stage5_cmd "${log_mode}" "bin/wastral -S ${output_wastral_prefix}.tre > ${output_wastral_prefix}_bootstrap.tre"
       bin/wastral -S "${output_wastral_prefix}.tre" > "${output_wastral_prefix}_bootstrap.tre"
     # if the number of species is more than 2000, run wastral
     else
       # 01-run wastral
-      stage5_cmd "${log_mode}" "bin/wastral_precise --mode ${wastral_mode} -t ${nt_wastral} -r ${wastral_R} -s ${wastral_S} -o ${output_wastral_prefix}.tre ${input_combined_tree} 2> ${o}/00-logs_and_reports/logs/wASTRAL_${prefix}_${ortho_method}.log"
+      stage5_cmd "${log_mode}" "bin/wastral_precise --mode ${wastral_mode} -t ${nt_wastral} -r ${wastral_R} -s ${wastral_S} -o ${output_wastral_prefix}.tre ${input_combined_tree} 2> ${o}/00-logs_and_checklists/logs/wASTRAL_${prefix}_${ortho_method}.log"
       bin/wastral_precise --mode ${wastral_mode} -t ${nt_wastral} \
       -r ${wastral_R} -s ${wastral_S} \
       -o "${output_wastral_prefix}.tre" \
-      "${input_combined_tree}" 2> ${o}/00-logs_and_reports/logs/wASTRAL_${prefix}_${ortho_method}.log
+      "${input_combined_tree}" 2> ${o}/00-logs_and_checklists/logs/wASTRAL_${prefix}_${ortho_method}.log
       # 02-Add bootstrap value by wastral
       stage5_cmd "${log_mode}" "bin/wastral_precise -S ${output_wastral_prefix}.tre > ${output_wastral_prefix}_bootstrap.tre"
       bin/wastral_precise -S "${output_wastral_prefix}.tre" > "${output_wastral_prefix}_bootstrap.tre"
