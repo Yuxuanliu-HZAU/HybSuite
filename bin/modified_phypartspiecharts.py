@@ -1,10 +1,23 @@
 #!/usr/bin/env python
 """
 modified_phypartspiecharts.py
-PhyPartsPieCharts - Generate pie chart representation of gene tree conflict.
 
-This script generates the "Pie Chart" representation of gene tree conflict from
-Smith et al. 2015 using the output of phyparts.
+A modified version of the original PhyParts visualization script "phypartspiecharts.py", designed to generate
+enhanced pie chart representations of gene tree conflicts. This script is part of the
+HybSuite package and extends the functionality of the original PhyParts 
+(Smith et al. 2015).
+
+Key Features:
+- Generates pie chart visualizations showing gene tree conflict patterns
+- Supports multi-threading for improved performance
+- Provides flexible output formats (SVG, PDF)
+- Offers customizable display options for tree visualization
+- Includes statistical analysis of gene tree conflicts
+- Exports detailed conflict statistics in CSV/TSV format
+
+Original concept from:
+Smith et al. 2015. Resolving the phylogeny of lizards and snakes (Squamata) 
+with extensive sampling of genes and species. Biology Letters 11: 20150062.
 
 Requirements:
 - Python 3
@@ -303,42 +316,42 @@ class PhyPartsPieCharts:
 
         try:
             logging.info(f"Exporting statistics to {self.config.stat_output}")
-            support_conflict_ratios = []  # 用于存储支持/冲突比值
+            support_conflict_ratios = []  # For storing support/conflict ratios
 
             with open(self.config.stat_output, 'w') as f:
-                # 写入表头
+                # Write header
                 f.write("Node\tSupport(blue)\tTopConflict(green)\tOtherConflict(red)\tNoSignal(gray)\tSupport/Conflict_Ratio\n")
                 
                 for node_name, pie_data in self.phyparts_pies.items():
-                    # 获取各部分的原始数量（而不是百分比）
-                    concordant = int(self.concord_dict[node_name])  # 蓝色
-                    all_conflict = int(self.conflict_dict[node_name])  # 红色+绿色
+                    # Get raw counts (not percentages) for each component
+                    concordant = int(self.concord_dict[node_name])  # Blue part
+                    all_conflict = int(self.conflict_dict[node_name])  # Red + green parts
                     
-                    # 从饼图数据中获取最主要冲突的比例
-                    most_conflict_percent = pie_data[1]  # 绿色部分的百分比
-                    most_conflict = int(round(most_conflict_percent * self.config.num_genes / 100))  # 转换为数量
-                    other_conflict = all_conflict - most_conflict  # 红色部分
+                    # Get the main conflict proportion from pie data
+                    most_conflict_percent = pie_data[1]  # Green part percentage
+                    most_conflict = int(round(most_conflict_percent * self.config.num_genes / 100))  # Convert to count
+                    other_conflict = all_conflict - most_conflict  # Red part
                     
-                    no_signal = self.config.num_genes - concordant - all_conflict  # 灰色部分
+                    no_signal = self.config.num_genes - concordant - all_conflict  # Gray part
                     
-                    # 计算支持/冲突比值
+                    # Calculate support/conflict ratio
                     ratio = float('inf') if all_conflict == 0 else concordant/all_conflict
                     
-                    # 只为内部节点记录比值（用于计算平均值）
+                    # Only record ratios for internal nodes (for average calculation)
                     node = next(n for n in self.plot_tree.traverse() if n.name == node_name)
                     if not node.is_leaf():
                         support_conflict_ratios.append(ratio)
                     
-                    # 写入数据行
+                    # Write data row
                     f.write(f"{node_name}\t{concordant}\t{most_conflict}\t{other_conflict}\t{no_signal}\t")
                     if ratio == float('inf'):
                         f.write("∞\n")
                     else:
                         f.write(f"{ratio:.2f}\n")
                 
-                # 计算并写入平均支持/冲突比值
+                # Calculate and write average support/conflict ratio
                 if support_conflict_ratios:
-                    # 计算有限数值的平均值
+                    # Calculate average of finite values
                     finite_ratios = [r for r in support_conflict_ratios if r != float('inf')]
                     if finite_ratios:
                         avg_ratio = sum(finite_ratios) / len(finite_ratios)
@@ -361,21 +374,21 @@ class PhyPartsPieCharts:
             if not self.config.no_ladderize:
                 self.plot_tree.ladderize(direction=1)
                 
-            # 获取输出格式
-            output_format = Path(self.config.output).suffix.lower()[1:]  # 去掉点号
+            # Get output format
+            output_format = Path(self.config.output).suffix.lower()[1:]  # Remove dot
             
-            # 设置图片尺寸和DPI
+            # Set image size and DPI
             if output_format == "png":
-                # 对于PNG格式，使用简单的宽度计算，避免浮点数运算
+                # For PNG format, use simple width calculation to avoid floating point operations
                 if self.config.dpi == 300:
-                    width = 2000  # 基础宽度
+                    width = 2000  # Base width
                 else:
-                    # 使用整数乘法和除法
+                    # Use integer multiplication and division
                     width = 2000 * self.config.dpi // 300
                 
-                # 确保width是整数
+                # Ensure width is integer
                 width = int(width)
-                height = width  # 宽高相等
+                height = width  # Equal width and height
                 
                 logging.info(f"Rendering PNG with width={width}, height={height}, dpi={self.config.dpi}")
                 
@@ -386,8 +399,8 @@ class PhyPartsPieCharts:
                                     dpi=self.config.dpi,
                                     units="px")
             else:
-                # 对于SVG和PDF格式使用默认设置
-                width = 595  # 确保是整数
+                # Use default settings for SVG and PDF formats
+                width = 595  # Ensure integer
                 logging.info(f"Rendering {output_format.upper()} with width={width}")
                 
                 self.plot_tree.render(str(self.config.output),  
@@ -420,24 +433,24 @@ class PhyPartsPieCharts:
         ts.scale = 30
         ts.branch_vertical_margin = 10
 
-        # 设置树的显示类型
+        # Set tree display type
         if self.config.tree_type == "circle":
-            ts.mode = "c"  # 圆形树
-            ts.arc_start = -180  # 起始角度
-            ts.arc_span = 360  # 跨度角度
+            ts.mode = "c"  # Circle tree
+            ts.arc_start = -180  # Start angle
+            ts.arc_span = 360  # Span angle
         elif self.config.tree_type == "phylo":
-            ts.show_branch_length = True  # 显示枝长
+            ts.show_branch_length = True  # Show branch length
         else:  # cladogram
-            ts.show_branch_length = False  # 不显示枝长
+            ts.show_branch_length = False  # Do not show branch length
 
         nstyle = NodeStyle()
         nstyle["size"] = 0
         
-        # 设置所有分支的线宽（包括垂直和水平线）
+        # Set line width for all branches (including vertical and horizontal lines)
         for n in self.plot_tree.traverse():
             n.set_style(nstyle)
-            n.img_style["vt_line_width"] = self.config.vt_line_width  # 垂直线宽度
-            n.img_style["hz_line_width"] = self.config.vt_line_width  # 水平线宽度
+            n.img_style["vt_line_width"] = self.config.vt_line_width  # Vertical line width
+            n.img_style["hz_line_width"] = self.config.vt_line_width  # Horizontal line width
 
         return ts
 
@@ -523,8 +536,8 @@ class PhyPartsPieCharts:
 
     def _node_text_layout(self, node):
         """Node text layout"""
-        # 使用调整后的字体大小
-        adjusted_size = int(20 * self.config.tip_size_factor)  # 20是原始大小
+        # Use adjusted font size
+        adjusted_size = int(20 * self.config.tip_size_factor)  # Base size is 20
         F = faces.TextFace(node.name, fsize=adjusted_size)
         faces.add_face_to_node(F, node, 0, position="branch-right")
 
@@ -552,17 +565,17 @@ def main():
                        help="Display species names in normal font style (default: italic)",
                        dest="italic_names")
     
-    # 添加控制数字显示的参数
+    # Add control tip label font size parameter
     parser.add_argument("--tip_size", type=float, default=1.0,
                        help="Scale factor for tip label font size (default: 1.0)",
                        dest="tip_size_factor")
     
-    # 添加控制基因树数量字体大小的参数
+    # Add control gene tree count font size parameter
     parser.add_argument("--number_size", type=float, default=1.0,
                        help="Scale factor for gene tree count font size (default: 1.0)",
                        dest="number_size_factor")
 
-    # 修改显示模式控制参数
+    # Modify display mode control parameter
     parser.add_argument("--show_num_mode",
                        default="12",
                        help="""Control what numbers to show on branches (specify 0-2 digits):
@@ -582,17 +595,17 @@ Example: --show_num_mode 0  (hide all numbers)
         --show_num_mode 8  (show original node support values)""",
                        dest="show_num_mode")
 
-    # 添加控制饼图大小的参数
+    # Add pie chart size parameter
     parser.add_argument("--pie_size", type=float, default=1.0,
                        help="Scale factor for pie chart size (default: 1.0)",
                        dest="pie_size_factor")
 
-    # 添加统计输出参数
+    # Add statistics output parameter
     parser.add_argument("--stat",
                        help="Output file path for node statistics (TSV format)",
                        dest="stat_output")
 
-    # 添加线程数参数
+    # Add thread count parameter
     parser.add_argument("-nt", "--threads", type=int, default=1,
                        help="Number of threads to use (default: 1)",
                        dest="threads")
@@ -609,7 +622,7 @@ Example: --show_num_mode 0  (hide all numbers)
         if config.to_csv:
             processor.export_to_csv()
         
-        # 添加统计输出
+        # Add statistics output
         processor.export_statistics()
             
         processor.render_tree()
