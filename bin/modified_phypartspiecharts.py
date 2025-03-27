@@ -22,6 +22,9 @@ from pathlib import Path
 from typing import Dict, Tuple, List, Optional
 from dataclasses import dataclass
 from ete3 import Tree, TreeStyle, TextFace, NodeStyle, faces, COLOR_SCHEMES
+import concurrent.futures
+import threading
+from concurrent.futures import ThreadPoolExecutor
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -53,29 +56,45 @@ class PhyPartsConfig:
     phyparts_root: str
     num_genes: int
     taxon_subst: Optional[str] = None
-    output_file: str = "pies.svg"
-    output_format: str = "svg"
+    output: str = "pies.svg"
     show_nodes: bool = False
     colors: Dict[str, str] = None
     no_ladderize: bool = False
     to_csv: bool = False
-    vt_line_width: float = 0
+    vt_line_width: int = 0
     italic_names: bool = True
+    dpi: int = 300
+    tree_type: str = "cladogram"
+    show_numbers: bool = True
+    tip_size_factor: float = 1.0
+    number_size_factor: float = 1.0
+    pie_size_factor: float = 1.0
+    show_num_mode: str = "12"
+    stat_output: Optional[str] = None
+    threads: int = 1
 
     def __post_init__(self):
+        # Validate output file format
+        valid_formats = [".svg", ".pdf"]
+        file_ext = Path(self.output).suffix.lower()
+        if not file_ext:
+            raise ValueError("Output file must have an extension (.svg or .pdf)")
+        if file_ext not in valid_formats:
+            raise ValueError(f"Unsupported output format: {file_ext}. Supported formats: {', '.join(valid_formats)}")
+        
+        # Validate tree type
+        valid_tree_types = ["circle", "cladogram", "phylo"]
+        if self.tree_type not in valid_tree_types:
+            raise ValueError(f"Invalid tree type: {self.tree_type}. Supported types: {', '.join(valid_tree_types)}")
+
         # Default color scheme
         if self.colors is None:
             self.colors = {
                 "concordance": "blue",
                 "top_conflict": "green",
                 "other_conflict": "red",
-                "no_signal": "dark gray"
+                "no_signal": "darkgray"
             }
-        
-        # Validate output format
-        valid_formats = ["svg", "png", "pdf"]
-        if self.output_format.lower() not in valid_formats:
-            raise ValueError(f"Unsupported output format: {self.output_format}. Supported formats: {', '.join(valid_formats)}")
         
         # Validate color keys
         required_colors = {"concordance", "top_conflict", "other_conflict", "no_signal"}
@@ -86,6 +105,39 @@ class PhyPartsConfig:
         for color_name, color_value in self.colors.items():
             if not validate_color(color_value):
                 raise ColorError(f"Invalid color value for {color_name}: {color_value}")
+
+        # Validate size factors
+        if self.tip_size_factor <= 0:
+            raise ValueError("Tip size factor must be positive")
+        if self.number_size_factor <= 0:
+            raise ValueError("Number size factor must be positive")
+        if self.pie_size_factor <= 0:
+            raise ValueError("Pie size factor must be positive")
+
+        # Validate show number mode
+        if self.show_num_mode is not None:
+            try:
+                # Convert string to number list
+                mode_list = [int(d) for d in str(self.show_num_mode)]
+                if len(mode_list) > 2:
+                    raise ValueError("Show number mode must be 0-2 digits")
+                valid_modes = set(range(9))  # Valid digits 0-8
+                if not all(mode in valid_modes for mode in mode_list):
+                    raise ValueError("Show number modes must be digits between 0 and 8")
+                # If only one digit is input
+                if len(mode_list) == 1:
+                    if mode_list[0] == 0:
+                        self.show_numbers = False  # Hide all numbers when input is 0
+                    else:
+                        self.show_num_mode = [mode_list[0], None]  # Show only one value
+                else:
+                    self.show_num_mode = mode_list  # Show two values
+            except ValueError as e:
+                raise ValueError(f"Invalid show number mode: {e}")
+
+        # Validate thread count
+        if self.threads < 1:
+            raise ValueError("Number of threads must be positive")
 
 class PhyPartsPieCharts:
     """Main class for processing PhyParts data and generating pie charts"""
@@ -100,6 +152,7 @@ class PhyPartsPieCharts:
         self.phyparts_dist = {}
         self.phyparts_pies = {}
         self.validate_input_files()
+        self._lock = threading.Lock()  # Add thread lock
 
     def validate_input_files(self) -> None:
         """Validate existence of required input files"""
@@ -172,29 +225,53 @@ class PhyPartsPieCharts:
             logging.error(f"Error in get_concord_and_conflict: {e}")
             raise
 
+    def _process_node_data(self, node_data):
+        """Process data for a single node"""
+        try:
+            data = node_data.split(",")
+            tot_genes = float(data[-1])
+            node_name = data[0][4:]
+            concord = self.concord_dict[node_name]
+            all_conflict = self.conflict_dict[node_name]
+
+            most_conflict = max([float(x) for x in data[2:-1]]) if len(data) > 3 else 0.0
+
+            # Calculate percentages
+            adj_concord = (concord / self.config.num_genes) * 100
+            adj_most_conflict = (most_conflict / self.config.num_genes) * 100
+            other_conflict = (all_conflict - most_conflict) / self.config.num_genes * 100
+            the_rest = (self.config.num_genes - concord - all_conflict) / self.config.num_genes * 100
+
+            return (node_name, 
+                   [adj_concord, adj_most_conflict, other_conflict, the_rest],
+                   [int(round(concord, 0)), int(round(tot_genes-concord, 0))])
+        except Exception as e:
+            logging.error(f"Error processing node data: {e}")
+            raise
+
     def _get_pie_chart_data(self) -> None:
-        """Generate pie chart data"""
+        """Generate pie chart data with multi-threading support"""
         try:
             with open(f"{self.config.phyparts_root}.hist") as f:
                 phyparts_hist = f.readlines()
 
-            for line in phyparts_hist:
-                data = line.split(",")
-                tot_genes = float(data[-1])
-                node_name = data[0][4:]
-                concord = self.concord_dict[node_name]
-                all_conflict = self.conflict_dict[node_name]
+            # Use thread pool to process data
+            with ThreadPoolExecutor(max_workers=self.config.threads) as executor:
+                # Submit all tasks
+                future_to_node = {executor.submit(self._process_node_data, line): line 
+                                for line in phyparts_hist}
+                
+                # Collect results
+                for future in concurrent.futures.as_completed(future_to_node):
+                    try:
+                        node_name, pie_data, dist_data = future.result()
+                        with self._lock:
+                            self.phyparts_pies[node_name] = pie_data
+                            self.phyparts_dist[node_name] = dist_data
+                    except Exception as e:
+                        logging.error(f"Error processing node: {e}")
+                        raise
 
-                most_conflict = max([float(x) for x in data[2:-1]]) if len(data) > 3 else 0.0
-
-                # Calculate percentages
-                adj_concord = (concord / self.config.num_genes) * 100
-                adj_most_conflict = (most_conflict / self.config.num_genes) * 100
-                other_conflict = (all_conflict - most_conflict) / self.config.num_genes * 100
-                the_rest = (self.config.num_genes - concord - all_conflict) / self.config.num_genes * 100
-
-                self.phyparts_pies[node_name] = [adj_concord, adj_most_conflict, other_conflict, the_rest]
-                self.phyparts_dist[node_name] = [int(round(concord, 0)), int(round(tot_genes-concord, 0))]
         except Exception as e:
             logging.error(f"Error in get_pie_chart_data: {e}")
             raise
@@ -219,6 +296,61 @@ class PhyPartsPieCharts:
             logging.error(f"Error exporting to CSV: {e}")
             raise
 
+    def export_statistics(self) -> None:
+        """Export node statistics to TSV file"""
+        if not self.config.stat_output:
+            return
+
+        try:
+            logging.info(f"Exporting statistics to {self.config.stat_output}")
+            support_conflict_ratios = []  # 用于存储支持/冲突比值
+
+            with open(self.config.stat_output, 'w') as f:
+                # 写入表头
+                f.write("Node\tSupport(blue)\tTopConflict(green)\tOtherConflict(red)\tNoSignal(gray)\tSupport/Conflict_Ratio\n")
+                
+                for node_name, pie_data in self.phyparts_pies.items():
+                    # 获取各部分的原始数量（而不是百分比）
+                    concordant = int(self.concord_dict[node_name])  # 蓝色
+                    all_conflict = int(self.conflict_dict[node_name])  # 红色+绿色
+                    
+                    # 从饼图数据中获取最主要冲突的比例
+                    most_conflict_percent = pie_data[1]  # 绿色部分的百分比
+                    most_conflict = int(round(most_conflict_percent * self.config.num_genes / 100))  # 转换为数量
+                    other_conflict = all_conflict - most_conflict  # 红色部分
+                    
+                    no_signal = self.config.num_genes - concordant - all_conflict  # 灰色部分
+                    
+                    # 计算支持/冲突比值
+                    ratio = float('inf') if all_conflict == 0 else concordant/all_conflict
+                    
+                    # 只为内部节点记录比值（用于计算平均值）
+                    node = next(n for n in self.plot_tree.traverse() if n.name == node_name)
+                    if not node.is_leaf():
+                        support_conflict_ratios.append(ratio)
+                    
+                    # 写入数据行
+                    f.write(f"{node_name}\t{concordant}\t{most_conflict}\t{other_conflict}\t{no_signal}\t")
+                    if ratio == float('inf'):
+                        f.write("∞\n")
+                    else:
+                        f.write(f"{ratio:.2f}\n")
+                
+                # 计算并写入平均支持/冲突比值
+                if support_conflict_ratios:
+                    # 计算有限数值的平均值
+                    finite_ratios = [r for r in support_conflict_ratios if r != float('inf')]
+                    if finite_ratios:
+                        avg_ratio = sum(finite_ratios) / len(finite_ratios)
+                        f.write(f"\nAverage Support/Conflict Ratio (internal nodes only): {avg_ratio:.2f}")
+                    else:
+                        f.write("\nAverage Support/Conflict Ratio (internal nodes only): ∞")
+            
+            logging.info("Statistics export completed")
+        except Exception as e:
+            logging.error(f"Error exporting statistics: {e}")
+            raise
+
     def render_tree(self) -> None:
         """Render tree visualization"""
         try:
@@ -229,22 +361,50 @@ class PhyPartsPieCharts:
             if not self.config.no_ladderize:
                 self.plot_tree.ladderize(direction=1)
                 
-            # Render tree with specified format
-            self.plot_tree.render(self.config.output_file, 
-                                tree_style=ts, 
-                                w=595, 
-                                dpi=300,
-                                units="px")
+            # 获取输出格式
+            output_format = Path(self.config.output).suffix.lower()[1:]  # 去掉点号
+            
+            # 设置图片尺寸和DPI
+            if output_format == "png":
+                # 对于PNG格式，使用简单的宽度计算，避免浮点数运算
+                if self.config.dpi == 300:
+                    width = 2000  # 基础宽度
+                else:
+                    # 使用整数乘法和除法
+                    width = 2000 * self.config.dpi // 300
+                
+                # 确保width是整数
+                width = int(width)
+                height = width  # 宽高相等
+                
+                logging.info(f"Rendering PNG with width={width}, height={height}, dpi={self.config.dpi}")
+                
+                self.plot_tree.render(str(self.config.output),  
+                                    tree_style=ts, 
+                                    w=width,  
+                                    h=height,  
+                                    dpi=self.config.dpi,
+                                    units="px")
+            else:
+                # 对于SVG和PDF格式使用默认设置
+                width = 595  # 确保是整数
+                logging.info(f"Rendering {output_format.upper()} with width={width}")
+                
+                self.plot_tree.render(str(self.config.output),  
+                                    tree_style=ts, 
+                                    w=width,
+                                    dpi=300,
+                                    units="px")
 
             if self.config.show_nodes:
                 node_style = TreeStyle()
                 node_style.show_leaf_name = False
                 node_style.layout_fn = self._node_text_layout
-                nodes_output = f"tree_nodes.{self.config.output_format}"
+                nodes_output = str(Path(self.config.output).parent / f"tree_nodes{Path(self.config.output).suffix}")
                 self.plot_tree.render(nodes_output, tree_style=node_style)
                 logging.info(f"Node tree saved as: {nodes_output}")
 
-            logging.info(f"Tree successfully saved as: {self.config.output_file}")
+            logging.info(f"Tree successfully saved as: {self.config.output}")
         except Exception as e:
             logging.error(f"Error rendering tree: {e}")
             raise
@@ -260,18 +420,71 @@ class PhyPartsPieCharts:
         ts.scale = 30
         ts.branch_vertical_margin = 10
 
+        # 设置树的显示类型
+        if self.config.tree_type == "circle":
+            ts.mode = "c"  # 圆形树
+            ts.arc_start = -180  # 起始角度
+            ts.arc_span = 360  # 跨度角度
+        elif self.config.tree_type == "phylo":
+            ts.show_branch_length = True  # 显示枝长
+        else:  # cladogram
+            ts.show_branch_length = False  # 不显示枝长
+
         nstyle = NodeStyle()
         nstyle["size"] = 0
+        
+        # 设置所有分支的线宽（包括垂直和水平线）
         for n in self.plot_tree.traverse():
             n.set_style(nstyle)
-            # Use custom line width if specified, otherwise keep default (0)
-            n.img_style["vt_line_width"] = self.config.vt_line_width
+            n.img_style["vt_line_width"] = self.config.vt_line_width  # 垂直线宽度
+            n.img_style["hz_line_width"] = self.config.vt_line_width  # 水平线宽度
 
         return ts
+
+    def _get_display_value(self, node_name: str, mode: int) -> str:
+        """Get display value for specified mode"""
+        if mode == 8:
+            # Get original support value from tree
+            for node in self.plot_tree.traverse():
+                if node.name == node_name:
+                    # Return support value if it exists
+                    if hasattr(node, 'support') and node.support:
+                        return f"{node.support:.2f}   "
+                    return "-   "
+        
+        # Get component data
+        concordant = int(self.concord_dict[node_name])  # Blue part
+        conflicting = int(self.conflict_dict[node_name])  # Red + green parts
+        total = self.config.num_genes
+        no_signal = total - concordant - conflicting  # Gray part
+        
+        if mode == 1:
+            return f"{concordant}   "
+        elif mode == 2:
+            return f"{conflicting}   "
+        elif mode == 3:
+            return f"{no_signal}   "
+        elif mode == 4:
+            return f"{concordant/total:.2f}   "
+        elif mode == 5:
+            return f"{conflicting/total:.2f}   "
+        elif mode == 6:
+            return f"{no_signal/total:.2f}   "
+        elif mode == 7:
+            # Handle division by zero
+            if conflicting == 0:
+                return "∞   "
+            return f"{concordant/conflicting:.2f}   "
+        else:
+            raise ValueError(f"Invalid display mode: {mode}")
 
     def _phyparts_pie_layout(self, node):
         """Node pie chart layout"""
         if node.name in self.phyparts_pies:
+            # Adjust pie chart size using pie_size_factor
+            base_size = 50  # Base size
+            adjusted_size = int(base_size * self.config.pie_size_factor)
+            
             pie = faces.PieChartFace(
                 self.phyparts_pies[node.name],
                 colors=[
@@ -280,25 +493,39 @@ class PhyPartsPieCharts:
                     self.config.colors["other_conflict"],
                     self.config.colors["no_signal"]
                 ],
-                width=50, height=50
+                width=adjusted_size, height=adjusted_size  # Use adjusted size
             )
             pie.border.width = None
             pie.opacity = 1
             faces.add_face_to_node(pie, node, 0, position="branch-right")
 
-            concord_text = faces.TextFace(f"{int(self.concord_dict[node.name])}   ", fsize=20)
-            conflict_text = faces.TextFace(f"{int(self.conflict_dict[node.name])}   ", fsize=20)
-
-            faces.add_face_to_node(concord_text, node, 0, position="branch-top")
-            faces.add_face_to_node(conflict_text, node, 0, position="branch-bottom")
+            # Modify number display logic
+            if self.config.show_numbers:
+                # Use adjusted font size
+                adjusted_size = int(20 * self.config.number_size_factor)
+                
+                # Get values based on display mode
+                if self.config.show_num_mode[0] is not None:
+                    top_value = self._get_display_value(node.name, self.config.show_num_mode[0])
+                    top_text = faces.TextFace(top_value, fsize=adjusted_size)
+                    faces.add_face_to_node(top_text, node, 0, position="branch-top")
+                
+                if self.config.show_num_mode[1] is not None:
+                    bottom_value = self._get_display_value(node.name, self.config.show_num_mode[1])
+                    bottom_text = faces.TextFace(bottom_value, fsize=adjusted_size)
+                    faces.add_face_to_node(bottom_text, node, 0, position="branch-bottom")
         else:
-            F = faces.TextFace(node.name, fsize=20, fstyle='italic' if self.config.italic_names else 'normal')
+            # Use adjusted font size
+            adjusted_size = int(20 * self.config.tip_size_factor)  # Base size is 20
+            F = faces.TextFace(node.name, fsize=adjusted_size, 
+                              fstyle='italic' if self.config.italic_names else 'normal')
             faces.add_face_to_node(F, node, 0, position="aligned")
 
-    @staticmethod
-    def _node_text_layout(node):
+    def _node_text_layout(self, node):
         """Node text layout"""
-        F = faces.TextFace(node.name, fsize=20)
+        # 使用调整后的字体大小
+        adjusted_size = int(20 * self.config.tip_size_factor)  # 20是原始大小
+        F = faces.TextFace(node.name, fsize=adjusted_size)
         faces.add_face_to_node(F, node, 0, position="branch-right")
 
 def main():
@@ -308,20 +535,15 @@ def main():
     parser.add_argument('phyparts_root', help="File root name used for Phyparts.")
     parser.add_argument('num_genes', type=int, help="Number of total gene trees.")
     parser.add_argument('--taxon_subst', help="Comma-delimited file to translate tip names.")
-    parser.add_argument("--output_file", help="Output filename with extension", default="pies.svg")
-    parser.add_argument("--output_format", help="Output format (svg, png, or pdf)", default="svg")
+    parser.add_argument("--output", help="Output filename with extension (.svg or .pdf)", default="pies.svg")
     parser.add_argument("--show_nodes", action="store_true", help="Show tree with labeled nodes")
     parser.add_argument("--no_ladderize", action="store_true", help="Don't ladderize tree")
     parser.add_argument("--to_csv", action="store_true", help="Export data to CSV")
-    
-    # Color customization arguments
-    parser.add_argument("--concordance_color", help="Color for concordance sections (default: blue)")
-    parser.add_argument("--top_conflict_color", help="Color for top conflict sections (default: green)")
-    parser.add_argument("--other_conflict_color", help="Color for other conflict sections (default: red)")
-    parser.add_argument("--no_signal_color", help="Color for no signal sections (default: dark gray)")
+    parser.add_argument("--tree_type", choices=["circle", "cladogram", "phylo"], 
+                       default="cladogram", help="Tree visualization type (default: cladogram)")
     
     # Add line width argument with user-friendly name
-    parser.add_argument("--line_width", type=float, default=0,
+    parser.add_argument("--line_width", type=int, default=0,
                        help="Width of tree branches (default: 0)",
                        dest="vt_line_width")
 
@@ -329,40 +551,66 @@ def main():
     parser.add_argument("--no_italic", action="store_false",
                        help="Display species names in normal font style (default: italic)",
                        dest="italic_names")
+    
+    # 添加控制数字显示的参数
+    parser.add_argument("--tip_size", type=float, default=1.0,
+                       help="Scale factor for tip label font size (default: 1.0)",
+                       dest="tip_size_factor")
+    
+    # 添加控制基因树数量字体大小的参数
+    parser.add_argument("--number_size", type=float, default=1.0,
+                       help="Scale factor for gene tree count font size (default: 1.0)",
+                       dest="number_size_factor")
+
+    # 修改显示模式控制参数
+    parser.add_argument("--show_num_mode",
+                       default="12",
+                       help="""Control what numbers to show on branches (specify 0-2 digits):
+0: Hide all numbers
+1: Number of genes supporting species tree (blue)
+2: Number of genes conflicting with species tree (red+green)
+3: Number of genes with no signal (gray)
+4: Proportion of supporting genes (blue/total)
+5: Proportion of conflicting genes ((red+green)/total)
+6: Proportion of no signal genes (gray/total)
+7: Ratio of supporting to conflicting genes (blue/(red+green))
+8: Original node support values from the input tree
+Example: --show_num_mode 0  (hide all numbers)
+        --show_num_mode 1  (show only support number)
+        --show_num_mode 12 (default, show support and conflict numbers)
+        --show_num_mode 47 (show support number and support/conflict ratio)
+        --show_num_mode 8  (show original node support values)""",
+                       dest="show_num_mode")
+
+    # 添加控制饼图大小的参数
+    parser.add_argument("--pie_size", type=float, default=1.0,
+                       help="Scale factor for pie chart size (default: 1.0)",
+                       dest="pie_size_factor")
+
+    # 添加统计输出参数
+    parser.add_argument("--stat",
+                       help="Output file path for node statistics (TSV format)",
+                       dest="stat_output")
+
+    # 添加线程数参数
+    parser.add_argument("-nt", "--threads", type=int, default=1,
+                       help="Number of threads to use (default: 1)",
+                       dest="threads")
 
     args = parser.parse_args()
+    args_dict = vars(args)
     
-    # Process file format
-    if not args.output_file.lower().endswith(tuple(['.' + fmt for fmt in ['svg', 'png', 'pdf']])):
-        args.output_file = f"{args.output_file}.{args.output_format}"
-    else:
-        args.output_format = args.output_file.split('.')[-1].lower()
-
-    # Process custom colors
-    colors = {}
-    if args.concordance_color:
-        colors["concordance"] = args.concordance_color
-    if args.top_conflict_color:
-        colors["top_conflict"] = args.top_conflict_color
-    if args.other_conflict_color:
-        colors["other_conflict"] = args.other_conflict_color
-    if args.no_signal_color:
-        colors["no_signal"] = args.no_signal_color
-
-    # Only update args.colors if custom colors were provided
-    if colors:
-        args = vars(args)
-        args["colors"] = colors
-        args = argparse.Namespace(**args)
-
     try:
-        config = PhyPartsConfig(**vars(args))
+        config = PhyPartsConfig(**args_dict)
         processor = PhyPartsPieCharts(config)
         processor.get_phyparts_nodes()
         processor.process_data()
         
         if config.to_csv:
             processor.export_to_csv()
+        
+        # 添加统计输出
+        processor.export_statistics()
             
         processor.render_tree()
         
