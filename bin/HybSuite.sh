@@ -3451,6 +3451,20 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
         run_trimal "./${filename}.aln.fasta" "./${filename}.trimmed.aln.fasta" "${trimal_mode}" \
         "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
         "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
+        awk '
+        BEGIN { OFS="\n" }
+        /^>/ {
+            header=$0
+            count[header]++
+            if(count[header] > 1) {
+                printf "%s_%d\n", header, count[header]
+            } else {
+                print header
+            }
+            next
+        }
+        { print $0 }' "./${filename}.trimmed.aln.fasta" > "./${filename}.trimmed.aln.temp" && \
+        mv "./${filename}.trimmed.aln.temp" "./${filename}.trimmed.aln.fasta"
         FastTree -nt -gamma "./${filename}.trimmed.aln.fasta" > "./${filename}.trimmed.aln.fasta.tre" 2>/dev/null
         rm "${file}" "${filename}.aln.fasta"
         # Update failed count
