@@ -2410,7 +2410,7 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
 
   if [ -s "${i}/My_Spname.txt" ] && [ -e "$my_raw_data" ]; then
     # Define total samples number
-    total_sps=$(awk 'NF' "${i}My_Spname.txt" | wc -l)
+    total_sps=$(awk 'NF' "${i}/My_Spname.txt" | wc -l)
     # Initialize parallel environment
     init_parallel_env "$work_dir" "$total_sps" "$process" "${i}/My_Spname.txt"
     stage1_info_main "Removing adapters for existing raw data of ${total_sps} samples..."
@@ -2437,14 +2437,14 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       -threads ${nt_trimmomatic} \
                       -phred33 \
                       ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}_1.f* ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}_2.f* \
-                      ./02-Downloaded_clean_data/${sample}_1_clean.paired.fq.gz ./02-Downloaded_clean_data/${sample}_1_clean.unpaired.fq.gz \
-                      ./02-Downloaded_clean_data/${sample}_2_clean.paired.fq.gz ./02-Downloaded_clean_data/${sample}_2_clean.unpaired.fq.gz \
+                      ./03-My_clean_data/${sample}_1_clean.paired.fq.gz ./03-My_clean_data/${sample}_1_clean.unpaired.fq.gz \
+                      ./03-My_clean_data/${sample}_2_clean.paired.fq.gz ./03-My_clean_data/${sample}_2_clean.unpaired.fq.gz \
                       ILLUMINACLIP:${script_dir}/../dependencies/Trimmomatic-0.39/adapters/TruSeq3-PE.fa:2:30:10 \
                       SLIDINGWINDOW:${trimmomatic_sliding_window_s}:${trimmomatic_sliding_window_q} \
                       LEADING:${trimmomatic_leading_quality} \
                       TRAILING:${trimmomatic_trailing_quality} \
                       MINLEN:${trimmomatic_min_length} > /dev/null 2>&1
-                  if [ ! -s "${d}/02-Downloaded_clean_data/${sample}_1_clean.paired.fq.gz" ] || [ ! -s "${d}/02-Downloaded_clean_data/${sample}_2_clean.paired.fq.gz" ]; then
+                  if [ ! -s "${d}/03-My_clean_data/${sample}_1_clean.paired.fq.gz" ] || [ ! -s "${d}/03-My_clean_data/${sample}_2_clean.paired.fq.gz" ]; then
                       record_failed_sample "$sample"
                       exit 1
                   fi
@@ -2459,14 +2459,14 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
                       -threads ${nt_trimmomatic} \
                       -phred33 \
                       ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}.f* \
-                      ${d}/02-Downloaded_clean_data/${sample}_clean.single.fq.gz \
+                      ${d}/03-My_clean_data/${sample}_clean.single.fq.gz \
                       ILLUMINACLIP:${script_dir}/../dependencies/Trimmomatic-0.39/adapters/TruSeq3-SE.fa:2:30:10 \
                       SLIDINGWINDOW:${trimmomatic_sliding_window_s}:${trimmomatic_sliding_window_q} \
                       LEADING:${trimmomatic_leading_quality} \
                       TRAILING:${trimmomatic_trailing_quality} \
                       MINLEN:${trimmomatic_min_length} > /dev/null 2>&1
 
-                  if [ ! -s "${d}/02-Downloaded_clean_data/${sample}_clean.single.fq.gz" ]; then
+                  if [ ! -s "${d}/03-My_clean_data/${sample}_clean.single.fq.gz" ]; then
                       record_failed_sample "$sample"
                       exit 1
                   fi
