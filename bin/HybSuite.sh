@@ -1999,6 +1999,31 @@ work_dir="${o}/00-logs_and_checklists/logs"
   
   #################===========================================================================
   # Function: Running MAFFT and TrimAl
+  remove_n() {
+    local input_fasta=$1
+    awk '/^>/ {
+        if (seq) {
+          if (seq ~ /[ATCGatcg]/) {
+            print header
+            print seq
+          }
+        }
+        header = $0
+        seq = ""
+        next
+      }
+      {
+        seq = seq $0
+      }
+      END {
+        if (seq ~ /[ATCGatcg]/) {
+          print header
+          print seq
+        }
+      }' "${input_fasta}" > "${input_fasta}.temp"
+      mv "${input_fasta}.temp" "${input_fasta}"
+  }
+  
   run_mafft() {
       local input=$1
       local output=$2
@@ -3446,7 +3471,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
         # Update start count
         update_start_count "$genename" "$stage3_logfile"
         sed -i "s/ single_hit/@single_hit/g;s/ multi/@multi/g;s/ NODE_/@NODE_/g;s/\.[0-9]\+@NODE_/@NODE_/g;s/\.main@NODE_/@NODE_/g" "${file}"
-        # Run MAFFT
+        # Run MAFFT  
         run_mafft "${file}" "${filename}.aln.fasta" "${mafft_algorithm}" "${mafft_adjustdirection}" "${nt_mafft}"
         run_trimal "./${filename}.aln.fasta" "./${filename}.trimmed.aln.fasta" "${trimal_mode}" \
         "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
@@ -3465,6 +3490,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
         }
         { print $0 }' "./${filename}.trimmed.aln.fasta" > "./${filename}.trimmed.aln.temp" && \
         mv "./${filename}.trimmed.aln.temp" "./${filename}.trimmed.aln.fasta"
+        remove_n "./${filename}.trimmed.aln.fasta"
         FastTree -nt -gamma "./${filename}.trimmed.aln.fasta" > "./${filename}.trimmed.aln.fasta.tre" 2>/dev/null
         rm "${file}" "${filename}.aln.fasta"
         # Update failed count
@@ -3866,6 +3892,7 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
       "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
       rm "${o}/04-Alignments/HRS/${file_name}.aln.fasta" "${o}/04-Alignments/HRS/${file_name}.fasta"
+      remove_n "${o}/04-Alignments/HRS/${file_name}.trimmed.aln.fasta"
       # Update failed count
       if [ ! -s "${o}/04-Alignments/HRS/${file_name}.trimmed.aln.fasta" ]; then
         record_failed_sample "$file_name"
@@ -3981,6 +4008,7 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
       "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
       rm "${o}/04-Alignments/RLWP/${file_name}.aln.fasta" "${o}/04-Alignments/RLWP/${file_name}.fasta"
+      remove_n "${o}/04-Alignments/RLWP/${file_name}.trimmed.aln.fasta"
       # Update failed count
       if [ ! -s "${o}/04-Alignments/RLWP/${file_name}.trimmed.aln.fasta" ]; then
         record_failed_sample "$file_name"
@@ -5055,6 +5083,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
       fi
       {
         update_start_count "$line" "$stage5_logfile"
+        remove_n "${line}"
         run_raxml_sg "${ortho_method}" "${Genename}"
         if [ ! -s "${o}/08-Coalescent-based_trees/${ortho_method}/01-Gene_trees/${Genename}/RAxML_bestTree.${Genename}.tre" ]; then
           record_failed_sample "$line"
