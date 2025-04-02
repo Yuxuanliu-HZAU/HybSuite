@@ -34,6 +34,8 @@ min_locus_coverage	0
 RLWP_samples_threshold	1
 mafft_algorithm	auto
 mafft_adjustdirection	TRUE
+mafft_maxiterate	_____
+mafft_pair	_____
 run_paragone	FALSE
 oi_tree	fasttree
 paragone_tree	fasttree
@@ -92,3 +94,5 @@ run_sortadate	FALSE
 sortadate_genes_num	25
 log_mode	cmd
 skip_genetree_for_coalescent	FALSE
+phypartspiecharts_tree_type	cladogram
+phypartspiecharts_num_mode	12
