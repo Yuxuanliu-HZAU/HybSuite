@@ -2027,12 +2027,10 @@ work_dir="${o}/00-logs_and_checklists/logs"
   run_mafft() {
       local input=$1
       local output=$2
-      local algorithm=$3
-      local adjustdirection=$4
-      local threads=$5
+      local threads=$3
       local mafft_cmd
       
-      case "${algorithm}" in
+      case "${mafft_algorithm}" in
           "auto")
               mafft_cmd="mafft --auto"
               ;;
@@ -2047,15 +2045,23 @@ work_dir="${o}/00-logs_and_checklists/logs"
               mafft_cmd="mafft-einsi"
               ;;
           *)
-              stage3_error "Unknown MAFFT algorithm: ${algorithm}"
+              stage3_error "Unknown MAFFT algorithm: ${mafft_algorithm}"
               return 1
               ;;
       esac
 
-      mafft_cmd="${mafft_cmd} --quiet"
-      mafft_cmd="${mafft_cmd} --thread ${threads}"
+      mafft_cmd="${mafft_cmd} --quiet --thread ${threads}"
+      if [ "${mafft_maxiterate}" != "_____" ]; then
+          mafft_cmd="${mafft_cmd} --maxiterate ${mafft_maxiterate}"
+      fi
 
-      if [ "${algorithm}" = "linsi" ] && [ "${adjustdirection}" = "TRUE" ]; then
+      if [ "${mafft_pair}" = "global" ]; then
+          mafft_cmd="${mafft_cmd} --globalpair"
+      elif [ "${mafft_pair}" = "local" ]; then
+          mafft_cmd="${mafft_cmd} --localpair"
+      fi
+      
+      if [ "${mafft_algorithm}" = "linsi" ] && [ "${mafft_adjustdirection}" = "TRUE" ]; then
           mafft_cmd="${mafft_cmd} --adjustdirectionaccurately"
       fi
 
@@ -2224,24 +2230,12 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
               read -u1000
           fi
           # Here you can define skip conditions
-          if [ "$download_format" = "fastq_gz" ]; then
-              if ([ -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}_1.fastq.gz" ] && [ -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}_2.fastq.gz" ]) \
-              || [ -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}.fastq.gz" ]; then
-                  record_skipped_sample "$spname" "Skipped downloading existing samples:" "$stage1_logfile"
-                  if [ "${process}" != "all" ]; then
-                      echo >&1000
-                  fi
-                  continue
+          if { [ -s "${d}/02-Downloaded_clean_data/${spname}_1_clean.paired.fq.gz" ] && [ -s "${d}/02-Downloaded_clean_data/${spname}_2_clean.paired.fq.gz" ]; } || [ -s "${d}/02-Downloaded_clean_data/${spname}_clean.single.fq.gz" ]; then
+              record_skipped_sample "$spname" "Skipped downloading existing samples:" "$stage1_logfile"
+              if [ "${process}" != "all" ]; then
+                  echo >&1000
               fi
-          elif [ "$download_format" = "fastq" ]; then
-              if ([ -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}_1.fastq" ] && [ -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}_2.fastq" ]) \
-              || [ -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}.fastq" ]; then
-                  record_skipped_sample "$spname" "Skipped downloading existing samples:" "$stage1_logfile"
-                  if [ "${process}" != "all" ]; then
-                      echo >&1000
-                  fi
-                  continue
-              fi
+              continue
           fi
           {
               
@@ -3472,7 +3466,7 @@ if [ "${skip_stage1234}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ]; then
         update_start_count "$genename" "$stage3_logfile"
         sed -i "s/ single_hit/@single_hit/g;s/ multi/@multi/g;s/ NODE_/@NODE_/g;s/\.[0-9]\+@NODE_/@NODE_/g;s/\.main@NODE_/@NODE_/g" "${file}"
         # Run MAFFT  
-        run_mafft "${file}" "${filename}.aln.fasta" "${mafft_algorithm}" "${mafft_adjustdirection}" "${nt_mafft}"
+        run_mafft "${file}" "${filename}.aln.fasta" "${nt_mafft}"
         run_trimal "./${filename}.aln.fasta" "./${filename}.trimmed.aln.fasta" "${trimal_mode}" \
         "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
         "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
@@ -3887,7 +3881,7 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       # Update start count
       update_start_count "$file_name" "$stage3_logfile"
       sed -e 's/ single_hit//g;s/ multi_hit_stitched_contig_comprising_.*_hits//g' "${file}" > "${o}/04-Alignments/HRS/${file_name}.fasta"
-      run_mafft "${o}/04-Alignments/HRS/${file_name}.fasta" "${o}/04-Alignments/HRS/${file_name}.aln.fasta" "${mafft_algorithm}" "${mafft_adjustdirection}" "${nt_mafft}"
+      run_mafft "${o}/04-Alignments/HRS/${file_name}.fasta" "${o}/04-Alignments/HRS/${file_name}.aln.fasta" "${nt_mafft}"
       run_trimal "${o}/04-Alignments/HRS/${file_name}.aln.fasta" "${o}/04-Alignments/HRS/${file_name}.trimmed.aln.fasta" "${trimal_mode}" \
       "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
       "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
@@ -4003,7 +3997,7 @@ if [ "${skip_stage1234}" != "TRUE" ]; then
       # Update start count
       update_start_count "$file_name" "$stage3_logfile"
       sed -e 's/ single_hit//g;s/ multi_hit_stitched_contig_comprising_.*_hits//g' "${file}" > "${o}/04-Alignments/RLWP/${file_name}.fasta"
-      run_mafft "${o}/04-Alignments/RLWP/${file_name}.fasta" "${o}/04-Alignments/RLWP/${file_name}.aln.fasta" "${mafft_algorithm}" "${mafft_adjustdirection}" "${nt_mafft}"
+      run_mafft "${o}/04-Alignments/RLWP/${file_name}.fasta" "${o}/04-Alignments/RLWP/${file_name}.aln.fasta" "${nt_mafft}"
       run_trimal "${o}/04-Alignments/RLWP/${file_name}.aln.fasta" "${o}/04-Alignments/RLWP/${file_name}.trimmed.aln.fasta" "${trimal_mode}" \
       "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
       "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
@@ -4930,17 +4924,21 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
       -o ${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_PhyParts &> /dev/null
             
       phyparts_number=$(find ${o}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees -type f -name "*_rr.tre" | wc -l)
-      python3 ${script_dir}/../dependencies/phypartspiecharts/phypartspiecharts.py \
+      python3 ${script_dir}/modified_phypartspiecharts.py \
       ${o}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/ASTRAL_${prefix}_${ortho_method}_sorted_rr.tre \
-      ASTRAL_PhyParts ${phyparts_number} \
-      --svg_name ASTRAL_PhyPartsPieCharts_${prefix}_${ortho_method}.svg \
-      --to_csv
+      ASTRAL_PhyParts "${phyparts_number}" \
+      --output "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg" \
+      --to_csv \
+      --tree_type "${phypartspiecharts_tree_type}" \
+      --show_num_mode "${phypartspiecharts_num_mode}" \
+      --stat "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.tsv" \
+      --threads "${nt}"
     
-      stage5_cmd "${log_mode}" "python3 ${script_dir}/../dependencies/phypartspiecharts/phypartspiecharts.py ${o}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/ASTRAL_${prefix}_${ortho_method}_sorted_rr.tre ASTRAL_PhyParts ${phyparts_number} --svg_name PhypartsPiecharts_${prefix}_${ortho_method}.svg --to_csv"
-      if [ -s "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_PhyPartsPieCharts_${prefix}_${ortho_method}.svg" ]; then
+      stage5_cmd "${log_mode}" "python3 ${script_dir}/modified_phypartspiecharts.py ${o}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/ASTRAL_${prefix}_${ortho_method}_sorted_rr.tre ASTRAL_PhyParts ${phyparts_number} --output ${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg --to_csv --tree_type ${phypartspiecharts_tree_type} --show_num_mode ${phypartspiecharts_num_mode} --stat ${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.tsv --threads ${nt}"
+      if [ -s "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg" ]; then
         stage5_info_main "Finish"
       else
-        stage5_error "Fail to run phypartspiecharts.py."
+        stage5_error "Fail to run modified_phypartspiecharts.py."
         stage5_blank_main ""
       fi
     fi
@@ -4954,17 +4952,21 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
       -o ${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_PhyParts &> /dev/null
             
       phyparts_number=$(find ${o}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees -type f -name "*_rr.tre" | wc -l)
-      python3 ${script_dir}/../dependencies/phypartspiecharts/phypartspiecharts.py \
+      python3 ${script_dir}/modified_phypartspiecharts.py \
       ${o}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/wASTRAL_${prefix}_${ortho_method}_sorted_rr.tre \
       wASTRAL_PhyParts ${phyparts_number} \
-      --svg_name wASTRAL_PhyPartsPieCharts_${prefix}_${ortho_method}.svg \
-      --to_csv
+      --output "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg" \
+      --to_csv \
+      --tree_type "${phypartspiecharts_tree_type}" \
+      --show_num_mode "${phypartspiecharts_num_mode}" \
+      --stat "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.tsv" \
+      --threads "${nt}"
   
-      stage5_cmd "${log_mode}" "python3 ${script_dir}/../dependencies/phypartspiecharts/phypartspiecharts.py ${o}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/wASTRAL_${prefix}_${ortho_method}_sorted_rr.tre wASTRAL_PhyParts ${phyparts_number} --svg_name PhypartsPiecharts_${prefix}_${ortho_method}.svg --to_csv"
-      if [ -s "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_PhyPartsPieCharts_${prefix}_${ortho_method}.svg" ]; then
+      stage5_cmd "${log_mode}" "python3 ${script_dir}/modified_phypartspiecharts.py ${o}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/wASTRAL_${prefix}_${ortho_method}_sorted_rr.tre wASTRAL_PhyParts ${phyparts_number} --output ${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg --to_csv --tree_type ${phypartspiecharts_tree_type} --show_num_mode ${phypartspiecharts_num_mode} --stat ${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.tsv --threads ${nt}"
+      if [ -s "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg" ]; then
         stage5_info_main "Finish"
       else
-        stage5_error "Fail to run phypartspiecharts.py."
+        stage5_error "Fail to run modified_phypartspiecharts.py."
         stage5_blank_main ""
       fi
     fi
