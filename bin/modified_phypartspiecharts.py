@@ -4,8 +4,7 @@ modified_phypartspiecharts.py
 
 A modified version of the original PhyParts visualization script "phypartspiecharts.py", designed to generate
 enhanced pie chart representations of gene tree conflicts. This script is part of the
-HybSuite package and extends the functionality of the original PhyParts 
-(Smith et al. 2015).
+HybSuite package and extends the functionality of the original "phypartspiecharts.py"
 
 Key Features:
 - Generates pie chart visualizations showing gene tree conflict patterns
@@ -13,7 +12,7 @@ Key Features:
 - Provides flexible output formats (SVG, PDF)
 - Offers customizable display options for tree visualization
 - Includes statistical analysis of gene tree conflicts
-- Exports detailed conflict statistics in CSV/TSV format
+- Exports detailed conflict statistics in TSV format
 
 Original concept from:
 Smith et al. 2015. Resolving the phylogeny of lizards and snakes (Squamata) 
@@ -70,7 +69,7 @@ class PhyPartsConfig:
     num_genes: int
     taxon_subst: Optional[str] = None
     output: str = "pies.svg"
-    show_nodes: bool = False
+    output_node_tree: bool = False
     colors: Dict[str, str] = None
     no_ladderize: bool = False
     to_csv: bool = False
@@ -316,48 +315,54 @@ class PhyPartsPieCharts:
 
         try:
             logging.info(f"Exporting statistics to {self.config.stat_output}")
-            support_conflict_ratios = []  # For storing support/conflict ratios
+            support_total_ratios = []  # Support/Total Ratio
+            conflict_total_ratios = []  # Conflict/Total Ratio
+            nosignal_total_ratios = []  # NoSignal/Total Ratio
 
             with open(self.config.stat_output, 'w') as f:
-                # Write header
-                f.write("Node\tSupport(blue)\tTopConflict(green)\tOtherConflict(red)\tNoSignal(gray)\tSupport/Conflict_Ratio\n")
+                # Modify header to reflect new ratio types
+                f.write("Node\tSupport(blue)\tTopConflict(green)\tOtherConflict(red)\tNoSignal(gray)\tSupport/Total_Ratio\n")
                 
                 for node_name, pie_data in self.phyparts_pies.items():
-                    # Get raw counts (not percentages) for each component
+                    # Get raw counts (not percentages)
                     concordant = int(self.concord_dict[node_name])  # Blue part
                     all_conflict = int(self.conflict_dict[node_name])  # Red + green parts
                     
-                    # Get the main conflict proportion from pie data
+                    # Get main conflict proportion
                     most_conflict_percent = pie_data[1]  # Green part percentage
                     most_conflict = int(round(most_conflict_percent * self.config.num_genes / 100))  # Convert to count
                     other_conflict = all_conflict - most_conflict  # Red part
                     
                     no_signal = self.config.num_genes - concordant - all_conflict  # Gray part
                     
-                    # Calculate support/conflict ratio
-                    ratio = float('inf') if all_conflict == 0 else concordant/all_conflict
+                    # Calculate ratios
+                    support_ratio = concordant / self.config.num_genes
+                    conflict_ratio = all_conflict / self.config.num_genes
+                    nosignal_ratio = no_signal / self.config.num_genes
                     
-                    # Only record ratios for internal nodes (for average calculation)
+                    # Record ratios for internal nodes only
                     node = next(n for n in self.plot_tree.traverse() if n.name == node_name)
                     if not node.is_leaf():
-                        support_conflict_ratios.append(ratio)
+                        support_total_ratios.append(support_ratio)
+                        conflict_total_ratios.append(conflict_ratio)
+                        nosignal_total_ratios.append(nosignal_ratio)
                     
-                    # Write data row
-                    f.write(f"{node_name}\t{concordant}\t{most_conflict}\t{other_conflict}\t{no_signal}\t")
-                    if ratio == float('inf'):
-                        f.write("∞\n")
-                    else:
-                        f.write(f"{ratio:.2f}\n")
+                    # Write data line
+                    f.write(f"{node_name}\t{concordant}\t{most_conflict}\t{other_conflict}\t{no_signal}\t{support_ratio:.4f}\n")
                 
-                # Calculate and write average support/conflict ratio
-                if support_conflict_ratios:
-                    # Calculate average of finite values
-                    finite_ratios = [r for r in support_conflict_ratios if r != float('inf')]
-                    if finite_ratios:
-                        avg_ratio = sum(finite_ratios) / len(finite_ratios)
-                        f.write(f"\nAverage Support/Conflict Ratio (internal nodes only): {avg_ratio:.2f}")
-                    else:
-                        f.write("\nAverage Support/Conflict Ratio (internal nodes only): ∞")
+                # Calculate and write all average ratios
+                if support_total_ratios:
+                    avg_support_ratio = sum(support_total_ratios) / len(support_total_ratios)
+                    avg_conflict_ratio = sum(conflict_total_ratios) / len(conflict_total_ratios)
+                    avg_nosignal_ratio = sum(nosignal_total_ratios) / len(nosignal_total_ratios)
+                    
+                    f.write("\nAverage ratios for internal nodes only:")
+                    f.write(f"\nSupport/Total Ratio: {avg_support_ratio:.4f}")
+                    f.write(f"\nConflict/Total Ratio: {avg_conflict_ratio:.4f}")
+                    f.write(f"\nNoSignal/Total Ratio: {avg_nosignal_ratio:.4f}")
+                    # Add check to verify if the sum is 1
+                    total = avg_support_ratio + avg_conflict_ratio + avg_nosignal_ratio
+                    f.write(f"\nSum of all ratios: {total:.4f}")
             
             logging.info("Statistics export completed")
         except Exception as e:
@@ -409,13 +414,13 @@ class PhyPartsPieCharts:
                                     dpi=300,
                                     units="px")
 
-            if self.config.show_nodes:
+            if self.config.output_node_tree:
                 node_style = TreeStyle()
                 node_style.show_leaf_name = False
                 node_style.layout_fn = self._node_text_layout
                 nodes_output = str(Path(self.config.output).parent / f"tree_nodes{Path(self.config.output).suffix}")
                 self.plot_tree.render(nodes_output, tree_style=node_style)
-                logging.info(f"Node tree saved as: {nodes_output}")
+                logging.info(f"Node tree visualization saved as: {nodes_output}")
 
             logging.info(f"Tree successfully saved as: {self.config.output}")
         except Exception as e:
@@ -549,7 +554,13 @@ def main():
     parser.add_argument('num_genes', type=int, help="Number of total gene trees.")
     parser.add_argument('--taxon_subst', help="Comma-delimited file to translate tip names.")
     parser.add_argument("--output", help="Output filename with extension (.svg or .pdf)", default="pies.svg")
-    parser.add_argument("--show_nodes", action="store_true", help="Show tree with labeled nodes")
+    parser.add_argument("--output_node_tree", 
+                       action="store_true", 
+                       help="""Generate an additional tree file with '_nodes' suffix showing:
+- All node identifiers in the tree
+- No pie charts
+- No numerical annotations""",
+                       dest="output_node_tree")
     parser.add_argument("--no_ladderize", action="store_true", help="Don't ladderize tree")
     parser.add_argument("--to_csv", action="store_true", help="Export data to CSV")
     parser.add_argument("--tree_type", choices=["circle", "cladogram", "phylo"], 
