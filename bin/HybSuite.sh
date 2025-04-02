@@ -4912,8 +4912,11 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
   run_phyparts_piecharts() {
     local ortho_method="$1"
     
-    mkdir -p ${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts
-    cd ${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts
+    if [ -d "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts" ]; then
+      rm -rf "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts"
+      mkdir -p "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts"
+    fi
+    cd "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts"
     # ASTRAL ############
     if [ "${run_astral}" = "TRUE" ]; then
       stage5_info_main "Running PhyPartsPieCharts for ${ortho_method} coalescent-based tree (ASTRAL) ..."
@@ -4932,7 +4935,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
       --tree_type "${phypartspiecharts_tree_type}" \
       --show_num_mode "${phypartspiecharts_num_mode}" \
       --stat "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.tsv" \
-      --threads "${nt}"
+      --threads "${nt}" > /dev/null 2>&1
     
       stage5_cmd "${log_mode}" "python3 ${script_dir}/modified_phypartspiecharts.py ${o}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/ASTRAL_${prefix}_${ortho_method}_sorted_rr.tre ASTRAL_PhyParts ${phyparts_number} --output ${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg --to_csv --tree_type ${phypartspiecharts_tree_type} --show_num_mode ${phypartspiecharts_num_mode} --stat ${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.tsv --threads ${nt}"
       if [ -s "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg" ]; then
@@ -4960,7 +4963,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
       --tree_type "${phypartspiecharts_tree_type}" \
       --show_num_mode "${phypartspiecharts_num_mode}" \
       --stat "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.tsv" \
-      --threads "${nt}"
+      --threads "${nt}" > /dev/null 2>&1
   
       stage5_cmd "${log_mode}" "python3 ${script_dir}/modified_phypartspiecharts.py ${o}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/wASTRAL_${prefix}_${ortho_method}_sorted_rr.tre wASTRAL_PhyParts ${phyparts_number} --output ${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg --to_csv --tree_type ${phypartspiecharts_tree_type} --show_num_mode ${phypartspiecharts_num_mode} --stat ${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.tsv --threads ${nt}"
       if [ -s "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg" ]; then
