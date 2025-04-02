@@ -2432,11 +2432,11 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
     total_sps=$(awk 'NF' "${i}/My_Spname.txt" | wc -l)
     # Initialize parallel environment
     init_parallel_env "$work_dir" "$total_sps" "$process" "${i}/My_Spname.txt"
-    stage1_info_main "Removing adapters for existing raw data of ${total_sps} samples..."
+    stage1_info_main "====>> Removing adapters for existing (user-provided) raw data of ${total_sps} samples (${process} in parallel) ====>>"
     stage1_info_main "Sequences that have already had adapters removed will not be trimmed for adapters again!!!"
     while IFS= read -r sample || [ -n "$sample" ]; do
       # Skip samples that have already had adapters removed
-      if [ -s "${d}/02-Downloaded_clean_data/${sample}_1_clean.paired.fq.gz" ] && [ -s "${d}/02-Downloaded_clean_data/${sample}_2_clean.paired.fq.gz" ] || [ -s "${d}/02-Downloaded_clean_data/${sample}_clean.single.fq.gz" ]; then
+      if [ -s "${d}/03-My_clean_data/${sample}_1_clean.paired.fq.gz" ] && [ -s "${d}/03-My_clean_data/${sample}_2_clean.paired.fq.gz" ] || [ -s "${d}/03-My_clean_data/${sample}_clean.single.fq.gz" ]; then
         record_skipped_sample "$sample" "Skipped removing adapters for samples:" "$stage1_logfile"
         if [ "${process}" != "all" ]; then
             echo >&1000
@@ -2447,48 +2447,42 @@ if [ "${skip_stage1}" != "TRUE" ] && [ "${skip_stage12}" != "TRUE" ] && [ "${ski
           # Update start count
           update_start_count "$sample" "$stage1_logfile"
           #for pair-ended
-          if ([ -s "${my_raw_data}/${sample}_1.fastq" ] && [ -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}_2.fastq" ]) \
-          || ([ -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}_1.fastq.gz" ] && [ -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}_2.fastq.gz" ]); then
-              files1=(${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}_1.f*)
-              files2=(${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}_2.f*)
-              if [ ${#files1[@]} -gt 0 ] && [ ${#files2[@]} -gt 0 ]; then
-                  java -jar ${script_dir}/../dependencies/Trimmomatic-0.39/trimmomatic-0.39.jar PE \
-                      -threads ${nt_trimmomatic} \
-                      -phred33 \
-                      ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}_1.f* ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}_2.f* \
-                      ./03-My_clean_data/${sample}_1_clean.paired.fq.gz ./03-My_clean_data/${sample}_1_clean.unpaired.fq.gz \
-                      ./03-My_clean_data/${sample}_2_clean.paired.fq.gz ./03-My_clean_data/${sample}_2_clean.unpaired.fq.gz \
-                      ILLUMINACLIP:${script_dir}/../dependencies/Trimmomatic-0.39/adapters/TruSeq3-PE.fa:2:30:10 \
-                      SLIDINGWINDOW:${trimmomatic_sliding_window_s}:${trimmomatic_sliding_window_q} \
-                      LEADING:${trimmomatic_leading_quality} \
-                      TRAILING:${trimmomatic_trailing_quality} \
-                      MINLEN:${trimmomatic_min_length} > /dev/null 2>&1
-                  if [ ! -s "${d}/03-My_clean_data/${sample}_1_clean.paired.fq.gz" ] || [ ! -s "${d}/03-My_clean_data/${sample}_2_clean.paired.fq.gz" ]; then
-                      record_failed_sample "$sample"
-                      exit 1
-                  fi
+          files1=(${my_raw_data}/${sample}_1.f*)
+          files2=(${my_raw_data}/${sample}_2.f*)
+          if [ ${#files1[@]} -gt 0 ] && [ ${#files2[@]} -gt 0 ]; then
+              java -jar ${script_dir}/../dependencies/Trimmomatic-0.39/trimmomatic-0.39.jar PE \
+                  -threads ${nt_trimmomatic} \
+                  -phred33 \
+                  ${my_raw_data}/${sample}_1.f* ${my_raw_data}/${sample}_2.f* \
+                  ${d}/03-My_clean_data/${sample}_1_clean.paired.fq.gz ${d}/03-My_clean_data/${sample}_1_clean.unpaired.fq.gz \
+                  ${d}/03-My_clean_data/${sample}_2_clean.paired.fq.gz ${d}/03-My_clean_data/${sample}_2_clean.unpaired.fq.gz \
+                  ILLUMINACLIP:${script_dir}/../dependencies/Trimmomatic-0.39/adapters/TruSeq3-PE.fa:2:30:10 \
+                  SLIDINGWINDOW:${trimmomatic_sliding_window_s}:${trimmomatic_sliding_window_q} \
+                  LEADING:${trimmomatic_leading_quality} \
+                  TRAILING:${trimmomatic_trailing_quality} \
+                  MINLEN:${trimmomatic_min_length} > /dev/null 2>&1
+              if [ ! -s "${d}/03-My_clean_data/${sample}_1_clean.paired.fq.gz" ] || [ ! -s "${d}/03-My_clean_data/${sample}_2_clean.paired.fq.gz" ]; then
+                  record_failed_sample "$sample"
+                  exit 1
               fi
           fi
-          #for single-ended
-          if [ -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}.fastq" ] \
-          || [ -s "${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}.fastq.gz" ]; then  
-              files3=(${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}.f*)
-              if [ ${#files3[@]} -gt 0 ]; then
-                  java -jar ${script_dir}/../dependencies/Trimmomatic-0.39/trimmomatic-0.39.jar SE \
-                      -threads ${nt_trimmomatic} \
-                      -phred33 \
-                      ${d}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${sample}.f* \
-                      ${d}/03-My_clean_data/${sample}_clean.single.fq.gz \
-                      ILLUMINACLIP:${script_dir}/../dependencies/Trimmomatic-0.39/adapters/TruSeq3-SE.fa:2:30:10 \
-                      SLIDINGWINDOW:${trimmomatic_sliding_window_s}:${trimmomatic_sliding_window_q} \
-                      LEADING:${trimmomatic_leading_quality} \
-                      TRAILING:${trimmomatic_trailing_quality} \
-                      MINLEN:${trimmomatic_min_length} > /dev/null 2>&1
+          #for single-ended 
+          files3=(${my_raw_data}/${sample}.f*)
+          if [ ${#files3[@]} -gt 0 ]; then
+              java -jar ${script_dir}/../dependencies/Trimmomatic-0.39/trimmomatic-0.39.jar SE \
+                  -threads ${nt_trimmomatic} \
+                  -phred33 \
+                  ${my_raw_data}/${sample}.f* \
+                  ${d}/03-My_clean_data/${sample}_clean.single.fq.gz \
+                  ILLUMINACLIP:${script_dir}/../dependencies/Trimmomatic-0.39/adapters/TruSeq3-SE.fa:2:30:10 \
+                  SLIDINGWINDOW:${trimmomatic_sliding_window_s}:${trimmomatic_sliding_window_q} \
+                  LEADING:${trimmomatic_leading_quality} \
+                  TRAILING:${trimmomatic_trailing_quality} \
+                  MINLEN:${trimmomatic_min_length} > /dev/null 2>&1
 
-                  if [ ! -s "${d}/03-My_clean_data/${sample}_clean.single.fq.gz" ]; then
-                      record_failed_sample "$sample"
-                      exit 1
-                  fi
+              if [ ! -s "${d}/03-My_clean_data/${sample}_clean.single.fq.gz" ]; then
+                  record_failed_sample "$sample"
+                  exit 1
               fi
           fi
           # Update finish count
@@ -2609,10 +2603,11 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
   stage2_info_main "Step 1: Assembling data using 'hybpiper assemble'..."
   cd "${eas_dir}"
   #################===========================================================================
-  if [ -s "${eas_dir}/Assembled_data_namelist.txt" ]; then
-    total_sps=$(awk 'END {print NR}' "${eas_dir}/Assembled_data_namelist.txt")
-    init_parallel_env "$work_dir" "$total_sps" "$process" "${eas_dir}/Assembled_data_namelist.txt" || exit 1
-    stage2_info_main "====>> Running 'hybpiper assemble' to assemble data (${process} in parallel) ====>>"
+  if [ -s "${i}/SRR_Spname.txt" ]; then
+    cut -f 2 "${i}/SRR_Spname.txt" > "${eas_dir}/NCBI_Spname.txt"
+    total_sps=$(awk 'END {print NR}' "${eas_dir}/NCBI_Spname.txt")
+    init_parallel_env "$work_dir" "$total_sps" "$process" "${eas_dir}/NCBI_Spname.txt" || exit 1
+    stage2_info_main "====>> Running 'hybpiper assemble' to assemble public data (${process} in parallel) ====>>"
     while IFS= read -r Spname || [ -n "$Spname" ]; do
       # Here you can define skip conditions
       if [ -s "${eas_dir}/${Spname}/genes_with_seqs.txt" ]; then
@@ -2624,7 +2619,7 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
       fi
       # Your processing logic
       if [ -e "${eas_dir}/${Spname}" ] && [ ! -e "${eas_dir}/${Spname}/genes_with_seqs.txt" ]; then
-          rm -rf "${eas_dir}/${Spname}/*"
+          rm -rf "${eas_dir}/${Spname}/"*
       fi
       if [ "${process}" != "all" ]; then
           read -u1000
@@ -2708,7 +2703,118 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
             echo >&1000
         fi
       } &
-    done < "${eas_dir}/Assembled_data_namelist.txt"
+    done < "${eas_dir}/NCBI_Spname.txt"
+    # Wait for all tasks to complete
+    wait
+    echo
+    # Display processing log
+    if [ "${log_mode}" = "full" ]; then
+      display_process_log "$stage2_logfile" "stage2" "Failed to assemble data:"
+    fi
+    stage2_blank_main ""
+    rm "${eas_dir}/NCBI_Spname.txt"
+  fi
+
+  if [ -s "${i}/My_Spname.txt" ]; then
+    total_sps=$(awk 'END {print NR}' "${i}/My_Spname.txt")
+    init_parallel_env "$work_dir" "$total_sps" "$process" "${i}/My_Spname.txt" || exit 1
+    stage2_info_main "====>> Running 'hybpiper assemble' to assemble user-provided data (${process} in parallel) ====>>"
+    while IFS= read -r Spname || [ -n "$Spname" ]; do
+      # Here you can define skip conditions
+      if [ -s "${eas_dir}/${Spname}/genes_with_seqs.txt" ]; then
+          record_skipped_sample "$Spname" "Skipped data assembly for existing samples:" "$stage2_logfile"
+          if [ "${process}" != "all" ]; then
+            echo >&1000
+          fi
+          continue
+      fi
+      # Your processing logic
+      if [ -e "${eas_dir}/${Spname}" ] && [ ! -e "${eas_dir}/${Spname}/genes_with_seqs.txt" ]; then
+          rm -rf "${eas_dir}/${Spname}/"*
+      fi
+      if [ "${process}" != "all" ]; then
+          read -u1000
+      fi
+      {
+        # Update start count
+        update_start_count "$Spname" "$stage2_logfile"
+      
+        # Run the loop
+        if [ -d "${Spname}" ] && [ ! -s "${Spname}/${Spname}_chimera_check_performed.txt" ]; then
+          echo "True" > "${Spname}/${Spname}_chimera_check_performed.txt"
+        fi
+        # For paired-end
+        if ([ -s "${d}/03-My_clean_data/${Spname}_1_clean.paired.fq.gz" ] && [ -s "${d}/03-My_clean_data/${Spname}_2_clean.paired.fq.gz" ]) \
+        && [ ! -s "${d}/03-My_clean_data/${Spname}_clean.single.fq.gz" ]; then
+          # 01: for protein reference sequence
+          # Use diamond to map reads
+          if [ "${hybpiper_tt}" = "aa" ] && [ "${hybpiper_m}" = "diamond" ]; then
+              hybpiper assemble "-t_${hybpiper_tt}" ${t} \
+              -r ${d}/03-My_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/03-My_clean_data/${Spname}_2_clean.paired.fq.gz \
+              -o ${eas_dir} \
+              --prefix ${Spname} \
+              --diamond \
+              --cpu ${nt_hybpiper} > /dev/null 2>&1
+          fi
+          # Use BLASTx (default) to map reads
+          if [ "${hybpiper_tt}" = "aa" ] && [ "${hybpiper_m}" = "blast" ]; then
+              hybpiper assemble "-t_${hybpiper_tt}" ${t} \
+              -r ${d}/03-My_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/03-My_clean_data/${Spname}_2_clean.paired.fq.gz \
+              -o ${eas_dir} \
+              --prefix ${Spname} \
+              --cpu ${nt_hybpiper} > /dev/null 2>&1
+          fi
+          # 02: for nucleotide reference sequence
+          if [ "${hybpiper_tt}" = "dna" ]; then
+              hybpiper assemble "-t_${hybpiper_tt}" ${t} \
+              -r ${d}/03-My_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/03-My_clean_data/${Spname}_2_clean.paired.fq.gz \
+              -o ${eas_dir} \
+              --prefix ${Spname} \
+              --bwa \
+              --cpu ${nt_hybpiper} > /dev/null 2>&1
+          fi
+        fi
+        # For single-end
+        if ([ ! -s "${d}/03-My_clean_data/${Spname}_1_clean.paired.fq.gz" ] && [ ! -s "${d}/03-My_clean_data/${Spname}_2_clean.paired.fq.gz" ]) \
+        && [ -s "${d}/03-My_clean_data/${Spname}_clean.single.fq.gz" ]; then
+          # 01: for protein reference sequence
+          # 01-1: use diamond to map reads
+          if [ "${hybpiper_tt}" = "aa" ] && [ "${hybpiper_m}" = "diamond" ]; then
+              hybpiper assemble "-t_${hybpiper_tt}" ${t} \
+              -r ${d}/03-My_clean_data/${Spname}_clean.single.fq.gz \
+              -o ${eas_dir} \
+              --prefix ${Spname} \
+              --diamond \
+              --cpu ${nt_hybpiper} > /dev/null 2>&1
+          fi
+          # 01-2: use BLASTx (default) to map reads
+          if [ "${hybpiper_tt}" = "aa" ] && [ "${hybpiper_m}" = "blast" ]; then
+              hybpiper assemble "-t_${hybpiper_tt}" ${t} \
+              -r ${d}/03-My_clean_data/${Spname}_clean.single.fq.gz \
+              -o ${eas_dir} \
+              --prefix ${Spname} \
+              --cpu ${nt_hybpiper} > /dev/null 2>&1
+          fi
+          # 02: for nucleotide reference sequence
+          if [ "${hybpiper_tt}" = "dna" ]; then
+              hybpiper assemble "-t_${hybpiper_tt}" ${t} \
+              -r ${d}/03-My_clean_data/${Spname}_clean.single.fq.gz \
+              -o ${eas_dir} \
+              --prefix ${Spname} \
+              --bwa \
+              --cpu ${nt_hybpiper} > /dev/null 2>&1
+          fi
+        fi
+        if [ -s "${eas_dir}/${Spname}/genes_with_seqs.txt" ]; then
+          update_finish_count "$Spname" "$stage2_logfile"
+        else
+            record_failed_sample "$Spname"
+        fi
+        if [ "${process}" != "all" ]; then
+            echo >&1000
+        fi
+      } &
+    done < "${i}/My_Spname.txt"
     # Wait for all tasks to complete
     wait
     echo
@@ -2718,6 +2824,7 @@ if [ "${skip_stage12}" != "TRUE" ] && [ "${skip_stage123}" != "TRUE" ] && [ "${s
     fi
     stage2_blank_main ""
   fi
+
   grep '>' ${t} | awk -F'-' '{print $NF}' | sort | uniq > "${o}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt"
   # Recovered_locus_num_for_samples.tsv
   echo -e "Sample\tRecovered_locus_num" > "${eas_dir}/Recovered_locus_num_for_samples.tsv"
@@ -4914,8 +5021,8 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
     
     if [ -d "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts" ]; then
       rm -rf "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts"
-      mkdir -p "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts"
     fi
+    mkdir -p "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts"
     cd "${o}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts"
     # ASTRAL ############
     if [ "${run_astral}" = "TRUE" ]; then
