@@ -319,36 +319,56 @@ class PhyPartsPieCharts:
             conflict_total_ratios = []  # Conflict/Total Ratio
             nosignal_total_ratios = []  # NoSignal/Total Ratio
 
-            with open(self.config.stat_output, 'w') as f:
-                # Modify header to reflect new ratio types
-                f.write("Node\tSupport(blue)\tTopConflict(green)\tOtherConflict(red)\tNoSignal(gray)\tSupport/Total_Ratio\n")
+            # Create a list to store all node data for sorting
+            node_data = []
+            
+            for node_name, pie_data in self.phyparts_pies.items():
+                # Get raw counts (not percentages)
+                concordant = int(self.concord_dict[node_name])  # Blue part
+                all_conflict = int(self.conflict_dict[node_name])  # Red + green part
                 
-                for node_name, pie_data in self.phyparts_pies.items():
-                    # Get raw counts (not percentages)
-                    concordant = int(self.concord_dict[node_name])  # Blue part
-                    all_conflict = int(self.conflict_dict[node_name])  # Red + green parts
-                    
-                    # Get main conflict proportion
-                    most_conflict_percent = pie_data[1]  # Green part percentage
-                    most_conflict = int(round(most_conflict_percent * self.config.num_genes / 100))  # Convert to count
-                    other_conflict = all_conflict - most_conflict  # Red part
-                    
-                    no_signal = self.config.num_genes - concordant - all_conflict  # Gray part
-                    
-                    # Calculate ratios
-                    support_ratio = concordant / self.config.num_genes
-                    conflict_ratio = all_conflict / self.config.num_genes
-                    nosignal_ratio = no_signal / self.config.num_genes
-                    
-                    # Record ratios for internal nodes only
-                    node = next(n for n in self.plot_tree.traverse() if n.name == node_name)
-                    if not node.is_leaf():
-                        support_total_ratios.append(support_ratio)
-                        conflict_total_ratios.append(conflict_ratio)
-                        nosignal_total_ratios.append(nosignal_ratio)
-                    
-                    # Write data line
-                    f.write(f"{node_name}\t{concordant}\t{most_conflict}\t{other_conflict}\t{no_signal}\t{support_ratio:.4f}\n")
+                # Get main conflict proportion
+                most_conflict_percent = pie_data[1]  # Green part percentage
+                most_conflict = int(round(most_conflict_percent * self.config.num_genes / 100))  # Convert to count
+                other_conflict = all_conflict - most_conflict  # Red part
+                
+                no_signal = self.config.num_genes - concordant - all_conflict  # Gray part
+                
+                # Calculate ratios
+                support_ratio = concordant / self.config.num_genes
+                conflict_ratio = all_conflict / self.config.num_genes
+                nosignal_ratio = no_signal / self.config.num_genes
+                
+                # Record ratios for internal nodes
+                node = next(n for n in self.plot_tree.traverse() if n.name == node_name)
+                if not node.is_leaf():
+                    support_total_ratios.append(support_ratio)
+                    conflict_total_ratios.append(conflict_ratio)
+                    nosignal_total_ratios.append(nosignal_ratio)
+                
+                # Add data to list
+                node_data.append({
+                    'node': int(node_name),  # Convert to integer for sorting
+                    'data': (node_name, concordant, most_conflict, other_conflict, no_signal, 
+                            support_ratio, conflict_ratio, nosignal_ratio)
+                })
+
+            # Sort by node number
+            node_data.sort(key=lambda x: x['node'])
+
+            with open(self.config.stat_output, 'w') as f:
+                # Modify header to include new ratio columns
+                f.write("Node\tSupport(blue)\tTopConflict(green)\tOtherConflict(red)\t"
+                       "NoSignal(gray)\tSupport/Total_Ratio\tConflict/Total_Ratio\t"
+                       "NoSignal/Total_Ratio\n")
+                
+                # Write data in sorted order
+                for item in node_data:
+                    node_name, concordant, most_conflict, other_conflict, no_signal, \
+                    support_ratio, conflict_ratio, nosignal_ratio = item['data']
+                    f.write(f"{node_name}\t{concordant}\t{most_conflict}\t{other_conflict}\t"
+                           f"{no_signal}\t{support_ratio:.4f}\t{conflict_ratio:.4f}\t"
+                           f"{nosignal_ratio:.4f}\n")
                 
                 # Calculate and write all average ratios
                 if support_total_ratios:
