@@ -119,7 +119,7 @@ def create_paralog_heatmap(df, output_base, filetype, dpi, fig_length, fig_heigh
     
     # Create starting color based on user selection
     if color == 'black':
-        start_color = (0.97, 0.97, 0.97)  # Light gray
+        start_color = (0.88, 0.88, 0.88)  # Light gray
     elif color == 'blue':
         start_color = (0.95, 0.95, 0.99)  # Light blue
     elif color == 'red':
