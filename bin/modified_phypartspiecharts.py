@@ -481,7 +481,7 @@ class PhyPartsPieCharts:
 
     def _get_display_value(self, node_name: str, mode: int) -> str:
         """Get display value for specified mode"""
-        if mode == 8:
+        if mode == 9:
             # Get original support value from tree
             for node in self.plot_tree.traverse():
                 if node.name == node_name:
@@ -509,10 +509,15 @@ class PhyPartsPieCharts:
         elif mode == 6:
             return f"{no_signal/total:.2f}   "
         elif mode == 7:
-            # Handle division by zero
-            if conflicting == 0:
-                return "∞   "
-            return f"{concordant/conflicting:.2f}   "
+            total_support_conflict = concordant + conflicting
+            if total_support_conflict == 0:
+                return "0.00   "
+            return f"{concordant / total_support_conflict:.2f}   "
+        elif mode == 8:
+            total_support_conflict = concordant + conflicting
+            if total_support_conflict == 0:
+                return "0.00   "
+            return f"{conflicting / total_support_conflict:.2f}   "
         else:
             raise ValueError(f"Invalid display mode: {mode}")
 
@@ -617,13 +622,14 @@ def main():
 4: Proportion of supporting genes (blue/total)
 5: Proportion of conflicting genes ((red+green)/total)
 6: Proportion of no signal genes (gray/total)
-7: Ratio of supporting to conflicting genes (blue/(red+green))
-8: Original node support values from the input tree
+7: Ratio of supporting to all signal genes (blue/(blue+red+green))
+8: Ratio of conflicting to all signal genes (red+green/(blue+red+green))
+9: Original node support values from the input tree
 Example: --show_num_mode 0  (hide all numbers)
         --show_num_mode 1  (show only support number)
         --show_num_mode 12 (default, show support and conflict numbers)
         --show_num_mode 47 (show support number and support/conflict ratio)
-        --show_num_mode 8  (show original node support values)""",
+        --show_num_mode 9  (show original node support values)""",
                        dest="show_num_mode")
 
     # Add pie chart size parameter
