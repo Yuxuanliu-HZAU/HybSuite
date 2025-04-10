@@ -94,5 +94,6 @@ run_sortadate	FALSE
 sortadate_genes_num	25
 log_mode	cmd
 skip_genetree_for_coalescent	FALSE
+run_phyparts	FALSE
 phypartspiecharts_tree_type	cladogram
 phypartspiecharts_num_mode	12
