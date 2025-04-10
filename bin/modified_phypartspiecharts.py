@@ -95,7 +95,7 @@ class PhyPartsConfig:
             raise ValueError(f"Unsupported output format: {file_ext}. Supported formats: {', '.join(valid_formats)}")
         
         # Validate tree type
-        valid_tree_types = ["circle", "cladogram", "phylo"]
+        valid_tree_types = ["circle", "cladogram"]
         if self.tree_type not in valid_tree_types:
             raise ValueError(f"Invalid tree type: {self.tree_type}. Supported types: {', '.join(valid_tree_types)}")
 
@@ -482,8 +482,6 @@ class PhyPartsPieCharts:
             ts.mode = "c"  # Circle tree
             ts.arc_start = -180  # Start angle
             ts.arc_span = 360  # Span angle
-        elif self.config.tree_type == "phylo":
-            ts.show_branch_length = True  # Show branch length
         else:  # cladogram
             ts.show_branch_length = False  # Do not show branch length
 
@@ -607,8 +605,8 @@ def main():
                        dest="output_node_tree")
     parser.add_argument("--no_ladderize", action="store_true", help="Don't ladderize tree")
     parser.add_argument("--to_csv", action="store_true", help="Export data to CSV")
-    parser.add_argument("--tree_type", choices=["circle", "cladogram", "phylo"], 
-                       default="cladogram", help="Tree visualization type (default: cladogram)")
+    parser.add_argument("--tree_type", choices=["circle", "cladogram"], 
+                       default="cladogram", help="Tree visualization type (cladogram or circle, default: cladogram)")
     
     # Add line width argument with user-friendly name
     parser.add_argument("--line_width", type=int, default=0,
