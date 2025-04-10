@@ -133,9 +133,9 @@ class PhyPartsConfig:
                 mode_list = [int(d) for d in str(self.show_num_mode)]
                 if len(mode_list) > 2:
                     raise ValueError("Show number mode must be 0-2 digits")
-                valid_modes = set(range(9))  # Valid digits 0-8
+                valid_modes = set(range(10))  # Valid digits 0-9
                 if not all(mode in valid_modes for mode in mode_list):
-                    raise ValueError("Show number modes must be digits between 0 and 8")
+                    raise ValueError("Show number modes must be digits between 0 and 9")
                 # If only one digit is input
                 if len(mode_list) == 1:
                     if mode_list[0] == 0:
@@ -318,6 +318,8 @@ class PhyPartsPieCharts:
             support_total_ratios = []  # Support/Total Ratio
             conflict_total_ratios = []  # Conflict/Total Ratio
             nosignal_total_ratios = []  # NoSignal/Total Ratio
+            support_signal_ratios = []  # Support/Signal Ratio
+            conflict_signal_ratios = []  # Conflict/Signal Ratio
 
             # Create a list to store all node data for sorting
             node_data = []
@@ -339,18 +341,30 @@ class PhyPartsPieCharts:
                 conflict_ratio = all_conflict / self.config.num_genes
                 nosignal_ratio = no_signal / self.config.num_genes
                 
+                # 计算新增比率
+                total_signal = concordant + all_conflict
+                support_signal_ratio = 0.0
+                conflict_signal_ratio = 0.0
+                
+                if total_signal > 0:
+                    support_signal_ratio = concordant / total_signal
+                    conflict_signal_ratio = all_conflict / total_signal
+                
                 # Record ratios for internal nodes
                 node = next(n for n in self.plot_tree.traverse() if n.name == node_name)
                 if not node.is_leaf():
                     support_total_ratios.append(support_ratio)
                     conflict_total_ratios.append(conflict_ratio)
                     nosignal_total_ratios.append(nosignal_ratio)
+                    support_signal_ratios.append(support_signal_ratio)
+                    conflict_signal_ratios.append(conflict_signal_ratio)
                 
                 # Add data to list
                 node_data.append({
                     'node': int(node_name),  # Convert to integer for sorting
                     'data': (node_name, concordant, most_conflict, other_conflict, no_signal, 
-                            support_ratio, conflict_ratio, nosignal_ratio)
+                            support_ratio, conflict_ratio, nosignal_ratio,
+                            support_signal_ratio, conflict_signal_ratio)
                 })
 
             # Sort by node number
@@ -360,29 +374,34 @@ class PhyPartsPieCharts:
                 # Modify header to include new ratio columns
                 f.write("Node\tSupport(blue)\tTopConflict(green)\tOtherConflict(red)\t"
                        "NoSignal(gray)\tSupport/Total_Ratio\tConflict/Total_Ratio\t"
-                       "NoSignal/Total_Ratio\n")
+                       "NoSignal/Total_Ratio\tSupport/Signal_Ratio\tConflict/Signal_Ratio\n")
                 
                 # Write data in sorted order
                 for item in node_data:
                     node_name, concordant, most_conflict, other_conflict, no_signal, \
-                    support_ratio, conflict_ratio, nosignal_ratio = item['data']
+                    support_ratio, conflict_ratio, nosignal_ratio, \
+                    support_signal_ratio, conflict_signal_ratio = item['data']
+                    
                     f.write(f"{node_name}\t{concordant}\t{most_conflict}\t{other_conflict}\t"
                            f"{no_signal}\t{support_ratio:.4f}\t{conflict_ratio:.4f}\t"
-                           f"{nosignal_ratio:.4f}\n")
+                           f"{nosignal_ratio:.4f}\t{support_signal_ratio:.4f}\t{conflict_signal_ratio:.4f}\n")
                 
                 # Calculate and write all average ratios
                 if support_total_ratios:
                     avg_support_ratio = sum(support_total_ratios) / len(support_total_ratios)
                     avg_conflict_ratio = sum(conflict_total_ratios) / len(conflict_total_ratios)
                     avg_nosignal_ratio = sum(nosignal_total_ratios) / len(nosignal_total_ratios)
+                    # Calculate average ratios for new columns
+                    avg_support_signal_ratio = sum(support_signal_ratios) / len(support_signal_ratios)
+                    avg_conflict_signal_ratio = sum(conflict_signal_ratios) / len(conflict_signal_ratios)
                     
                     f.write("\nAverage ratios for internal nodes only:")
                     f.write(f"\nSupport/Total Ratio: {avg_support_ratio:.4f}")
                     f.write(f"\nConflict/Total Ratio: {avg_conflict_ratio:.4f}")
                     f.write(f"\nNoSignal/Total Ratio: {avg_nosignal_ratio:.4f}")
-                    # Add check to verify if the sum is 1
-                    total = avg_support_ratio + avg_conflict_ratio + avg_nosignal_ratio
-                    f.write(f"\nSum of all ratios: {total:.4f}")
+                    # Add new ratio outputs
+                    f.write(f"\nSupport/Signal Ratio: {avg_support_signal_ratio:.4f}")
+                    f.write(f"\nConflict/Signal Ratio: {avg_conflict_signal_ratio:.4f}")
             
             logging.info("Statistics export completed")
         except Exception as e:
