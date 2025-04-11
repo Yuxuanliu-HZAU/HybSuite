@@ -121,21 +121,21 @@ def create_paralog_heatmap(df, output_base, filetype, dpi, fig_length, fig_heigh
     if color == 'black':
         start_color = (0.88, 0.88, 0.88)  # Light gray
     elif color == 'blue':
-        start_color = (0.95, 0.95, 0.99)  # Light blue
+        start_color = (0.85, 0.85, 0.95)  # Light blue
     elif color == 'red':
-        start_color = (0.99, 0.95, 0.95)  # Light red
+        start_color = (0.95, 0.85, 0.85)  # Light red
     elif color == 'green':
-        start_color = (0.95, 0.99, 0.95)  # Light green
+        start_color = (0.85, 0.95, 0.85)  # Light green
     elif color == 'purple':
-        start_color = (0.97, 0.95, 0.97)  # Light purple
+        start_color = (0.85, 0.75, 0.85)  # Light purple
     elif color == 'orange':
-        start_color = (0.99, 0.96, 0.95)  # Light orange
+        start_color = (0.95, 0.85, 0.80)  # Light orange
     elif color == 'yellow':
-        start_color = (0.99, 0.99, 0.95)  # Light yellow
+        start_color = (0.95, 0.95, 0.85)  # Light yellow
     elif color == 'brown':
-        start_color = (0.97, 0.96, 0.95)  # Light brown
+        start_color = (0.90, 0.85, 0.80)  # Light brown
     elif color == 'pink':
-        start_color = (0.99, 0.95, 0.97)  # Light pink
+        start_color = (0.95, 0.85, 0.90)  # Light pink
     else:
         start_color = (0.97, 0.97, 0.97)  # Default light gray
 
