@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Script Name: HybSuite.sh
 # Author: Yuxuan Liu
 #===> Preparation and HybSuite Checking <===#
@@ -49,11 +49,11 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Parse command line arguments and set variables
 # Set conditional statements so that options "-h" and "-v" are in play
-if [[ "$1" = "-h" || "$1" = "--help" ]]; then
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     display_help
     exit 1
 fi
-if [[ "$1" = "-v" || "$1" = "--version" ]]; then
+if [ "$1" = "-v" ] || [ "$1" = "--version" ]; then
     display_version
     exit 1
 fi
@@ -93,7 +93,7 @@ while IFS= read -r line || [ -n "$line" ]; do
   eval "found_${var}=false" > /dev/null 2>&1
 done < "${script_dir}/../config/HybSuite_options_list.txt"
 
-if [[ $# -eq 0 ]]; then
+if [ "$#" -eq 0 ]; then
   echo ""
   echo "[HybSuite-WARNING]: You didn't set any options ."
   echo "                    Please set necessary options to run HybSuite. (use -h to check options)"
@@ -170,14 +170,14 @@ else
       exit 1
     fi
 fi
-if [[ $# -eq 1 ]]; then
+if [ "$#" -eq 1 ]; then
   echo "[HybSuite-WARNING]: Except the first option, you didn't set any other required options."
   echo "                    Please set required options to run HybSuite. (use -h to check options)"
   echo "                    HybSuite exits."
   echo ""
   exit 1
 fi
-if [[ "$2" = "--full_pipeline" || "$2" = "--run_to_stage1" || "$2" = "--run_to_stage2" || "$2" = "--run_to_stage3" || "$2" = "--run_to_stage4" ]]; then
+if [ "$2" = "--full_pipeline" ] || [ "$2" = "--run_to_stage1" ] || [ "$2" = "--run_to_stage2" ] || [ "$2" = "--run_to_stage3" ] || [ "$2" = "--run_to_stage4" ]; then
     echo "[HybSuite-ERROR]:   Sorry, you can't specify the stage to run to more than once!"
     echo "                    Please specify one of '--full_pipeline', '--run_to_stage1', '--run_to_stage2', '--run_to_stage3', or '--run_to_stage4' only once!"
     echo "                    HybSuite exits."
@@ -185,32 +185,30 @@ if [[ "$2" = "--full_pipeline" || "$2" = "--run_to_stage1" || "$2" = "--run_to_s
     exit 1
 fi
 
-while [[ $# -gt 1 ]]; do
-    if [[ "$2" != -* ]]; then
-        echo "[HybSuite-ERROR]:   Invalid option '$2'. Options should start with '-'."
-        echo "                    HybSuite exits."
-        echo ""
-        exit 1 
-    fi
+while [ "$#" -gt 1 ]; do
     case "$2" in
         -*)
             option="${2/-/}"
             vars=($(awk '{print $1}' ${script_dir}/../config/HybSuite_options_list.txt))
             #echo "                    -$option: $3"
-            if [[ "$3" = -* ]]; then
-              option3="${3/-/}"
-              if [[ " ${vars[*]} " == *" $option3 "* ]]; then
-                echo ""
-                echo "[HybSuite-WARNING]: The argument for option $2 is not permitted to start with '-'"
-                echo "                    Please change your argument for the option $2."
-                echo "[HybSuite-WARNING]: Or you didn't specify any argument for the option $2."
-                echo "                    Please specify an argument for the option $2."
-                echo "                    HybSuite exits."
-                echo ""
-                exit 1
-              fi
-            fi  
-            if [[ -z "$3" ]]; then
+            case "$3" in
+              -*)
+                option3=$(echo "$3" | sed 's/^-//')
+                for v in ${vars[@]}; do
+                  if [ "$v" = "$option3" ]; then
+                    echo ""
+                    echo "[HybSuite-WARNING]: The argument for option $2 is not permitted to start with '-'"
+                    echo "                    Please change your argument for the option $2."
+                    echo "[HybSuite-WARNING]: Or you didn't specify any argument for the option $2."
+                    echo "                    Please specify an argument for the option $2."
+                    echo "                    HybSuite exits."
+                    echo ""
+                    exit 1
+                  fi
+                done
+                ;;
+            esac
+            if [ -z "$3" ]; then
               echo ""
               echo "[HybSuite-ERROR]:   You didn't specify any argument for the option $2 "
               echo "                    Please specify an argument for the option $2."
@@ -218,14 +216,21 @@ while [[ $# -gt 1 ]]; do
               echo ""
               exit 1
             fi
-            if [[ " ${vars[*]} " == *" $option "* ]]; then
-              if [ "${3: -1}" = "/" ]; then
-                eval "${option}=\"${3%/}\""
+            found=0
+            for v in ${vars[@]}; do
+              if [ "$v" = "$option" ]; then
+                found=1
+                break
+              fi
+            done
+            if [ $found -eq 1 ]; then
+              if [ "$(echo "$3" | sed 's/.*\(.\)$/\1/')" = "/" ]; then
+                eval "${option}=$(echo "$3" | sed 's/\/$//')"
               else
-                eval "${option}=\"$3\""
+                eval "${option}=$3"
               fi
               eval "found_${option}=true"
-              echo "$option" >> $script_dir/../config/Option-list.txt
+              echo "$option" >> "$script_dir/../config/Option-list.txt"
               shift 2
             else
               echo ""
@@ -237,7 +242,10 @@ while [[ $# -gt 1 ]]; do
             fi
             ;;
         *)
-            shift
+            echo "[HybSuite-ERROR]:   Invalid option '$2'. Options should start with '-'."
+            echo "                    HybSuite exits." 
+            echo ""
+            exit 1
             ;;
     esac
 done
@@ -254,11 +262,14 @@ done < "$script_dir/../config/Option-default-list.txt"
 rm "$script_dir"/../config/Option*
 
 for var in i o d eas_dir t other_seqs my_raw_data iqtree_constraint_tree raxml_constraint_tree rng_constraint_tree; do
-  if [ ! -z "${!var}" ] && [ "${!var}" != "_____" ]; then
-    if [[ ! "${!var}" =~ ^/ ]]; then
-      abs_path=$(readlink -f "${!var}")
-      eval "${var}=${abs_path}"
-    fi
+  eval "val=\$$var"
+  if [ ! -z "$val" ] && [ "$val" != "_____" ]; then
+    case "$val" in
+      /*) ;;
+      *) abs_path=$(cd "$(dirname "$val")" && pwd)/$(basename "$val")
+         eval "$var=$abs_path"
+         ;;
+    esac
   fi
 done
 
@@ -705,7 +716,7 @@ else
   cd "${i}"
   if [ -s "./My_Spname.txt" ] && [ "$my_raw_data" != "_____" ]; then
     first_iteration=true
-  	while IFS= read -r add_sp_names || [[ -n $add_sp_names ]]; do
+  	while IFS= read -r add_sp_names || [ -n "$add_sp_names" ]; do
   		if ([ ! -s "${my_raw_data}/${add_sp_names}_1.fq" ] || [ ! -s "${my_raw_data}/${add_sp_names}_2.fq" ]) && ([ ! -s "${my_raw_data}/${add_sp_names}_1.fastq" ] || [ ! -s "${my_raw_data}/${add_sp_names}_2.fastq" ]) \
       && ([ ! -s "${my_raw_data}/${add_sp_names}.fq" ] && [ ! -s "${my_raw_data}/${add_sp_names}.fastq" ]) && ([ ! -s "${my_raw_data}/${add_sp_names}_1.fq.gz" ] || [ ! -s "${my_raw_data}/${add_sp_names}_2.fq.gz" ]) && ([ ! -s "${my_raw_data}/${add_sp_names}_1.fastq.gz" ] || [ ! -s "${my_raw_data}/${add_sp_names}_2.fastq.gz" ]) \
       && ([ ! -s "${my_raw_data}/${add_sp_names}.fq.gz" ] && [ ! -s "${my_raw_data}/${add_sp_names}.fastq.gz" ]); then
@@ -1765,12 +1776,14 @@ work_dir="${o}/00-logs_and_checklists/logs"
           echo $started_j > $started_file
           
           # Find actual batch number for the sample
-          local actual_batch_num=0
+          actual_batch_num=0
           while IFS= read -r batch_line || [ -n "$batch_line" ]; do
-              if [[ $batch_line == *"$sample"* ]]; then
-                  actual_batch_num=$(echo "$batch_line" | cut -d':' -f1)
-                  break
-              fi
+              case "$batch_line" in
+                  *"$sample"*)
+                      actual_batch_num=$(echo "$batch_line" | cut -d':' -f1)
+                      break
+                      ;;
+              esac
           done < "$batch_info_file"
           
           # Check if this batch has already been recorded
@@ -1812,10 +1825,12 @@ work_dir="${o}/00-logs_and_checklists/logs"
           finished_j=$(cat $finished_file)
           local current_batch_num=0
           while IFS= read -r batch_line || [ -n "$batch_line" ]; do
-              if [[ $batch_line == *"$sample"* ]]; then
-                  current_batch_num=$(echo "$batch_line" | cut -d':' -f1)
-                  break
-              fi
+              case "$batch_line" in
+                  *"$sample"*)
+                      current_batch_num=$(echo "$batch_line" | cut -d':' -f1)
+                      break
+                      ;;
+              esac
           done < "$batch_info_file"
           
           # Check if this batch has already been recorded as completed
@@ -2652,6 +2667,7 @@ else
           # 01: for protein reference sequence
           # Use diamond to map reads
           if [ "${hybpiper_tt}" = "aa" ] && [ "${hybpiper_m}" = "diamond" ]; then
+              stage_cmd "${log_mode}" "hybpiper assemble "-t_${hybpiper_tt}" ${t} -r ${d}/02-Downloaded_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/02-Downloaded_clean_data/${Spname}_2_clean.paired.fq.gz -o ${eas_dir} --prefix ${Spname} --diamond --cpu ${nt_hybpiper}"
               hybpiper assemble "-t_${hybpiper_tt}" ${t} \
               -r ${d}/02-Downloaded_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/02-Downloaded_clean_data/${Spname}_2_clean.paired.fq.gz \
               -o ${eas_dir} \
@@ -2661,6 +2677,7 @@ else
           fi
           # Use BLASTx (default) to map reads
           if [ "${hybpiper_tt}" = "aa" ] && [ "${hybpiper_m}" = "blast" ]; then
+              stage_cmd "${log_mode}" "hybpiper assemble "-t_${hybpiper_tt}" ${t} -r ${d}/02-Downloaded_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/02-Downloaded_clean_data/${Spname}_2_clean.paired.fq.gz -o ${eas_dir} --prefix ${Spname} --cpu ${nt_hybpiper}"
               hybpiper assemble "-t_${hybpiper_tt}" ${t} \
               -r ${d}/02-Downloaded_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/02-Downloaded_clean_data/${Spname}_2_clean.paired.fq.gz \
               -o ${eas_dir} \
@@ -2669,6 +2686,7 @@ else
           fi
           # 02: for nucleotide reference sequence
           if [ "${hybpiper_tt}" = "dna" ]; then
+              stage_cmd "${log_mode}" "hybpiper assemble "-t_${hybpiper_tt}" ${t} -r ${d}/02-Downloaded_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/02-Downloaded_clean_data/${Spname}_2_clean.paired.fq.gz -o ${eas_dir} --prefix ${Spname} --bwa --cpu ${nt_hybpiper}"
               hybpiper assemble "-t_${hybpiper_tt}" ${t} \
               -r ${d}/02-Downloaded_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/02-Downloaded_clean_data/${Spname}_2_clean.paired.fq.gz \
               -o ${eas_dir} \
@@ -2683,6 +2701,7 @@ else
           # 01: for protein reference sequence
           # 01-1: use diamond to map reads
           if [ "${hybpiper_tt}" = "aa" ] && [ "${hybpiper_m}" = "diamond" ]; then
+              stage_cmd "${log_mode}" "hybpiper assemble "-t_${hybpiper_tt}" ${t} -r ${d}/02-Downloaded_clean_data/${Spname}_clean.single.fq.gz -o ${eas_dir} --prefix ${Spname} --diamond --cpu ${nt_hybpiper}"
               hybpiper assemble "-t_${hybpiper_tt}" ${t} \
               -r ${d}/02-Downloaded_clean_data/${Spname}_clean.single.fq.gz \
               -o ${eas_dir} \
@@ -2692,6 +2711,7 @@ else
           fi
           # 01-2: use BLASTx (default) to map reads
           if [ "${hybpiper_tt}" = "aa" ] && [ "${hybpiper_m}" = "blast" ]; then
+              stage_cmd "${log_mode}" "hybpiper assemble "-t_${hybpiper_tt}" ${t} -r ${d}/02-Downloaded_clean_data/${Spname}_clean.single.fq.gz -o ${eas_dir} --prefix ${Spname} --cpu ${nt_hybpiper}"
               hybpiper assemble "-t_${hybpiper_tt}" ${t} \
               -r ${d}/02-Downloaded_clean_data/${Spname}_clean.single.fq.gz \
               -o ${eas_dir} \
@@ -2700,12 +2720,13 @@ else
           fi
           # 02: for nucleotide reference sequence
           if [ "${hybpiper_tt}" = "dna" ]; then
+              stage_cmd "${log_mode}" "hybpiper assemble "-t_${hybpiper_tt}" ${t} -r ${d}/02-Downloaded_clean_data/${Spname}_clean.single.fq.gz -o ${eas_dir} --prefix ${Spname} --bwa --cpu ${nt_hybpiper}"
               hybpiper assemble "-t_${hybpiper_tt}" ${t} \
               -r ${d}/02-Downloaded_clean_data/${Spname}_clean.single.fq.gz \
               -o ${eas_dir} \
               --prefix ${Spname} \
               --bwa \
-              --cpu ${nt_hybpiper} > /dev/null 2>&1
+              --cpu ${nt_hybpiper} > /dev/null 2>&1 
           fi
         fi
         if [ -s "${eas_dir}/${Spname}/genes_with_seqs.txt" ]; then
@@ -2763,7 +2784,8 @@ else
           # 01: for protein reference sequence
           # Use diamond to map reads
           if [ "${hybpiper_tt}" = "aa" ] && [ "${hybpiper_m}" = "diamond" ]; then
-              hybpiper assemble "-t_${hybpiper_tt}" ${t} \
+              stage_cmd "${log_mode}" "hybpiper assemble -t_${hybpiper_tt} ${t} -r ${d}/03-My_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/03-My_clean_data/${Spname}_2_clean.paired.fq.gz -o ${eas_dir} --prefix ${Spname} --diamond --cpu ${nt_hybpiper}"
+              hybpiper assemble -t_${hybpiper_tt} ${t} \
               -r ${d}/03-My_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/03-My_clean_data/${Spname}_2_clean.paired.fq.gz \
               -o ${eas_dir} \
               --prefix ${Spname} \
@@ -2772,7 +2794,8 @@ else
           fi
           # Use BLASTx (default) to map reads
           if [ "${hybpiper_tt}" = "aa" ] && [ "${hybpiper_m}" = "blast" ]; then
-              hybpiper assemble "-t_${hybpiper_tt}" ${t} \
+              stage_cmd "${log_mode}" "hybpiper assemble -t_${hybpiper_tt} ${t} -r ${d}/03-My_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/03-My_clean_data/${Spname}_2_clean.paired.fq.gz -o ${eas_dir} --prefix ${Spname} --cpu ${nt_hybpiper}"
+              hybpiper assemble -t_${hybpiper_tt} ${t} \
               -r ${d}/03-My_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/03-My_clean_data/${Spname}_2_clean.paired.fq.gz \
               -o ${eas_dir} \
               --prefix ${Spname} \
@@ -2780,7 +2803,8 @@ else
           fi
           # 02: for nucleotide reference sequence
           if [ "${hybpiper_tt}" = "dna" ]; then
-              hybpiper assemble "-t_${hybpiper_tt}" ${t} \
+              stage_cmd "${log_mode}" "hybpiper assemble -t_${hybpiper_tt} ${t} -r ${d}/03-My_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/03-My_clean_data/${Spname}_2_clean.paired.fq.gz -o ${eas_dir} --prefix ${Spname} --bwa --cpu ${nt_hybpiper}"
+              hybpiper assemble -t_${hybpiper_tt} ${t} \
               -r ${d}/03-My_clean_data/${Spname}_1_clean.paired.fq.gz ${d}/03-My_clean_data/${Spname}_2_clean.paired.fq.gz \
               -o ${eas_dir} \
               --prefix ${Spname} \
@@ -2794,7 +2818,8 @@ else
           # 01: for protein reference sequence
           # 01-1: use diamond to map reads
           if [ "${hybpiper_tt}" = "aa" ] && [ "${hybpiper_m}" = "diamond" ]; then
-              hybpiper assemble "-t_${hybpiper_tt}" ${t} \
+              stage_cmd "${log_mode}" "hybpiper assemble -t_${hybpiper_tt} ${t} -r ${d}/03-My_clean_data/${Spname}_clean.single.fq.gz -o ${eas_dir} --prefix ${Spname} --diamond --cpu ${nt_hybpiper}"
+              hybpiper assemble -t_${hybpiper_tt} ${t} \
               -r ${d}/03-My_clean_data/${Spname}_clean.single.fq.gz \
               -o ${eas_dir} \
               --prefix ${Spname} \
@@ -2803,7 +2828,8 @@ else
           fi
           # 01-2: use BLASTx (default) to map reads
           if [ "${hybpiper_tt}" = "aa" ] && [ "${hybpiper_m}" = "blast" ]; then
-              hybpiper assemble "-t_${hybpiper_tt}" ${t} \
+              stage_cmd "${log_mode}" "hybpiper assemble -t_${hybpiper_tt} ${t} -r ${d}/03-My_clean_data/${Spname}_clean.single.fq.gz -o ${eas_dir} --prefix ${Spname} --cpu ${nt_hybpiper}"
+              hybpiper assemble -t_${hybpiper_tt} ${t} \
               -r ${d}/03-My_clean_data/${Spname}_clean.single.fq.gz \
               -o ${eas_dir} \
               --prefix ${Spname} \
@@ -2811,7 +2837,8 @@ else
           fi
           # 02: for nucleotide reference sequence
           if [ "${hybpiper_tt}" = "dna" ]; then
-              hybpiper assemble "-t_${hybpiper_tt}" ${t} \
+              stage_cmd "${log_mode}" "hybpiper assemble -t_${hybpiper_tt} ${t} -r ${d}/03-My_clean_data/${Spname}_clean.single.fq.gz -o ${eas_dir} --prefix ${Spname} --bwa --cpu ${nt_hybpiper}"
+              hybpiper assemble -t_${hybpiper_tt} ${t} \
               -r ${d}/03-My_clean_data/${Spname}_clean.single.fq.gz \
               -o ${eas_dir} \
               --prefix ${Spname} \
@@ -2869,7 +2896,7 @@ else
   ############################################################################################
 
   #################===========================================================================
-  if [ "$LS" = "TRUE" ] || [ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ] || [ "${RLWP}" = "TRUE" ]; then
+  if [ "$LS" = "TRUE" ] || [ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ] || [ "${RLWP}" = "TRUE" ] || [ "${HRS}" = "TRUE" ]; then
     stage_info_main "Step 2: retrieving all original paralogs via HybPiper..."
     if [ -d "${o}/02-All_paralogs/" ]; then
       rm -rf "${o}/02-All_paralogs/"
@@ -2877,7 +2904,7 @@ else
     mkdir -p "${o}/02-All_paralogs/01-Original_paralogs" "${o}/02-All_paralogs/02-Original_paralog_reports_and_heatmap"
     cd "${o}/02-All_paralogs/02-Original_paralog_reports_and_heatmap"
   #################===========================================================================
-    stage_cmd "${log_mode}" "hybpiper paralog_retriever ${eas_dir}/Assembled_data_namelist.txt "-t_${hybpiper_tt}" ${t} --fasta_dir_all ${o}/02-All_paralogs --hybpiper_dir ${eas_dir} --no_heatmap"
+    stage_cmd "${log_mode}" "hybpiper paralog_retriever ${eas_dir}/Assembled_data_namelist.txt "-t_${hybpiper_tt}" ${t} --fasta_dir_all ${o}/02-All_paralogs/01-Original_paralogs --hybpiper_dir ${eas_dir} --no_heatmap"
     hybpiper paralog_retriever ${eas_dir}/Assembled_data_namelist.txt "-t_${hybpiper_tt}" ${t} \
       --fasta_dir_all "${o}/02-All_paralogs/01-Original_paralogs" \
       --hybpiper_dir "${eas_dir}" \
