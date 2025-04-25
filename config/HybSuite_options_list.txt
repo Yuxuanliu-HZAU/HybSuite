@@ -31,7 +31,7 @@ mean_length_ratio	0
 max_length_ratio	0
 min_sample_coverage	0
 min_locus_coverage	0
-RLWP_samples_threshold	1
+RLWP_samples_threshold	2
 mafft_algorithm	auto
 mafft_adjustdirection	TRUE
 mafft_maxiterate	_____
