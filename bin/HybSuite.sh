@@ -3428,18 +3428,21 @@ else
 
       if [ "${MO}" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ]; then
         paragone_step5_cmd="${paragone_step5_cmd} --mo"
+        paragone_step6_cmd="${paragone_step6_cmd} --mo"
       fi
       if [ "${MI}" = "TRUE" ]; then
         paragone_step5_cmd="${paragone_step5_cmd} --mi"
+        paragone_step6_cmd="${paragone_step6_cmd} --mi"
       fi
       if [ "${RT}" = "TRUE" ]; then
         paragone_step5_cmd="${paragone_step5_cmd} --rt"
+        paragone_step6_cmd="${paragone_step6_cmd} --rt"
       fi
 
       stage_info_main "Running ParaGone step1 ... "
       stage_cmd "${log_mode}" "${paragone_step1_cmd}"
       eval "${paragone_step1_cmd}" > /dev/null 2>&1
-      if [ ! -n "$(find "./04_alignments_trimmed_cleaned" -maxdepth 1 -mindepth 1 -print -quit)" ]; then
+      if [ ! -n "$(find "./04_alignments_trimmed_cleaned" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
         stage_error "Fail to run ParaGone step1."
         stage_error "HybSuite exits."
         stage_blank_main ""
@@ -3450,7 +3453,7 @@ else
       stage_info_main "Running ParaGone step2 ... "
       stage_cmd "${log_mode}" "${paragone_step2_cmd}"
       eval "${paragone_step2_cmd}" > /dev/null 2>&1
-      if [ ! -n "$(find "./05_trees_pre_quality_control" -maxdepth 1 -mindepth 1 -print -quit)" ]; then
+      if [ ! -n "$(find "./05_trees_pre_quality_control" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
         stage_error "Fail to run ParaGone step2."
         stage_error "HybSuite exits."
         stage_blank_main ""
@@ -3461,7 +3464,7 @@ else
       stage_info_main "Running ParaGone step3 ... "
       stage_cmd "${log_mode}" "${paragone_step3_cmd}"
       eval "${paragone_step3_cmd}" > /dev/null 2>&1
-      if [ ! -n "$(find "./09_sequences_from_qc_trees" -maxdepth 1 -mindepth 1 -print -quit)" ]; then
+      if [ ! -n "$(find "./09_sequences_from_qc_trees" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
         stage_error "Fail to run ParaGone step3."
         stage_error "HybSuite exits."
         stage_blank_main ""
@@ -3472,7 +3475,7 @@ else
       stage_info_main "Running ParaGone step4 ... "
       stage_cmd "${log_mode}" "${paragone_step4_cmd}"
       eval "${paragone_step4_cmd}" > /dev/null 2>&1
-      if [ ! -n "$(find "./13_pre_paralog_resolution_trees" -maxdepth 1 -mindepth 1 -print -quit)" ]; then
+      if [ ! -n "$(find "./13_pre_paralog_resolution_trees" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
         stage_error "Fail to run ParaGone step4."
         stage_error "HybSuite exits."
         stage_blank_main ""
@@ -3483,9 +3486,9 @@ else
       stage_info_main "Running ParaGone step5 ... "
       stage_cmd "${log_mode}" "${paragone_step5_cmd}"
       eval "${paragone_step5_cmd}" > /dev/null 2>&1
-      if [ ! -n "$(find "./14_pruned_MO" -maxdepth 1 -mindepth 1 -print -quit)" ] \
-      && [ ! -n "$(find "./15_pruned_MI" -maxdepth 1 -mindepth 1 -print -quit)" ] \
-      && [ ! -n "$(find "./16_pruned_RT" -maxdepth 1 -mindepth 1 -print -quit) " ]; then
+      if [ ! -n "$(find "./14_pruned_MO" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ] \
+      && [ ! -n "$(find "./15_pruned_MI" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ] \
+      && [ ! -n "$(find "./16_pruned_RT" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
         stage_error "Fail to run ParaGone step5."
         stage_error "HybSuite exits."
         stage_blank_main ""
@@ -3496,12 +3499,12 @@ else
       stage_info_main "Running ParaGone step6 ... "
       stage_cmd "${log_mode}" "${paragone_step6_cmd}"
       eval "${paragone_step6_cmd}" > /dev/null 2>&1
-      if [ ! -n "$(find "./23_MO_final_alignments" -maxdepth 1 -mindepth 1 -print -quit)" ] \
-      && [ ! -n "$(find "./24_MI_final_alignments" -maxdepth 1 -mindepth 1 -print -quit)" ] \
-      && [ ! -n "$(find "./25_RT_final_alignments" -maxdepth 1 -mindepth 1 -print -quit)" ] \
-      && [ ! -n "$(find "./26_MO_final_alignments_trimmed" -maxdepth 1 -mindepth 1 -print -quit)" ] \
-      && [ ! -n "$(find "./27_MI_final_alignments_trimmed" -maxdepth 1 -mindepth 1 -print -quit)" ] \
-      && [ ! -n "$(find "./28_RT_final_alignments_trimmed" -maxdepth 1 -mindepth 1 -print -quit)" ]; then
+      if [ ! -n "$(find "./23_MO_final_alignments" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ] \
+      && [ ! -n "$(find "./24_MI_final_alignments" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ] \
+      && [ ! -n "$(find "./25_RT_final_alignments" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ] \
+      && [ ! -n "$(find "./26_MO_final_alignments_trimmed" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ] \
+      && [ ! -n "$(find "./27_MI_final_alignments_trimmed" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ] \
+      && [ ! -n "$(find "./28_RT_final_alignments_trimmed" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
         stage_error "Fail to finish running ParaGone."
         stage_error "HybSuite exits."
         stage_blank_main ""
@@ -3561,6 +3564,7 @@ else
 
   ############################################################################################
   # End of Stage 3
+  stage_blank_main ""
   stage_info_main "Successfully finishing the stage3: 'Orthology inference'."
   stage_info_main "The resulting files have been saved in ${output_dir}/03-Orthology_inference/"
 
