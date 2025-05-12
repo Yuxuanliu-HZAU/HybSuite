@@ -10,56 +10,64 @@ Latest Version: 1.1.0
 
 [1] ESSENTIAL INPUT FILES
 --------------------------------------------------------------------------------
-Input Directory (-i) must contain:
-  SRR_Spname.txt            # Tab-delimited file mapping SRA accessions to species names (each sample per line) (Optional)
-                            # Format: SRR_accession<tab>Species_name
-  My_Spname.txt             # User-provided species list (each sample per line) (Optional)
-  Outgroup.txt              # Outgroup species list (each sample per line) (Required)
+- Input list (specified by '-input_list'): The file listing input sample names and corresponding data types (Required).
+- Input data (specified by '-input_data'): The directory containing all input data (Required when the list of your own data is provided). 
+- Target file (specified by '-t'): Target file for HybPiper (Absolute path) (Required except for running only stage 1).
+- Directory containing assembled data (specified by '-eas_dir') (Optional):
+  - If you have a directory containing sequences of your samples assmebled by HybPiper, you can directly specify this directory, in order to save time for data assembly.
+- Directory containing NGS data (specified by '-NGS_dir') (Optional):
+  - If you have a directory containing downloaded and clean sequences of your samples, you can directly specify this directory, in order to save time for sequences downloading and adapters removal.
 
 [2] DATA FORMAT SPECIFICATIONS
 --------------------------------------------------------------------------------
-Optional user-provided raw data (-my_raw_data):
-  - Paired-end: <taxon>_1.fastq + <taxon>_2.fastq or <taxon>_1.fq.gz + <taxon>_2.fq.gz
-  - Single-end: <taxon>.fastq or <taxon>.fq.gz
-
-Optional user-provided addtional single-copy orthology sequence files (-other_seqs):
-  - for sample <taxon>: <taxon>.fasta
+Optional user-provided raw data and pre-assembled sequences (-input_data):
+  - user-provided raw data:
+    - Paired-end: <taxon>_1.fastq + <taxon>_2.fastq or <taxon>_1.fq.gz + <taxon>_2.fq.gz
+    - Single-end: <taxon>.fastq or <taxon>.fq.gz
+  - pre-assembled sequences:
+    - Seqs of sample <taxon>: <taxon>.fasta
 
 ################################################################################
                               HYBSUITE USER MANUAL
 ################################################################################
 
-[1] PIPELINE STAGES CONTROL
+[1] COMMAND MODE
 --------------------------------------------------------------------------------
-Usage 1: Run the full pipeline
-  bash HybSuite.sh --full_pipeline [options]...
+Command mode 1 (for conda version):
+  hybsuite [subcommand] [options] ...
 
-Usage 2: Run until finishing stage 1
-  bash HybSuite.sh --run_to_stage1 [options]...
+Command mode 2 (for local version):
+  bash HybSuite.sh [subcommand] [options] ...
 
-Usage 3: Run until finishing stage 1-2
-  bash HybSuite.sh --run_to_stage2 [options]...
+Available subcommands for running HybSuite pipeline:
+  full_pipeline                       - Run all stages (stage1-5)
+  run_to_stage1                       - Run stage 1
+  run_to_stage2                       - Run stage 1-2
+  run_to_stage3                       - Run stage 1-3
+  run_to_stage4                       - Run stage 1-4
+  retrieve_results                    - Retrieve results
 
-Usage 4: Run until finishing stage 1-3
-  bash HybSuite.sh --run_to_stage3 [options]...
-
-Usage 5: Run until finishing stage 1-4
-  bash HybSuite.sh --run_to_stage4 [options]...
+Available subcommands for running HybSuite extension tools:
+  filter_seqs_by_length               - Filter sequences by length (filter_seqs_by_length.py)
+  filter_seqs_by_coverage             - Filter sequences by sample and locus coverage (filter_seqs_by_sample_and_locus_coverage.py)
+  plot_paralog_heatmap                - Plot paralog heatmap (plot_paralog_heatmap.py)
+  plot_recovery_heatmap               - Plot recovery heatmap (plot_recovery_heatmap.py)
+  rlwp                                - RLWP tool (RLWP.py)
+  fasta_formatter                     - FASTA formatting tool (Fasta_formatter.py)
 
 [2] CORE PARAMETERS
 --------------------------------------------------------------------------------
-  -i <DIR>                             Absolute path to input directory (Required)
-  -o <DIR>                             Output directory (Default: <input_dir>/HybSuite_results)
-  -d <DIR>                             Database directory (Default: <output_dir>/NGS_dataset)
+  -input_list <FILE>                   The file listing input sample names and corresponding data types. (Required)
+  -input_data <DIR>                    The directory containing all input data. (Required)
+  -output_dir <DIR>                    Output directory (Required)
   -t <FILE>                            Target file for HybPiper (Absolute path)
-  -eas_dir <DIR>                       Pre-assembled data (by HybPiper) directory (Default: <output_dir>/01-Assembled_data)
+  -NGS_dir <DIR>                       Database directory (Default: <output_dir>/NGS_dataset)
+  -eas_dir <DIR>                       The directory containing sequences assmebled by HybPiper (Default: <output_dir>/01-Assembled_data)
   -prefix <STRING>                     Prefix for output files (Default: HybSuite)
   -skip_stage <STR>                    Skip specific stages (Format: "0123" or "012")
                                        0="HybSuite checking" 1="Stage 1", 2="Stage 2", 3="Stage 3", 4="Stage 4"
   -skip_genetree_for_coalescent <STR>  Whether to skip constructing single-gene trees for ASTRAL/wASTRAL when running stage 5
-                                       TRUE="Skip", FALSE="NO skipping"         
-  -conda1 <ENV>                        Conda environment for core tools
-  -conda2 <ENV>                        Conda environment for ParaGone (Default: base)
+                                       TRUE="Skip", FALSE="NO skipping"
   -h/--help                            Show help message
   -v/--version                         Show version info
 
@@ -67,32 +75,32 @@ Usage 5: Run until finishing stage 1-4
 --------------------------------------------------------------------------------
 === Thread Control ===
   -nt <INT|AUTO>                       Global thread setting (Default: AUTO)
-  -nt_fasterq_dump <INT>               fasterq-dump threads (Default: 10)
-  -nt_pigz <INT>                       pigz compression threads (Default: 10)
-  -nt_trimmomatic <INT>                Trimmomatic threads (Default: 10)
-  -nt_hybpiper <INT>                   HybPiper threads (Default: 10)
-  -nt_paragone <INT>                   ParaGone threads (Default: 10)
-  -nt_phylopypruner <INT>              PhyloPyPruner threads (Default: 10)
-  -nt_mafft <INT>                      MAFFT threads (Default: 10)
-  -nt_modeltest_ng <INT>               ModelTest-NG threads (Default: 10)
-  -nt_iqtree <INT>                     IQ-TREE threads (Default: 10)
-  -nt_raxml_ng <INT>                   RAxML-NG threads (Default: 10)
-  -nt_raxml <INT>                      RAxML threads (Default: 10)
-  -nt_astral <INT>                     ASTRAL-III threads (Default: 10)
+  -nt_fasterq_dump <INT>               fasterq-dump threads (Default: 1)
+  -nt_pigz <INT>                       pigz compression threads (Default: 1)
+  -nt_trimmomatic <INT>                Trimmomatic threads (Default: 1)
+  -nt_hybpiper <INT>                   HybPiper threads (Default: 1)
+  -nt_paragone <INT>                   ParaGone threads (Default: 1)
+  -nt_phylopypruner <INT>              PhyloPyPruner threads (Default: 1)
+  -nt_mafft <INT>                      MAFFT threads (Default: 1)
+  -nt_amas <INT>                       AMAS.py threads (Default: 1)
+  -nt_modeltest_ng <INT>               ModelTest-NG threads (Default: 1)
+  -nt_iqtree <INT>                     IQ-TREE threads (Default: 1)
+  -nt_raxml_ng <INT>                   RAxML-NG threads (Default: 1)
+  -nt_raxml <INT>                      RAxML threads (Default: 1)
+  -nt_astral <INT>                     ASTRAL-III threads (Default: 1)
   -nt_wastral <INT>                    wASTRAL threads (Default: 1)
 
-=== Thread Control ===
+=== Parallel Control ===
   -process <INT|all>                   Number of alignments to run concurrently (Default: 1)
                                        "all" means running all samples concurrently (be cautious to set this option)
 
 [4] DATA INPUT/OUTPUT
 --------------------------------------------------------------------------------
 === Raw Data Configuration ===
-  -my_raw_data <DIR>                   Directory containing user-provided raw data
-  -other_seqs <DIR>                    Additional sequences directory (e.g. PAFTOL data)
+  -input_data <DIR>                    Directory containing user-provided raw data and pre-assembled sequences
 
 === File Management ===
-  -log_mode <str>                      Logging verbosity [simple|full] (Default: simple)
+  -log_mode <str>                      Logging verbosity [simple|cmd|full] (Default: simple)
   -heatmap_color <str>                 Heatmap (paralog_heatmap, recovery_heatmap for HRS and RLWP sequences) color scheme (Default: black)
 
 [5] STAGE 1 NGS DATASET CONSTRUCTION
@@ -101,6 +109,9 @@ Usage 5: Run until finishing stage 1-4
   -rm_sra <TRUE/FALSE>                 Whether to remove SRA files after conversion (Default: TRUE)
   -download_format <str>               Downloaded data format [fastq|fastq_gz] (Default: fastq_gz)
 
+=== SRAToolkit Settings ===
+  -sra_maxsize                         The maximum size of sra files to download (Default: 20GB)
+
 === Trimmomatic Settings ===
   -trimmomatic_leading_quality <3-40>  Leading base quality cutoff (Default: 3)
   -trimmomatic_trailing_quality <3-40> Trailing base quality cutoff (Default: 3)
@@ -108,7 +119,7 @@ Usage 5: Run until finishing stage 1-4
   -trimmomatic_sliding_window_s <4-10> Sliding window size (Default: 4)
   -trimmomatic_sliding_window_q <15-30>Window average quality (Default: 15)
 
-[6] STAGE 2 DATA ASSEMBLY AND FILTERED PARALOGS RECOVERING
+[6] STAGE 2 DATA ASSEMBLY AND FILTERED PARALOGS RETRIEVING
 --------------------------------------------------------------------------------
 === General Settings ===
   -min_length <INT>                    Minimum sequence length for filtered paralogs and final alignments. (Default: 50)
@@ -152,12 +163,22 @@ Usage 5: Run until finishing stage 1-4
 === MAFFT Settings ===  
   -mafft_algorithm <str>               MAFFT algorithm [auto|linsi] (Default: auto)
   -mafft_adjustdirection <TRUE/FALSE>  Whether to adjust sequence directions (Default: TRUE)
+  -mafft_maxiterate <INT>              Maximum number of iterations for MAFFT (Default: auto)
+                                       Specifies the maximum number of iterations MAFFT will perform during multiple sequence alignment. Higher iteration counts may improve alignment accuracy but will increase computation time.
+  -mafft_pair <str>                    Pairing strategy for MAFFT (Default: auto)
+                                       Specifies the pairing strategy used by MAFFT during multiple sequence alignment. Options include auto, localpair, globalpair, etc. Choosing the appropriate strategy can affect the alignment results and efficiency.
   
-=== TrimAl settings ===
-  -trimal_mode <str>                   trimAl mode [automated1|strict] (Default: automated1)
-  -trimal_gapthreshold <0-1>           Gap threshold (Default: auto)
+=== TrimAl Settings ===
+  -trimal_mode <str>                   trimAl mode [automated1|strict|strictplus|gappyout|nogaps|noallgaps] (Default: automated1)
+  -trimal_gapthreshold <0-1>           Gap threshold (Default: 0.12)
   -trimal_simthreshold <0-1>           Similarity threshold (Default: auto)
   -trimal_cons <0-100>                 Consensus threshold (Default: auto)
+  -trimal_block <INT>                  Minimum block size (Default: auto)
+  -trimal_w <INT>                      Window size (Default: auto)
+  -trimal_gw <INT>                     Gap window size (Default: auto)
+  -trimal_sw <INT>                     Similarity window size (Default: auto)
+  -trimal_resoverlap <0-1>             Minimum overlap of a positions with other positions in the column. (Default: auto) 
+  -trimal_seqoverlap <0-100>           Minimum percentage of sequences without gaps in a column. (Default: auto)
 
 [9] STAGE 5 PHYLOGENETIC TREE INFERENCE
 --------------------------------------------------------------------------------
@@ -183,7 +204,8 @@ Usage 5: Run until finishing stage 1-4
 === RAxML-NG Settings ===
   -rng_bs_trees <INT>                  RAxML-NG bootstrap replicates (Default: 1000)
   -rng_force <TRUE/FALSE>              Ignore thread warnings (Default: FALSE)
-  
+  -rng_constraint_tree                 The pathway to the constraint tree for running RAxML-NG (Default: no constraint tree)
+
 === wASTRAL Settings ===
   -wastral_dir <DIR>                   The pathway to the directory of the installed and configured wASTRAL (Default: _____)
   -wastral_mode <1-4>                  wASTRAL mode [1|2|3|4] (Default: 1)
@@ -196,11 +218,9 @@ Usage 5: Run until finishing stage 1-4
 
 Example 1: Running the full HybSuite pipeline (Stage1-5)
 --------------------------------------------------------------------------------
-HybSuite.sh --full_pipeline \
-  -i /data/input \
+hybsuite full_pipeline \
+  -input_list /data/input/Input_list.tsv \
   -t /data/targets.fasta \
-  -conda1 hybsuite_env \
-  -conda2 paragone_env \
   -my_raw_data /seq/raw_data \
   -OI 1234567b \
   -tree 134 \
@@ -208,10 +228,13 @@ HybSuite.sh --full_pipeline \
 
 Example 2: Getting assembled data and filtered parlogs (Stage1-2)
 --------------------------------------------------------------------------------
-HybSuite.sh --run_to_stage2 \
-  -i /data/raw_input \
+hybsuite run_to_stage2 \
+  -input_list /data/input/Input_list.tsv \
   -t /data/targets.fasta \
-  -conda1 hybsuite_env \
   -my_raw_data /seq/raw_data \
   -nt 8
+
+Example 3: Running the HybSuite extension tools
+--------------------------------------------------------------------------------
+hybsuite filter_seqs_by_length ...
 
