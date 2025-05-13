@@ -30,6 +30,8 @@ HybSuite is a bash wrapper, and designed for **reconstructing phylogenetic trees
 
 Hence, HybSuite can significantly streamline the process of Hyb-Seq phylogenomics analysis, making it more accessible to researchers from diverse research backgrounds.    
 
+![](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/master/images/HybSuite-workflow.png)
+
 ## Pipeline introduction
 
 * The HybSuite pipeline starts with **NGS(Next-generation sequencing) raw data** (mainly Hyb-Seq, but other types such as RNA-seq and WGS (Whole genome sequencing) are also supported). All public raw data in NCBI can be automatically downloaded if the user provides the corresponding accession numbers (usually prefixed with SRR- or ERR-).     
@@ -85,3 +87,27 @@ Full details about the results, output directories and files are available on ou
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Results-and-output-files
 
 # Citation
+
+Our manuscript is still in preparation, it will be posted here once a preprint of the article is available.
+
+# Dependencies
+
+* [sra-tools](https://github.com/ncbi/sra-tools)
+* [pigz](https://github.com/madler/pigz)
+* [HybPiper](https://github.com/mossmatters/HybPiper)>=2.2.0
+* [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone)=1.1.1
+* [Newick_Utilities](https://github.com/tjunier/newick_utils)
+* [MAFFT](https://github.com/GSLBiotech/mafft)  
+* [TrimAl](https://github.com/inab/trimal)
+* [ModelTest-NG](https://github.com/ddarriba/modeltest)
+* [IQ-TREE](http://trimal.cgenomics.org/)
+* [RAxML](https://github.com/stamatak/standard-RAxML)  
+* [RAxML-NG](https://github.com/amkozlov/raxml-ng)
+* [R](https://www.r-project.org/about.html)≥3.2.0
+    * [ape](https://cran.r-project.org/web/packages/ape/index.html)
+    * [phytools](https://cran.r-project.org/web/packages/phytools/index.html)
+* [Python](https://www.python.org/downloads/)=3.9.15
+    * [ete3](http://etetoolkit.org/)
+    * [PyQt5](https://pypi.org/project/PyQt5/)
+    * [PhyloPyPruner](https://pypi.org/project/phylopypruner/)
+    * [PhyKit](https://github.com/JLSteenwyk/PhyKIT)
