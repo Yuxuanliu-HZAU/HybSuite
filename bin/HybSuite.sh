@@ -33,7 +33,7 @@ print_welcome_phrases() {
   echo ""
 }
 
-# 子命令处理函数
+# subcommand
 run_subcommand() {
   local subcommand="$1"
   shift  # Remove subcommand argument, pass remaining args to subcommand
