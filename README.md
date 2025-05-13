@@ -72,25 +72,7 @@ git clone https://github.com/Yuxuanliu-HZAU/HybSuite.git
 More details can be found in our wiki page:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Installation
 
----
-
-# How to run HybSuite
-
-## HybSuite Input and Usage Instruction
-
-Full instructions on running the HybSuite pipeline, including pipeline input preparation and parameter configuration, are available on our wiki:
-https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial
-
-## HybSuite Pipeline Output
-
-Full details about the results, output directories and files are available on our wiki:    
-https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Results-and-output-files
-
-# Citation
-
-Our manuscript is still in preparation, it will be posted here once a preprint of the article is available.
-
-# Dependencies
+## Dependencies
 
 * [sra-tools](https://github.com/ncbi/sra-tools)
 * [pigz](https://github.com/madler/pigz)
@@ -111,3 +93,21 @@ Our manuscript is still in preparation, it will be posted here once a preprint o
     * [PyQt5](https://pypi.org/project/PyQt5/)
     * [PhyloPyPruner](https://pypi.org/project/phylopypruner/)
     * [PhyKit](https://github.com/JLSteenwyk/PhyKIT)
+
+---
+
+# How to run HybSuite
+
+## HybSuite Input and Usage Instruction
+
+Full instructions on running the HybSuite pipeline, including pipeline input preparation and parameter configuration, are available on our wiki:
+https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial
+
+## HybSuite Pipeline Output
+
+Full details about the results, output directories and files are available on our wiki:    
+https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Results-and-output-files
+
+# Citation
+
+Our manuscript is still in preparation, it will be posted here once a preprint of the article is available.
