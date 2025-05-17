@@ -67,12 +67,12 @@ Hence, HybSuite can significantly streamline the process of Hyb-Seq phylogenomic
 Full instruction of installing HybSuite:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Installation
 
-## HybSuite Input and Usage Instruction
+## HybSuite input and usage instruction
 
 Full instructions on running the HybSuite pipeline, including pipeline input preparation and parameter configuration, are available on our wiki:
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial
 
-## HybSuite Pipeline Output
+## HybSuite pipeline output
 
 Full details about the results, output directories and files are available on our wiki:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Results-and-output-files
