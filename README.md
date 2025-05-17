@@ -61,42 +61,11 @@ Hence, HybSuite can significantly streamline the process of Hyb-Seq phylogenomic
 
 ---
 
-# Set up
+# Installing and running HybSuite
 
-## How to install HybSuite
-
-HybSuite is a shell script that incorporates some python and R scripts. It is available only for Linux/Unix/WSL users. Installing HybSuite is easy-you can directly clone the [Github repository](https://github.com/Yuxuanliu-HZAU/HybSuite.git):
-```
-git clone https://github.com/Yuxuanliu-HZAU/HybSuite.git
-```
-More details can be found in our wiki page:    
+## HybSuite installation
+Full instruction of installing HybSuite:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Installation
-
-## Dependencies
-
-* [sra-tools](https://github.com/ncbi/sra-tools)
-* [pigz](https://github.com/madler/pigz)
-* [HybPiper](https://github.com/mossmatters/HybPiper)>=2.2.0
-* [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone)=1.1.1
-* [Newick_Utilities](https://github.com/tjunier/newick_utils)
-* [MAFFT](https://github.com/GSLBiotech/mafft)  
-* [TrimAl](https://github.com/inab/trimal)
-* [ModelTest-NG](https://github.com/ddarriba/modeltest)
-* [IQ-TREE](http://trimal.cgenomics.org/)
-* [RAxML](https://github.com/stamatak/standard-RAxML)  
-* [RAxML-NG](https://github.com/amkozlov/raxml-ng)
-* [R](https://www.r-project.org/about.html)≥3.2.0
-    * [ape](https://cran.r-project.org/web/packages/ape/index.html)
-    * [phytools](https://cran.r-project.org/web/packages/phytools/index.html)
-* [Python](https://www.python.org/downloads/)=3.9.15
-    * [ete3](http://etetoolkit.org/)
-    * [PyQt5](https://pypi.org/project/PyQt5/)
-    * [PhyloPyPruner](https://pypi.org/project/phylopypruner/)
-    * [PhyKit](https://github.com/JLSteenwyk/PhyKIT)
-
----
-
-# How to run HybSuite
 
 ## HybSuite Input and Usage Instruction
 
@@ -107,6 +76,12 @@ https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial
 
 Full details about the results, output directories and files are available on our wiki:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Results-and-output-files
+
+> [!TIP]
+> Every aspect of HybSuite can be found on our wiki, just feel free to visit:    
+https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/
+
+---
 
 # Citation
 
