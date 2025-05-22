@@ -1345,6 +1345,8 @@ fi
 # Create Folders：
 ### 01 Create the desired folder
 stage_info "<<<======= Preparation: Create desired folders and define functions =======>>>"
+eas_dir="${output_dir}/01-Assembled_data"
+NGS_dir="${output_dir}/NGS_dataset"
 if [ -d "${output_dir}/00-logs_and_checklists/checklists" ]; then
   rm "${output_dir}/00-logs_and_checklists/checklists"/* > /dev/null 2>&1
 fi
