@@ -1169,7 +1169,7 @@ else
 
   check_r_phytools() {
     if Rscript -e "if (!requireNamespace('phytools', quietly = TRUE)) { quit(status = 1) }"; then
-      stage0_info "R packsge 'phytools' existed, pass"
+      stage0_info "R package 'phytools' existed, pass"
     else
       stage0_error "'phytools' must be installed in your conda environment."
       stage0_error "Please install 'phytools' using install.packages('phytools')."
@@ -1200,7 +1200,7 @@ else
     else
       stage0_error "Python package "${pyinstall}" is not installed."
       stage0_error "Recommended command for installation:"
-      stage0_error "pip install pandas"
+      stage0_error "pip install ${pyinstall}"
       stage0_error "HybSuite exits."
       stage0_blank ""
       exit 1
