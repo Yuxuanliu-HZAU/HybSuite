@@ -3,9 +3,9 @@ o	${i}/HybSuite_results
 input_list	_____
 input_data	_____
 output_dir	_____
-NGS_dir	${output_dir}/NGS_dataset
+NGS_dir	_____
 t	_____
-eas_dir	${output_dir}/01-Assembled_data
+eas_dir	_____
 prefix	HybSuite
 skip_stage	_____
 tree	0
