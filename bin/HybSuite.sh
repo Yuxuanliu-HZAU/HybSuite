@@ -4895,6 +4895,13 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
     ############################################################
     stage_blank "${log_mode}" ""
     stage_info_main "Step6: Recaculate the branch length via RAxMl"
+    if ! command -v pxlstr >/dev/null 2>&1 || ! command -v pxbp >/dev/null 2>&1; then
+      stage_error "To continue using SortaDate to filter suitable alignments for branch length estimation, please install the local version (non-conda) of Phyx, or the two subprograms pxlstr and pxbp from Phyx."
+      stage_error "For details, please refer to https://github.com/FePhyFoFum/SortaDate#installing-pxlstr-and-pxbp"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
     if [ -d "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/" ]; then  
       rm -rf "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/"
     fi
