@@ -1194,7 +1194,7 @@ else
   
   check_r_ape() {
     if Rscript -e "if (!requireNamespace('ape', quietly = TRUE)) { quit(status = 1) }"; then
-      stage0_info "R packsge 'ape' existed, pass"
+      stage0_info "R package 'ape' existed, pass"
     else
       stage0_error "To run wASTRAL/ASTRAL-III, 'ape' must be installed in your conda environment."
       stage0_error "Please install 'ape' using install.packages('ape')."
@@ -1355,8 +1355,14 @@ fi
 # Create Folders：
 ### 01 Create the desired folder
 stage_info "<<<======= Preparation: Create desired folders and define functions =======>>>"
-eas_dir="${output_dir}/01-Assembled_data"
-NGS_dir="${output_dir}/NGS_dataset"
+if [ "${eas_dir}" = "_____" ]; then
+  eas_dir="${output_dir}/01-Assembled_data"
+  stage0_info "Assembled data directory was not specified, set to: ${eas_dir} by default"
+fi
+if [ "${NGS_dir}" = "_____" ]; then
+  NGS_dir="${output_dir}/NGS_dataset"
+  stage0_info "NGS dataset directory was not specified, set to: ${NGS_dir} by default"
+fi
 if [ -d "${output_dir}/00-logs_and_checklists/checklists" ]; then
   rm "${output_dir}/00-logs_and_checklists/checklists"/* > /dev/null 2>&1
 fi
@@ -1472,32 +1478,21 @@ work_dir="${output_dir}/00-logs_and_checklists/logs"
       
       # Preprocessing: Group samples into batches
       batch_count=0
-      current_batch=""
-      delim=$(printf '\x1E')  # Use a more obscure record delimiter (0x1E)
-
-      sanitize() {
-        printf '%s' "$1" | sed -e 's/\x1E/\\x1E/g' -e 's/\x00/\\x00/g'
-      }
-
+      declare -a current_batch
+      
       while IFS= read -r sample || [ -n "$sample" ]; do
-        sample=$(sanitize "$sample")
-        current_batch=${current_batch:+$current_batch$delim}$sample
-        
-        count=$(printf '%s' "$current_batch" | tr -dc "$delim" | wc -c)
-        if [ $((count + 1)) -eq "$process_num" ]; then
-          printf "%d:" "$batch_count" >> "$batch_info_file"
-          printf '%s' "$current_batch" | tr "$delim" ' ' >> "$batch_info_file"
-          printf '\n' >> "$batch_info_file"
-          current_batch=""
-          batch_count=$((batch_count + 1))
-        fi
+          current_batch+=("$sample")
+          if [ "${#current_batch[@]}" -eq "$process_num" ]; then
+              echo "${batch_count}:${current_batch[*]}" >> "$batch_info_file"
+              current_batch=()
+              ((batch_count++))
+          fi
       done < "$input_file"
-
-      [ -n "$current_batch" ] && {
-        printf "%d:" "$batch_count" >> "$batch_info_file"
-        printf '%s' "$current_batch" | tr "$delim" ' ' >> "$batch_info_file"
-        printf '\n' >> "$batch_info_file"
-      }
+      
+      # Process the last incomplete batch
+      if [ "${#current_batch[@]}" -gt 0 ]; then
+          echo "${batch_count}:${current_batch[*]}" >> "$batch_info_file"
+      fi
       
       # Create FIFO file and process control
       if [ "$process" != "all" ]; then
@@ -1987,20 +1982,18 @@ else
           if [ "${process}" != "all" ]; then
               read -u1000
           fi
-          # Here you can define skip conditions
-          if { [ -s "${NGS_dir}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}_1.fastq.gz" ] && [ -s "${NGS_dir}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}_2.fastq.gz" ]; } || [ -s "${NGS_dir}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}.fastq.gz" ]; then
-              record_skipped_sample "$spname" "Skipped downloading existing samples:" "$stage_logfile"
+          # check paired-end compressed files
+          if [ -s "${NGS_dir}/02-Downloaded_clean_data/${spname}_1_clean.paired.fq.gz" ] && [ -s "${NGS_dir}/02-Downloaded_clean_data/${spname}_2_clean.paired.fq.gz" ]; then
+              record_skipped_sample "$spname" "Skipped downloading existing samples with adapters removed:" "$stage_logfile"
               if [ "${process}" != "all" ]; then
                   echo >&1000
               fi
               continue
           fi
-          {
-              
+          {  
               # Update start count
               update_start_count "$spname" "$stage_logfile"
-
-              # Your processing logic
+              # download raw data
               if [ "$download_format" = "fastq_gz" ]; then
                   # prefetch
                   stage_cmd "${log_mode}" "prefetch ${srr} -O ${NGS_dir}/01-Downloaded_raw_data/01-Raw-reads_sra/ --max-size ${sra_maxsize}"
@@ -2201,14 +2194,14 @@ else
           # Update start count
           update_start_count "$sample" "$stage_logfile"
           #for pair-ended
-          files1=(${my_raw_data}/${sample}_1.f*)
-          files2=(${my_raw_data}/${sample}_2.f*)
-          if [ -n "$files1" ] && [ -n "$files2" ]; then
-              stage_cmd "${log_mode}" "trimmomatic PE ${my_raw_data}/${sample}_1.f* ${my_raw_data}/${sample}_2.f* -threads ${nt_trimmomatic} -phred33 -basein ${sample} -baseout ${NGS_dir}/03-My_clean_data/${sample}_clean.paired.fq.gz ILLUMINACLIP:$CONDA_PREFIX/share/trimmomatic/adapters/TruSeq3-PE-2.fa:2:30:10 SLIDINGWINDOW:${trimmomatic_sliding_window_s}:${trimmomatic_sliding_window_q} LEADING:${trimmomatic_leading_quality} TRAILING:${trimmomatic_trailing_quality} MINLEN:${trimmomatic_min_length}"
+          files1=(${input_data}/${sample}_1.f*)
+          files2=(${input_data}/${sample}_2.f*)
+          if [ ${#files1[@]} -gt 0 ] && [ ${#files2[@]} -gt 0 ]; then
+              stage_cmd "${log_mode}" "trimmomatic PE ${input_data}/${sample}_1.f* ${input_data}/${sample}_2.f* -threads ${nt_trimmomatic} -phred33 -basein ${sample} -baseout ${NGS_dir}/03-My_clean_data/${sample}_clean.paired.fq.gz ILLUMINACLIP:$CONDA_PREFIX/share/trimmomatic/adapters/TruSeq3-PE-2.fa:2:30:10 SLIDINGWINDOW:${trimmomatic_sliding_window_s}:${trimmomatic_sliding_window_q} LEADING:${trimmomatic_leading_quality} TRAILING:${trimmomatic_trailing_quality} MINLEN:${trimmomatic_min_length}"
               trimmomatic PE \
                   -threads ${nt_trimmomatic} \
                   -phred33 \
-                  ${my_raw_data}/${sample}_1.f* ${my_raw_data}/${sample}_2.f* \
+                  ${input_data}/${sample}_1.f* ${input_data}/${sample}_2.f* \
                   ${NGS_dir}/03-My_clean_data/${sample}_1_clean.paired.fq.gz ${NGS_dir}/03-My_clean_data/${sample}_1_clean.unpaired.fq.gz \
                   ${NGS_dir}/03-My_clean_data/${sample}_2_clean.paired.fq.gz ${NGS_dir}/03-My_clean_data/${sample}_2_clean.unpaired.fq.gz \
                   ILLUMINACLIP:$CONDA_PREFIX/share/trimmomatic/adapters/TruSeq3-PE-2.fa:2:30:10 \
@@ -2218,16 +2211,13 @@ else
                   MINLEN:${trimmomatic_min_length} > /dev/null 2>&1
           fi
           #for single-ended 
-          files3=(${my_raw_data}/${sample}.f*)
-          if [ -n "$files3" ]; then
-              stage_cmd "${log_mode}" "trimmomatic SE ${my_raw_data}/${sample}.f* -threads ${nt_trimmomatic} -phred33 -basein ${sample} -baseout ${NGS_dir}/03-My_clean_data/${sample}_clean.single.fq.gz ILLUMINACLIP:$CONDA_PREFIX/share/trimmomatic/adapters/TruSeq3-SE.fa:2:30:10 SLIDINGWINDOW:${trimmomatic_sliding_window_s}:${trimmomatic_sliding_window_q} LEADING:${trimmomatic_leading_quality} TRAILING:${trimmomatic_trailing_quality} MINLEN:${trimmomatic_min_length}"
-              set -- "${my_raw_data}/${sample}.f"*
-              input=$1
-              echo "[input]: ${input1}"
+          files3=(${input_data}/${sample}.f*)
+          if [ ${#files3[@]} -gt 0 ]; then
+              stage_cmd "${log_mode}" "trimmomatic SE -threads ${nt_trimmomatic} -phred33 ${input_data}/${sample}.f* ${NGS_dir}/03-My_clean_data/${sample}_clean.single.fq.gz ILLUMINACLIP:$CONDA_PREFIX/share/trimmomatic/adapters/TruSeq3-SE.fa:2:30:10 SLIDINGWINDOW:${trimmomatic_sliding_window_s}:${trimmomatic_sliding_window_q} LEADING:${trimmomatic_leading_quality} TRAILING:${trimmomatic_trailing_quality} MINLEN:${trimmomatic_min_length}"
               trimmomatic SE \
                   -threads ${nt_trimmomatic} \
                   -phred33 \
-                  ${my_raw_data}/${sample}.f* \
+                  ${input_data}/${sample}.f* \
                   ${NGS_dir}/03-My_clean_data/${sample}_clean.single.fq.gz \
                   ILLUMINACLIP:$CONDA_PREFIX/share/trimmomatic/adapters/TruSeq3-SE.fa:2:30:10 \
                   SLIDINGWINDOW:${trimmomatic_sliding_window_s}:${trimmomatic_sliding_window_q} \
@@ -4468,20 +4458,13 @@ fi
 if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
   stage_info_main "Optional step: Constructing coalescent-based trees using ASTRAL/wASTRAL."
   
-  reroot_and_sort_tree() {
+  sort_tree() {
     local input_tree="$1"
     local output_tree="$2"
 
-	  if [ "${found_outgroup}" = "1" ]; then
-      outgroup_name=$(cat "${output_dir}"/00-logs_and_checklists/checklists/Outgroup.txt|fmt)
-      stage_cmd "${log_mode}" "nw_reroot ${input_tree} ${outgroup_name} | nw_order -c d - > ${output_tree}"
-      nw_reroot "${input_tree}" "${outgroup_name}" | nw_order -c d - > "${output_tree}"
-      stage_info_main "Successfully rerooting and sorting the tree."
-    else
-      stage_info_main "No outgroup name is provided. The tree will only be sorted, not rerooted."
-      stage_cmd "${log_mode}" "nw_order -c d ${input_tree} > ${output_tre e}"
-      nw_order -c d ${input_tree} > ${output_tree}
-    fi
+    stage_info_main "Sorting the tree..."
+    stage_cmd "${log_mode}" "nw_order -c d ${input_tree} > ${output_tree}"
+    nw_order -c d ${input_tree} > ${output_tree}
   }
   
   run_raxml_sg() {
@@ -4518,7 +4501,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
       stage_blank_main ""
     fi
     # reroot and sort the ASTRAL tree
-    reroot_and_sort_tree "${output_astral_prefix}.tre" "${output_astral_prefix}_sorted_rr.tre"
+    sort_tree "${output_astral_prefix}.tre" "${output_astral_prefix}_sorted_rr.tre"
   }
 
 
@@ -4562,7 +4545,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
       stage_blank_main ""
     fi
     # reroot and sort the wASTRAL tree
-    reroot_and_sort_tree "${output_wastral_prefix}_bootstrap.tre" "${output_wastral_prefix}_bootstrap_sorted_rr.tre"
+    sort_tree "${output_wastral_prefix}_bootstrap.tre" "${output_wastral_prefix}_bootstrap_sorted_rr.tre"
   }
 
   calculate_branch_length() {
@@ -4600,8 +4583,8 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
     -w "${bp_output_dir2}" \
     -N 100 > /dev/null 2>&1
     cd "${bp_output_dir2}"
-    # reroot the recalculated bl ASTRAL tree
-    reroot_and_sort_tree "${bp_output_dir2}/RAxML_result.${suffix}_${prefix}_${ortho_method}_bl.tre" "${bp_output_dir2}/${suffix}_${prefix}_${ortho_method}_sorted_bl_rr.tre"
+    # sort the recalculated bl ASTRAL tree
+    sort_tree "${bp_output_dir2}/RAxML_result.${suffix}_${prefix}_${ortho_method}_bl.tre" "${bp_output_dir2}/${suffix}_${prefix}_${ortho_method}_sorted_bl_rr.tre"
     if [ -s "${bp_output_dir2}/RAxML_result.${suffix}_${prefix}_${ortho_method}_bl.tre" ]; then
       stage_info_main "Finish"
     else
@@ -4641,8 +4624,8 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
     -w "${bp_output_dir}" \
     -N 100 > /dev/null 2>&1
     cd "${bp_output_dir}"
-    # reroot the recalculated bl ASTRAL tree
-    reroot_and_sort_tree "${bp_output_dir}/RAxML_result.${suffix}_sortadate_${prefix}_${ortho_method}_bl.tre" "${bp_output_dir}/${suffix}_sortadate_${prefix}_${ortho_method}_sorted_bl_rr.tre"
+    # sort the recalculated bl ASTRAL tree
+    sort_tree "${bp_output_dir}/RAxML_result.${suffix}_sortadate_${prefix}_${ortho_method}_bl.tre" "${bp_output_dir}/${suffix}_sortadate_${prefix}_${ortho_method}_sorted_bl_rr.tre"
     if [ -s "${bp_output_dir}/RAxML_result.${suffix}_sortadate_${prefix}_${ortho_method}_bl.tre" ]; then
       stage_info_main "Succeed to run SortaDate for ASTRAL results and recalculate the branch length."
       stage_blank_main ""
@@ -4737,6 +4720,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
       mkdir -p "${sortadate_results_dir_wastral}"
     fi
 
+    og_params=$(cat "${output_dir}"/00-logs_and_checklists/checklists/Outgroup.txt|fmt|tr '\n' ','|sed 's/ /,/g;s/,$//g')
     if [ "${run_astral}" = "TRUE" ]; then
       mkdir -p "${sortadate_results_dir_astral}"
       # sortadate step 01
@@ -4747,7 +4731,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
       --outg "${og_params}" > /dev/null 2>&1
       
       # sortadate step 02
-      stage_cmd "${log_mode}" "python ${dependencies_dir}/Sortadate/get_bp_genetrees.py ${input_gene_rr_trees} ${final_ASTRAL_rr_tree} --flend _rr.tre --outf ${sortadate_results_dir_astral}/step1_result.txt"
+      stage_cmd "${log_mode}" "python ${dependencies_dir}/Sortadate/get_bp_genetrees.py ${input_gene_rr_trees} ${final_ASTRAL_rr_tree} --flend _rr.tre --outf ${sortadate_results_dir_astral}/step2_result.txt"
       python "${dependencies_dir}/Sortadate/get_bp_genetrees.py" "${input_gene_rr_trees}" "${final_ASTRAL_rr_tree}" \
       --flend ".tre" \
       --outf "${sortadate_results_dir_astral}/step2_result.txt" > /dev/null 2>&1
@@ -4862,6 +4846,8 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
     init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Final_alignments_for_coalscent_list.txt" || exit 1
     stage_info_main "====>> Rerooting single-gene trees via mad(R) and newick_utilis (${process} in parallel) ====>>"
     if [ "${found_outgroup}" = "1" ]; then
+      outgroup_name=$(cat "${output_dir}"/00-logs_and_checklists/checklists/Outgroup.txt|fmt)
+      outgroup_name2="\"$outgroup_name\""
       while IFS= read -r line || [ -n "$line" ]; do
         if [ "${process}" != "all" ]; then
           read -u1000
@@ -4870,7 +4856,7 @@ if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
         Genename=$(basename "$line" .trimmed.aln.fasta)
         update_start_count "$Genename" "$stage_logfile"
         # Dynamically build the parameters of the nw reroot command
-        cmd="Rscript ${script_dir}/Reroot_genetree.R ${Genename} ${output_dir}/08-Coalescent-based_trees/${ortho_method}/01-Gene_trees ${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees ${output_dir}/00-logs_and_checklists/checklists/Outgroup.txt"
+        cmd="Rscript ${script_dir}/Reroot_genetree.R ${Genename} ${output_dir}/08-Coalescent-based_trees/${ortho_method}/01-Gene_trees ${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees ${outgroup_name2}"
         stage_cmd "${log_mode}" "${cmd}"
         eval "${cmd}" > /dev/null 2>&1
         if [ ! -s "${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees/${Genename}_rr.tre" ]; then
