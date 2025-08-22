@@ -86,9 +86,18 @@ https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/
 # Changelog
 
 **1.1.2** *August, 2025*
-Integrated [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md) into the pipeline stage 5. Users can specify `-tree` as `5` to run. (`-tree 5` was originally for running wASTRAL, now it is for running [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md), use `-tree 6` to run [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md).
+
+Integrated [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md) into the pipeline stage 5.           
+
+**Usage Update:**    
+- Run [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md) with parameter: `-tree 5`
+- Run [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md) with parameter: `-tree 6`    
+
+**New dependency:**     
+- [ASTER(conda version)](https://github.com/chaoszhang/ASTER)
 
 **1.1.1** *August, 2025*
+
 Fixed some common bugs.
 
 # Citation
