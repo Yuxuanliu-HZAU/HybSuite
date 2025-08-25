@@ -1,5 +1,5 @@
 <div align="center">
-    
+
 # HybSuite: An integrated pipeline for hybrid capture phylogenomics from reads to trees
 
 </div>
