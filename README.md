@@ -1,6 +1,3 @@
-<div align="center">
-</div>
-
 # HybSuite: An integrated pipeline for hybrid capture phylogenomics from reads to trees
 
 <img src="https://github.com/Yuxuanliu-HZAU/HybSuite/blob/master/images/HybSuite_logo.png" width="300" height="auto">
