@@ -1,26 +1,9 @@
 <div align="center">
+</div>
 
 # HybSuite: An integrated pipeline for hybrid capture phylogenomics from reads to trees
 
 <img src="https://github.com/Yuxuanliu-HZAU/HybSuite/blob/master/images/HybSuite_logo.png" width="300" height="auto">
-
-
-</div>
-
-```
-........>>>> One Single Run
- _     _                 _          ________               _    
-| |   | |               | |        / _______|             |_|     _ 
-| |   | |               | |        | |_         _     _    _    _| |_    ______       
-| |___| |  __      __   | |____     \_ \_      | |   | |  | |  |_   _|  /  ____|   
-|  ___  |  \ \    / /   |  ___ \      \_ \_    | |   | |  | |    | |    | |____   
-| |   | |   \ \  / /    | |   \ \       \_ \   | |   | |  | |    | |    |  ____|
-| |   | |    \ \/ /     | |___/ /   ______| |  | |___| |  | |    | |_   | |____ 
-|_|   |_|     \  /      |______/   |________/   \_____/   |_|    |__/   \______|             
-              / /                                    
-             / /       
-            /_/            NGS Raw Data ATGCTACTGATCCAACCT   ......  >>>>  Trees
-```
 
 **Released on 10.3.2025 by [Sun's Lab](https://github.com/SunLab-MiaoPu)**  
 **Developed by:** [Yuxuan Liu](https://github.com/Yuxuanliu-HZAU)  
