@@ -1,0 +1,126 @@
+Stage 4 Manual
+--------------------------------------------------------------------------------
+Usage: hybsuite stage4 ...
+
+Mandatory arguments: -input_list -aln_dir -output_dir
+
+Essential arguments: -PH -sp_tree -prefix -run_phyparts -nt -process
+
+Arguments for inputs:
+  -input_list <FILE>    The file listing input sample names and corresponding data types used in stage 1&2. (Default: None)
+  -aln_dir              The directory containing different orthogroups alignments generated in stage 3. (Default: <output_dir>/06-Final_alignments)
+                        It's advisable to set this parameter as '<output_dir>/06-Final_alignments'.
+  -PH <1-7|a|b|all>     Alignments used by Paralogs handling methods: (one or more of them can be chosen)
+                        1: HRS, 2: RLWP, 3: LS, 4: MI, 5: MO, 6: RT, 7: 1to1
+                        a: PhyloPyPruner, b: ParaGone (Default: 1a)
+
+Arguments for outputs:
+  -output_dir <DIR>     Output directory for all pipeline results (better to be consistent across all stages). (Default: None)
+  -prefix <STRING>      Prefix for output files. (Default: HybSuite)
+
+General arguments:
+  === Orthology inference control ===
+  -PH <1-7|a|b|all>     Choose alignments generated via paralogs handling methods as input:
+                        1: HRS, 2: RLWP, 3: LS, 4: MI, 5: MO, 6: RT, 7: 1to1 (one or more of them can be chosen)
+                        a: PhyloPyPruner, b: ParaGone (Default: 1a)
+
+  === Species tree builder control ===
+  -sp_tree <1-5|all>    Species tree inference method:
+                        1: IQ-TREE, 2: RAxML, 3: RAxML-NG, 4: ASTRAL-IV, 5: wASTRAL
+  
+  === Gene tree builder control ===
+  -gene_tree <1/2>      Choose the software to construct paralogs gene trees. (1: IQ-TREE; 2: FastTree) (Default: 1) 
+  -gene_tree_bb <INT>   Choose the bootstrap value for paralogs gene trees inference. (Default: 1000)
+  
+  === Gene trees collapse threshold ===
+  -collapse_threshold <VALUE>
+                        Specify the minimum support value threshold for internal nodes in gene trees. (Default: 0)
+                        Nodes with support values ≤ this threshold will be collapsed into polytomies.
+
+  === Threads control ===
+  -nt <INT|AUTO>        Global thread setting. (Default: 1)
+  -nt_amas <INT>        AMAS.py threads (Default: 1)
+  -nt_modeltest_ng <INT>               
+                        ModelTest-NG threads (Default: 1)
+  -nt_iqtree <INT>      IQ-TREE threads (Default: 1)
+  -nt_fasttree <INT>    FastTree threads (Default: 1)
+  -nt_raxml_ng <INT>    RAxML-NG threads (Default: 1)
+  -nt_raxml <INT>       RAxML threads (Default: 1)
+  -nt_astral4 <INT>     ASTRAL-IV threads (Default: 1)
+  -nt_wastral <INT>     wASTRAL threads (Default: 1)
+  -nt_astral_pro <INT>  ASTRAL-Pro3 threads (Default: 1)
+
+  === Parallel control ===
+  -process <INT|all>    Number of gene trees inference in coalescent analysis to run concurrently. (Default: 1)
+                        "all" means running all samples concurrently. (be cautious to set this option)
+
+Arguments for integrated tools :
+  === IQ-TREE (cancatenated analysis)===
+  -iqtree_bb <INT>      IQ-TREE bootstrap replicates (Default: 1000)
+  -iqtree_alrt <INT>    SH-aLRT replicates (Default: 1000)
+  -iqtree_run_option <str>      
+                        IQ-TREE run mode [standard|undo] (Default: undo)
+  -iqtree_partition <TRUE/FALSE>       
+                        Whether to use partition models in IQ-TREE (Default: TRUE)
+  -iqtree_constraint_tree <Treefile>           
+                        The pathway to the constraint tree for running IQ-TREE (Default: none)
+
+  === ModelTest-NG ===
+  -run_modeltest_ng <TRUE/FALSE>       
+                        Whether to run ModelTest-NG (Default: TRUE)
+
+  === RAxML ===
+  -raxml_m <str>        RAxML model [GTRGAMMA|PROTGAMMA] (Default: GTRGAMMA)
+  -raxml_bb <INT>       RAxML bootstrap replicates (Default: 1000)
+  -raxml_constraint_tree <Treefile>              
+                        The pathway to the constraint tree for running RAxML (Default: no constraint tree)
+
+  === RAxML-NG ===
+  -rng_bs_trees <INT>   RAxML-NG bootstrap replicates (Default: 1000)
+  -rng_force <TRUE/FALSE>              
+                        Ignore thread warnings (Default: FALSE)
+  -rng_constraint_tree <Treefile>                
+                        The pathway to the constraint tree for running RAxML-NG (Default: no constraint tree)
+
+  === ASTRAL-IV ===
+  -astral_r <INT>       ASTRAL-IV rounds of search. (Default: 4)
+  -astral_s <INT>       ASTRAL-IV rounds of subsampling. (Default: 4)
+
+  === wASTRAL ===
+  -wastral_mode <1-4>   wASTRAL mode [1|2|3|4] (Default: 1)
+                        1: hybrid weighting, 2: support only, 3: length only, 4: unweighted
+  -wastral_r <INT>      wASTRAL rounds of search. (Default: 4)
+  -wastral_s <INT>      wASTRAL rounds of subsampling. (Default: 4)
+
+  === ASTRAL-Pro ===
+  -astral_pro_r <INT>   ASTRAL-Pro rounds of search. (Default: 4)
+  -astral_pro_s <INT>   ASTRAL-Pro rounds of subsampling. (Default: 4)
+
+  === PhyPartsPieCharts & modified_phypartspiecharts ===
+  -run_phyparts <TRUE|FALSE>
+                        Enable/disable PhyParts concordance analysis and modified pie chart visualization. (Default: TRUE)
+                        Note: Requires successful completion of previous coalescent analysis.
+  -phypartspiecharts_tree_type <cladogram/circle>
+                        The tree type of displaying when running modified_phypartspiecharts.py (Default: cladogram)
+  -phypartspiecharts_num_mode <num>
+                        Control what numbers to show on branches (specify 0-2 digits) (Default: 12)
+                        0: Hide all numbers
+                        1: Number of genes supporting species tree (blue)
+                        2: Number of genes conflicting with species tree (red+green)
+                        3: Number of genes with no signal (gray)
+                        4: Proportion of supporting genes (blue/total)
+                        5: Proportion of conflicting genes ((red+green)/total)
+                        6: Proportion of no signal genes (gray/total)
+                        7: Ratio of supporting to all signal genes (blue/(blue+red+green))
+                        8: Ratio of conflicting to all signal genes ((red+green)/(blue+red+green))
+                        9: Original node support values from the input tree
+
+Command example :
+  === Run IQ-TREE ===
+  hybsuite stage4 -aln_dir ./06-Final_alignments -t ./Angiosperms353 -OI 1234567a -output_dir ./ -nt -process 5 -sp_tree 1
+  
+  === Run ASTRAL-IV ===
+  hybsuite stage4 -aln_dir ./06-Final_alignments -t ./Angiosperms353 -OI 1234567a -output_dir ./ -nt -process 5 -sp_tree 4
+
+  === Run ASTRAL-IV and PhyParts ===
+  hybsuite stage4 -aln_dir ./06-Final_alignments -t ./Angiosperms353 -OI 1234567a -output_dir ./ -nt -process 5 -sp_tree 4 -run_phyparts TRUE

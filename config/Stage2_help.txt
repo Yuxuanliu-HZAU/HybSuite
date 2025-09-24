@@ -1,0 +1,62 @@
+Stage 2 Manual
+--------------------------------------------------------------------------------
+Usage: hybsuite stage2 ...
+
+Mandatory arguments: -input_list -NGS_dir -t -output_dir
+
+Essential arguments: -eas_dir -seqs_min_length -seqs_locus_filter -nt -process
+
+Arguments for inputs:
+  -input_list <FILE>    The file listing input sample names and corresponding data types used in stage 1. (Default: None)
+  -NGS_dir <DIR>        The directory containing NGS raw and cleaned reads files (generated in stage 1). (Default: ./NGS_dir)
+  -t <FILE>             Target file for data assembly. (follows the format required in HybPiper)
+
+Arguments for outputs:
+  -output_dir <DIR>     The Output directory for all pipeline results (better to be consistent across all stages). (Default: None)
+  -eas_dir <DIR>        The output directory containing HybPiper assembly sequences. (Default: <output_dir>/01-Assembled_data)
+                        Note: Pre-existing data in this directory will skip redundant assembly steps.
+
+General arguments:
+  === Putative paralogs filtering control ===
+  -seqs_min_length <INT>         
+                        Minimum sequence length for filtered paralogs. (Default: 0)
+                        Putative paralogs shorter than this value will be filtered.             
+  -seqs_mean_length_ratio <0-1>    
+                        Minimum sequence length ratio relative to the mean value per locus for putative paralogs. (Default: 0)
+                        Putative paralogs shorter than this percentage of the maximum length will be filtered.
+  -seqs_max_length_ratio <0-1>              
+                        Minimum length ratio relative to the longest value per locus for putative paralogs. (Default: 0)
+                        Putative paralogs shorter than this percentage of the maximum length will be filtered.
+  -seqs_locus_filter <0-1>           
+                        Minimum sample coverage for putative paralogs. (Default: 0)
+                        For all putative paralogs in stage 2, HRS and RLWP sequences in stage 3, loci lower than this sample coverage will be filtered.
+  -seqs_sample_filter <0-1>            
+                        Minimum locus coverage for putative paralogs. (Default: 0)
+                        For all putative paralogs in stage 2, taxa (samples) with lower than this locus coverage will be filtered.
+  
+  -heatmap_color {black,blue,red,green,purple,orange,yellow,brown,pink}
+                        Color scheme for heatmap gradient (Default: black)
+  
+  === Threads control ===
+  -nt <INT|AUTO>        Global thread setting (Default: 1)
+  -nt_hybpiper <INT>    HybPiper threads (Default: 1)
+
+  === Parallel control ===
+  -process <INT|all>    Number of data assembly ('hybpiper assemble') to run concurrently (Default: 1)
+                        "all" means running all samples concurrently (be cautious to set this option)
+  
+  === Logfile control ===
+  -log_mode <simple|cmd|full>
+                        The output mode of hybsuite logfile. (Default: cmd)
+
+Arguments for integrated tools:
+  === HybPiper ===
+  -hybpiper_m <str>     Sequence retrieval method [blast|diamond] (Default: blast)
+
+Command example:
+  === Without putative paralogs filtering ===
+  hybsuite stage2 -NGS_dir ./NGS_dir -t ./Angiosperms353.fasta -output_dir ./ -nt 5 -process 5
+  
+  === With putative paralogs filtering ===
+  hybsuite stage2 -NGS_dir ./NGS_dir -t ./Angiosperms353.fasta -output_dir ./ -nt 5 -process 5 -seqs_min_length 100 -seqs_locus_filter 0.1
+

@@ -1,0 +1,274 @@
+HybSuite full pipeline Manual
+--------------------------------------------------------------------------------
+Usage: hybsuite full_pipeline ...
+
+Mandatory arguments: -input_list -input_data (required when including user-provided data) -t -output_dir
+
+Essential arguments: -PH -sp_tree -seqs_min_length -aln_locus_filter -prefix -prefix -nt -process
+
+Arguments for inputs:
+  -input_list <FILE>    The file listing input sample names and corresponding data types. (Default: None)
+  -input_data <DIR>     The directory containing all input data (required when the inputs include your own data / pre-assembled data). (Default: None).
+  -t <FILE>             Target file for data assembly. (follows the format required in HybPiper)
+
+Arguments for outputs:
+  -output_dir <DIR>     The output directory for all pipeline results. (Default: None)
+  -NGS_dir <DIR>        The output directory containing raw and cleaned reads files (see GitHub documentation).
+                        Notes: Pre-existing cleaned reads will skip reads trimming steps.
+  -eas_dir <DIR>        The output directory containing HybPiper assembly sequences. (Default: <output_dir>/01-Assembled_data)
+                        Note: Pre-existing data in this directory will skip redundant assembly steps.
+  -prefix <STRING>      Prefix for output files. (Default: HybSuite)
+
+General arguments:
+  === Public raw reads downloading control (Stage 1) ===
+  -rm_sra <TRUE/FALSE>  Whether to remove SRA files after conversion. (Default: TRUE)
+  -download_format <fastq|fastq_gz>
+                        Downloaded data format. (Default: fastq_gz)
+
+  === Putative paralogs filtering control (Stage 2) ===
+  -seqs_min_length <INT>         
+                        Minimum sequence length for filtered paralogs. (Default: 0)
+                        Putative paralogs shorter than this value will be filtered.             
+  -seqs_mean_length_ratio <0-1>    
+                        Minimum sequence length ratio relative to the mean value per locus for putative paralogs. (Default: 0)
+                        Putative paralogs shorter than this percentage of the maximum length will be filtered.
+  -seqs_max_length_ratio <0-1>              
+                        Minimum length ratio relative to the longest value per locus for putative paralogs. (Default: 0)
+                        Putative paralogs shorter than this percentage of the maximum length will be filtered.
+  -seqs_locus_filter <0-1>           
+                        Minimum sample coverage for putative paralogs. (Default: 0)
+                        For all putative paralogs in stage 2, HRS and RLWP sequences in stage 3, loci lower than this sample coverage will be filtered.
+  -seqs_sample_filter <0-1>            
+                        Minimum locus coverage for putative paralogs. (Default: 0)
+                        For all putative paralogs in stage 2, taxa (samples) with lower than this locus coverage will be filtered.
+
+  === Heatmap control (Stage 2&3) ===
+  -heatmap_color {black,blue,red,green,purple,orange,yellow,brown,pink}
+                        Color scheme for heatmap gradient. (Default: black)
+
+  === Paralogs handling control (Stage 3) ===
+  -PH <1-7|a|b|all>     Paralogs handling methods to execute: (one or more of them can be chosen)
+                        1: HRS, 2: RLWP, 3: LS, 4: MI, 5: MO, 6: RT, 7: 1to1
+                        a: PhyloPyPruner, b: ParaGone (Default: 1a)
+  
+  === Sequences and alignments filtering control (Stage 3) ===
+  -seqs_min_length <INT>
+                        Minimum sequence bp length for filtering HRS and RLWP sequences. (Default: 0)
+                        HRS and RLWP sequences shorter than this value will be removed.
+  -aln_min_length <INT> 
+                        Minimum sequence bp length for filtering HRS and RLWP final alignments. (Default: 4)
+  -aln_locus_filter <0-1>
+                        Minimum sample coverage for final alignments. (Default: 0)
+                        Final alignments (aligned and trimmed) with sample coverage below this threshold will be removed.
+  -aln_sample_filter <0-1>
+                        Minimum locus coverage for final alignments. (Default: 0)
+                        Final alignments (aligned and trimmed) with sample coverage below this threshold will be removed.
+
+  === Alignments trimming tool control (Stage 3) ===
+  -trim_tool <1/2>      Choose the software to trim/clean alignments. (1: trimAl; 2: HMMCleaner) (Default: 1)
+  
+  === Gene trees builder control (Stage 3&4) ===
+  -gene_tree <1/2>      Choose the software to construct paralogs gene trees. (1: IQ-TREE; 2: FastTree) (Default: 1) 
+  -gene_tree_bb <INT>   Choose the bootstrap value for paralogs gene trees inference. (Default: 1000)
+
+  === Species tree builder control (Stage 4) ===
+  -sp_tree <1-5|all>    Species tree inference method: (Default: 1)
+                        1: IQ-TREE, 2: RAxML, 3: RAxML-NG, 4: ASTRAL-IV, 5: wASTRAL, 6: ASTRAL-Pro
+  
+  === Gene trees collapse threshold ===
+  -collapse_threshold <VALUE>
+                        Specify the minimum support value threshold for internal nodes in gene trees. (Default: 0)
+                        Nodes with support values ≤ this threshold will be collapsed into polytomies.
+  
+  === Threads Control ===
+  -nt <INT|AUTO>        Global thread setting. (Default: 1)
+  -nt_fasterq_dump <INT>               
+                        fasterq-dump threads. (Default: 1)
+  -nt_pigz <INT>        pigz compression threads. (Default: 1)
+  -nt_trimmomatic <INT> Trimmomatic threads. (Default: 1)
+  -nt_hybpiper <INT>    HybPiper threads (Default: 1)
+  -nt_paragone <INT>    ParaGone threads. (Default: 1)
+  -nt_phylopypruner <INT>              
+                        PhyloPyPruner threads. (Default: 1)
+  -nt_mafft <INT>       MAFFT threads. (Default: 1)
+  -nt_amas <INT>        AMAS.py threads. (Default: 1)
+  -nt_modeltest_ng <INT>               
+                        ModelTest-NG threads. (Default: 1)
+  -nt_iqtree <INT>      IQ-TREE threads. (Default: 1)
+  -nt_fasttree <INT>    FastTree threads. (Default: 1)
+  -nt_modeltest_ng <INT>               
+                        ModelTest-NG threads (Default: 1)
+  -nt_raxml_ng <INT>    RAxML-NG threads (Default: 1)
+  -nt_raxml <INT>       RAxML threads (Default: 1)
+  -nt_astral4 <INT>     ASTRAL-IV threads (Default: 1)
+  -nt_wastral <INT>     wASTRAL threads (Default: 1)
+  -nt_astral_pro <INT>  ASTRAL-Pro3 threads (Default: 1)
+
+  === Parallel Control ===
+  -process <INT|all>    Number of subprocess to run concurrently. (Default: 1)
+                        "all" means running all subprocesses concurrently. (be cautious to set this option)
+                        The related steps are: 
+                        Stage 1: public data downloading and raw reads trimming;
+                        Stage 2: data assembly ('hybpiper assemble');
+                        Stage 3: multiple sequences aligning, alignments trimming, and gene trees inference;
+                        Stage 4: gene trees inference in coalescent analysis.
+
+  === Logfile Control ===
+  -log_mode <simple|cmd|full>
+                        The output mode of hybsuite logfile. (Default: cmd)
+
+Arguments for integrated tools :
+  === SRAToolkit (Stage 1) ===
+  -sra_maxsize <NUM>    The maximum size of sra files to download. (Default: 20GB)
+
+  === Trimmomatic (Stage 1) ===
+  -trimmomatic_leading_quality <3-40>
+                        Leading base quality cutoff. (Default: 3)
+  -trimmomatic_trailing_quality <3-40> 
+                        Trailing base quality cutoff. (Default: 3)
+  -trimmomatic_min_length <36-100>
+                        Minimum read length. (Default: 36)
+  -trimmomatic_sliding_window_s <4-10> 
+                        Sliding window size. (Default: 4)
+  -trimmomatic_sliding_window_q <15-30>
+                        Window average quality. (Default: 15)
+
+  === HybPiper (Stage 2) ===
+  -hybpiper_m <str>     Sequence retrieval method [blast|diamond] (Default: blast)
+
+  === PhyloPyPruner (Stage 3) ===
+  -pp_min_taxa <INT>    Minimum taxa per cluster. (Default: 4)
+  -pp_min_support <0-1> Minimum support value. (Default: 0=auto)
+  -pp_trim_lb <INT>     Trim long branches. (Default: 5)
+
+  === ParaGone (Stage 3) ===  
+  -paragone_pool <INT>  Parallel alignment tasks. (Default: 1)
+  -paragone_treeshrink_q <0-1>        
+                        TreeShrink quantile threshold (Default: 0.05)
+  -paragone_cutoff_value <FLOAT>       
+                        Branch length cutoff (Default: 0.03)
+  -paragone_minimum_taxa <INT>         
+                        Minimum taxa per alignment (Default: 4)
+  -paragone_min_tips <INT>             
+                        Minimum tips per tree (Default: 4)
+  
+  === MAFFT (Stage 3) ===  
+  -mafft_algorithm <str>               
+                        MAFFT algorithm [auto|linsi] (Default: auto)
+  -mafft_adjustdirection <TRUE/FALSE>  
+                        Whether to adjust sequence directions (Default: TRUE)
+  -mafft_maxiterate <INT>              
+                        Maximum number of iterations for MAFFT (Default: auto)
+                        Specifies the maximum number of iterations MAFFT will perform during multiple sequence alignment. Higher iteration counts may improve alignment accuracy but will increase computation time.
+  -mafft_pair <str>                    
+                        Pairing strategy for MAFFT (Default: auto)
+                        Specifies the pairing strategy used by MAFFT during multiple sequence alignment. Options include auto, localpair, globalpair, etc. Choosing the appropriate strategy can affect the alignment results and efficiency.
+  
+  === trimAl (Stage 3) ===
+  -trimal_mode <str>                   
+                        trimAl mode [automated1|strict|strictplus|gappyout|nogaps|noallgaps] (Default: automated1)
+  -trimal_gapthreshold <0-1>           
+                        Gap threshold (Default: 0.12)
+  -trimal_simthreshold <0-1>           
+                        Similarity threshold (Default: auto)
+  -trimal_cons <0-100>                 
+                        Consensus threshold (Default: auto)
+  -trimal_block <INT>                  
+                        Minimum block size (Default: auto)
+  -trimal_w <INT>                      
+                        Window size (Default: auto)
+  -trimal_gw <INT>                     
+                        Gap window size (Default: auto)
+  -trimal_sw <INT>                     
+                        Similarity window size (Default: auto)
+  -trimal_resoverlap <0-1>             
+                        Minimum overlap of a positions with other positions in the column. (Default: auto) 
+  -trimal_seqoverlap <0-100>           
+                        Minimum percentage of sequences without gaps in a column. (Default: auto)
+  
+  === HMMCleaner (Stage 3) ===
+  -hmmcleaner_cost <NUM1_NUM2_NUM3_NUM4>
+                        Cost parameters that defines the low similarity segments detected by HmmCleaner. (Default: -0.15_-0.08_0.15_0.45) 
+                        Users can change each value but they have to be in increasing order. (NUM1 < NUM2 < 0 < NUM3 < NUM4)
+  
+  === IQ-TREE (Stage 4) ===
+  -iqtree_bb <INT>      IQ-TREE bootstrap replicates (Default: 1000)
+  -iqtree_alrt <INT>    SH-aLRT replicates (Default: 1000)
+  -iqtree_run_option <str>      
+                        IQ-TREE run mode [standard|undo] (Default: undo)
+  -iqtree_partition <TRUE/FALSE>       
+                        Whether to use partition models in IQ-TREE (Default: TRUE)
+  -iqtree_constraint_tree <Treefile>           
+                        The pathway to the constraint tree for running IQ-TREE (Default: none)
+
+  === ModelTest-NG (Stage 4) ===
+  -run_modeltest_ng <TRUE/FALSE>       
+                        Whether to run ModelTest-NG (Default: TRUE)
+
+  === RAxML (Stage 4) ===
+  -raxml_m <str>        RAxML model [GTRGAMMA|PROTGAMMA] (Default: GTRGAMMA)
+  -raxml_bb <INT>       RAxML bootstrap replicates (Default: 1000)
+  -raxml_constraint_tree <Treefile>              
+                        The pathway to the constraint tree for running RAxML (Default: no constraint tree)
+
+  === RAxML-NG (Stage 4) ===
+  -rng_bs_trees <INT>   RAxML-NG bootstrap replicates (Default: 1000)
+  -rng_force <TRUE/FALSE>              
+                        Ignore thread warnings (Default: FALSE)
+  -rng_constraint_tree <Treefile>                
+                        The pathway to the constraint tree for running RAxML-NG (Default: no constraint tree)
+
+  === ASTRAL-IV (Stage 4) ===
+  -astral_r <INT>       ASTRAL-IV rounds of search. (Default: 4)
+  -astral_s <INT>       ASTRAL-IV rounds of subsampling. (Default: 4)
+
+  === wASTRAL (Stage 4) ===
+  -wastral_mode <1-4>   wASTRAL mode [1|2|3|4] (Default: 1)
+                        1: hybrid weighting, 2: support only, 3: length only, 4: unweighted
+  -wastral_r <INT>      wASTRAL rounds of search. (Default: 4)
+  -wastral_s <INT>      wASTRAL rounds of subsampling. (Default: 4)
+
+  === ASTRAL-Pro ===
+  -astral_pro_r <INT>   ASTRAL-Pro rounds of search. (Default: 4)
+  -astral_pro_s <INT>   ASTRAL-Pro rounds of subsampling. (Default: 4)
+
+  === PhyPartsPieCharts & modified_phypartspiecharts (Stage 4) ===
+  -run_phyparts <TRUE|FALSE>
+                        Enable/disable PhyParts concordance analysis and modified pie chart visualization. (Default: TRUE)
+                        Note: Requires successful completion of previous coalescent analysis.
+  -phypartspiecharts_tree_type <cladogram/circle>
+                        The tree type of displaying when running modified_phypartspiecharts.py (Default: cladogram)
+  -phypartspiecharts_num_mode <num>
+                        Control what numbers to show on branches (specify 0-2 digits) (Default: 12)
+                        0: Hide all numbers
+                        1: Number of genes supporting species tree (blue)
+                        2: Number of genes conflicting with species tree (red+green)
+                        3: Number of genes with no signal (gray)
+                        4: Proportion of supporting genes (blue/total)
+                        5: Proportion of conflicting genes ((red+green)/total)
+                        6: Proportion of no signal genes (gray/total)
+                        7: Ratio of supporting to all signal genes (blue/(blue+red+green))
+                        8: Ratio of conflicting to all signal genes ((red+green)/(blue+red+green))
+                        9: Original node support values from the input tree
+
+Command example :
+  === Run the full pipeline with all paralog-handling methods and all species trees inference approaches ===
+  hybsuite full_pipeline \
+  -input_list ./Input_list.txt \
+  -input_data ./Input_data \
+  -t Angiosperms353.fasta \
+  -OI 1234567 \
+  -sp_tree 12345 \
+  -output_dir ./ \
+  -nt 5 -process 5
+  
+  === Run the full pipeline with only tree-based orthology inference methods (MO/MI/RT/1to1) in ParaGone and ASTRAL-IV ===
+  hybsuite full_pipeline \
+  -input_list ./Input_list.txt \
+  -input_data ./Input_data \
+  -t Angiosperms353.fasta \
+  -OI 4567b \
+  -sp_tree 4 \
+  -output_dir ./ \
+  -nt 5 -process 5
+

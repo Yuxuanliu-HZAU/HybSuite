@@ -1,0 +1,128 @@
+Stage 3 Manual
+--------------------------------------------------------------------------------
+Usage: hybsuite stage3 ...
+
+Mandatory arguments: -input_list -eas_dir -paralogs_dir -t -output_dir
+
+Essential arguments: -PH -prefix -run_phyparts -aln_locus_filter -nt -process
+
+Arguments for inputs:
+  -input_list <FILE>    The file listing input sample names and corresponding data types used in stage 1&2. (Default: None)
+  -eas_dir <DIR>        The output directory containing HybPiper assembly sequences (generated in stage 3). (Default: <output_dir>/01-Assembled_data)
+  -paralogs_dir <DIR>   The directory containing all putative paralog sequences generated in stage 2 or by users themselves. (Default: None)
+                        It's advisable to set this parameter as '<output_dir>/02-All_paralogs/03-Filtered_paralogs'.
+  -t <FILE>             Target file for data assembly. (follows the format required in HybPiper)
+
+Arguments for outputs:
+  -output_dir <DIR>     Output directory for all pipeline results (better to be consistent across all stages). (Default: None)
+  -prefix <STRING>      Prefix for output files. (Default: HybSuite)
+
+General arguments:
+  === Paralogs handling control ===
+  -PH <1-7|a|b|all>     Paralogs handling methods to execute: (one or more of them can be chosen)
+                        1: HRS, 2: RLWP, 3: LS, 4: MI, 5: MO, 6: RT, 7: 1to1
+                        a: PhyloPyPruner, b: ParaGone (Default: 1a)
+  
+  === Sequences and alignments filtering control ===
+  -seqs_min_length <INT>
+                        Minimum sequence bp length for filtering HRS and RLWP sequences. (Default: 0)
+                        HRS and RLWP sequences shorter than this value will be removed.
+  -aln_min_length <INT> 
+                        Minimum sequence bp length for filtering HRS and RLWP final alignments. (Default: 4)
+  -aln_locus_filter <0-1>
+                        Minimum sample coverage for final alignments. (Default: 0)
+                        Final alignments (aligned and trimmed) with sample coverage below this threshold will be removed.
+  -aln_sample_filter <0-1>
+                        Minimum locus coverage for final alignments. (Default: 0)
+                        Final alignments (aligned and trimmed) with sample coverage below this threshold will be removed.
+
+  === Gene tree builder control ===
+  -gene_tree <1/2>      Choose the software to construct paralogs gene trees. (1: IQ-TREE; 2: FastTree) (Default: 1) 
+  -gene_tree_bb <INT>   Choose the bootstrap value for paralogs gene trees inference. (Default: 1000)
+
+  === Alignments trimming tool control ===
+  -trim_tool <1/2>      Choose the software to trim/clean alignments. (1: trimAl; 2: HMMCleaner) (Default: 1) 
+
+  === Threads control ===
+  -nt <INT|AUTO>        Global thread setting. (Default: 1)
+  -nt_paragone <INT>    ParaGone threads. (Default: 1)
+  -nt_phylopypruner <INT>              
+                        PhyloPyPruner threads. (Default: 1)
+  -nt_mafft <INT>       MAFFT threads. (Default: 1)
+  -nt_amas <INT>        AMAS.py threads. (Default: 1)
+  -nt_modeltest_ng <INT>               
+                        ModelTest-NG threads. (Default: 1)
+  -nt_iqtree <INT>      IQ-TREE threads. (Default: 1)
+  -nt_fasttree <INT>    FastTree threads. (Default: 1)
+
+  === Parallel control ===
+  -process <INT|all>    Number of multiple sequences aligning, alignments trimming, and gene trees inference to run concurrently. (Default: 1)
+                        "all" means running all samples concurrently. (be cautious to set this option)
+
+  === Heatmap control ===
+  -heatmap_color {black,blue,red,green,purple,orange,yellow,brown,pink}
+                        Color scheme for heatmap gradient. (Default: black)
+
+Arguments for integrated tools :
+  === PhyloPyPruner ===
+  -pp_min_taxa <INT>    Minimum taxa per cluster. (Default: 4)
+  -pp_min_support <0-1> Minimum support value. (Default: 0=auto)
+  -pp_trim_lb <INT>     Trim long branches. (Default: 5)
+
+  === ParaGone ===  
+  -paragone_pool <INT>  Parallel alignment tasks. (Default: 1)
+  -paragone_treeshrink_q <0-1>        
+                        TreeShrink quantile threshold (Default: 0.05)
+  -paragone_cutoff_value <FLOAT>       
+                        Branch length cutoff (Default: 0.03)
+  -paragone_minimum_taxa <INT>         
+                        Minimum taxa per alignment (Default: 4)
+  -paragone_min_tips <INT>             
+                        Minimum tips per tree (Default: 4)
+  
+  === MAFFT ===  
+  -mafft_algorithm <str>               
+                        MAFFT algorithm [auto|linsi] (Default: auto)
+  -mafft_adjustdirection <TRUE/FALSE>  
+                        Whether to adjust sequence directions (Default: TRUE)
+  -mafft_maxiterate <INT>              
+                        Maximum number of iterations for MAFFT (Default: auto)
+                        Specifies the maximum number of iterations MAFFT will perform during multiple sequence alignment. Higher iteration counts may improve alignment accuracy but will increase computation time.
+  -mafft_pair <str>                    
+                        Pairing strategy for MAFFT (Default: auto)
+                        Specifies the pairing strategy used by MAFFT during multiple sequence alignment. Options include auto, localpair, globalpair, etc. Choosing the appropriate strategy can affect the alignment results and efficiency.
+  
+  === trimAl ===
+  -trimal_mode <str>                   
+                        trimAl mode [automated1|strict|strictplus|gappyout|nogaps|noallgaps] (Default: automated1)
+  -trimal_gapthreshold <0-1>           
+                        Gap threshold (Default: 0.12)
+  -trimal_simthreshold <0-1>           
+                        Similarity threshold (Default: auto)
+  -trimal_cons <0-100>                 
+                        Consensus threshold (Default: auto)
+  -trimal_block <INT>                  
+                        Minimum block size (Default: auto)
+  -trimal_w <INT>                      
+                        Window size (Default: auto)
+  -trimal_gw <INT>                     
+                        Gap window size (Default: auto)
+  -trimal_sw <INT>                     
+                        Similarity window size (Default: auto)
+  -trimal_resoverlap <0-1>             
+                        Minimum overlap of a positions with other positions in the column. (Default: auto) 
+  -trimal_seqoverlap <0-100>           
+                        Minimum percentage of sequences without gaps in a column. (Default: auto)
+  
+  === HMMCleaner ===
+  -hmmcleaner_cost <NUM1_NUM2_NUM3_NUM4>
+                        Cost parameters that defines the low similarity segments detected by HmmCleaner. (Default: -0.15_-0.08_0.15_0.45) 
+                        Users can change each value but they have to be in increasing order. (NUM1 < NUM2 < 0 < NUM3 < NUM4)
+
+Command example :
+  === Without alignments filtering ===
+  hybsuite stage3 -eas_dir ./01-Assembled_data -paralogs_dir ./02-All_paralogs/03-Filtered_paralogs -t ./Angiosperms353 -OI 1234567a -output_dir ./ -nt -process 5
+  
+  === With alignments filtering ===
+  hybsuite stage3 -eas_dir ./01-Assembled_data -paralogs_dir ./02-All_paralogs/03-Filtered_paralogs -t ./Angiosperms353 -OI 124567b -output_dir ./ -nt -process 5 -aln_min_length 100 -aln_locus_filter 0.1
+

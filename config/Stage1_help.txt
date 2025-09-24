@@ -1,0 +1,61 @@
+Stage 1 Manual
+--------------------------------------------------------------------------------
+Usage: hybsuite stage1 ...
+
+Mandatory arguments: -input_list -input_data (required when including user-provided data) -output_dir
+
+Essential arguments: -sra_maxsize -NGS_dir -nt -process
+
+Arguments for inputs:
+  -input_list <FILE>    The file listing input sample names and corresponding data types. (Default: None)
+  -input_data <DIR>     The directory containing all input data (required when the inputs include your own data / pre-assembled data). (Default: None).
+
+Arguments for outputs:
+  -output_dir <DIR>     The output directory for all pipeline results (better to be consistent across all stages). (Default: None)
+  -NGS_dir <DIR>        The output directory containing raw and cleaned reads files (Default: <output_dir>/NGS_dataset).
+                        Notes: Pre-existing cleaned reads will skip reads trimming steps.
+
+General arguments:
+  === Threads control ===
+  -nt <INT|AUTO>        Global thread setting. (Default: 1)
+  -nt_fasterq_dump <INT>               
+                        fasterq-dump threads. (Default: 1)
+  -nt_pigz <INT>        pigz compression threads. (Default: 1)
+  -nt_trimmomatic <INT> Trimmomatic threads. (Default: 1)
+
+  === Parallel control ===
+  -process <INT|all>    Number of public data downloading and raw reads trimming to run concurrently. (Default: 1)
+                        "all" means running all samples concurrently. (be cautious to set this option)
+   
+  === Public raw reads doenloading control ===
+  -rm_sra <TRUE/FALSE>  Whether to remove SRA files after conversion. (Default: TRUE)
+  -download_format <fastq|fastq_gz>
+                        Downloaded data format. (Default: fastq_gz)
+
+  === Logfile Control ===
+  -log_mode <simple|cmd|full>
+                        The output mode of hybsuite logfile. (Default: cmd)
+
+Arguments for integrated tools:
+  === SRAToolkit ===
+  -sra_maxsize <NUM>    The maximum size of sra files to download. (Default: 20GB)
+
+  === Trimmomatic ===
+  -trimmomatic_leading_quality <3-40> 
+                        Leading base quality cutoff. (Default: 3)
+  -trimmomatic_trailing_quality <3-40> 
+                        Trailing base quality cutoff. (Default: 3)
+  -trimmomatic_min_length <36-100>     
+                        Minimum read length. (Default: 36)
+  -trimmomatic_sliding_window_s <4-10> 
+                        Sliding window size. (Default: 4)
+  -trimmomatic_sliding_window_q <15-30>
+                        Window average quality. (Default: 15)
+
+Command example:
+  === Use 1 thread and 1 parallel processing ===
+  hybsuite stage1 -input_list ./input_list.txt -input_data ./Input_data -NGS_dir ./NGS_dir -output_dir ./
+  
+  === Use 5 threads and 5 parallel processing ===
+  hybsuite stage1 -input_list ./input_list.txt -input_data ./Input_data -NGS_dir ./NGS_dir -output_dir ./ -nt 5 -process 5
+
