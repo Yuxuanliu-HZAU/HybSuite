@@ -4,6 +4,7 @@
 #===> Preparation and HybSuite Checking <===#
 #Options setting
 ###set the run name:
+hybsuite_version="1.1.5"
 current_time=$(date +"%Y-%m-%d_%H:%M:%S")
 # Read the variable list file and set the default values
 # Obtain the script path
@@ -12,125 +13,97 @@ config_dir="$script_dir/../config"
 dependencies_dir="$script_dir/../dependencies"
 
 print_welcome_phrases() {
-  echo ""
-  echo "........>>>> One Single Run"
-  echo " _     _                 _          ________               _     "
-  echo "| |   | |               | |        / _______|             |_|     _  "
-  echo "| |   | |               | |        | |_         _     _    _    _| |_    ______        "
-  echo "| |___| |  __      __   | |____     \_ \_      | |   | |  | |  |_   _|  /  ____|    "
-  echo "|  ___  |  \ \    / /   |  ___ \      \_ \_    | |   | |  | |    | |    | |____    "
-  echo "| |   | |   \ \  / /    | |   \ \       \_ \   | |   | |  | |    | |    |  ____|"
-  echo "| |   | |    \ \/ /     | |___/ /   ______| |  | |___| |  | |    | |_   | |____  "
-  echo "|_|   |_|     \  /      |______/   |________/   \_____/   |_|    |__/   \______|              "
-  echo "              / /                                     "
-  echo "             / /           "
-  echo "            /_/            NGS raw data ATGCTACTGATCCAACCT......  >>>>  Trees  "
-  echo ""
+  PURPLE_HEADER='\033[0;38;5;129m'
+  PURPLE_BOLD='\033[1;38;5;141m'       
+  PURPLE_DARK='\033[0;38;5;99m'        
+  PURPLE_LIGHT='\033[0;38;5;183m'    
+  PURPLE_ACCENT='\033[0;38;5;147m'    
+  CYAN_ACCENT='\033[0;36m'            
+  NC='\033[0m'                        
+
+  echo -e ""
+  echo -e "${PURPLE_HEADER}.....>>>> Hyb-Seq Phylogenomics Pipeline${NC}"
+  echo -e "${PURPLE_DARK} _     _                 _          ________               _     ${NC}"
+  echo -e "${PURPLE_DARK}| |   | |               | |        / _______|             |_|     _  ${NC}"
+  echo -e "${PURPLE_BOLD}| |   | |               | |        | |_         _     _    _    _| |_    ______        ${NC}"
+  echo -e "${PURPLE_BOLD}| |___| |  __      __   | |____     \_ \_      | |   | |  | |  |_   _|  /  ____|    ${NC}"
+  echo -e "${PURPLE_LIGHT}|  ___  |  \ \    / /   |  ___ \      \_ \_    | |   | |  | |    | |    | |____    ${NC}"
+  echo -e "${PURPLE_LIGHT}| |   | |   \ \  / /    | |   \ \       \_ \   | |   | |  | |    | |    |  ____|${NC}"
+  echo -e "${PURPLE_DARK}| |   | |    \ \/ /     | |___/ /   ______| |  | |___| |  | |    | |_   | |____  ${NC}"
+  echo -e "${PURPLE_DARK}|_|   |_|     \  /      |______/   |________/   \_____/   |_|    |__/   \______|              ${NC}"
+  echo -e "${PURPLE_ACCENT}              / /                                     ${NC}"
+  echo -e "${PURPLE_ACCENT}             / /           ${NC}"
+  echo -e "${PURPLE_LIGHT}            /_/                       | ${CYAN_ACCENT}Transparent${PURPLE_LIGHT} | ${CYAN_ACCENT}Reproducible${PURPLE_LIGHT} | ${CYAN_ACCENT}Flexible${PURPLE_LIGHT} |  ${NC}"
+  echo -e "${PURPLE_HEADER}                                      NGS raw reads ATGCTATCCCT .....>>>> Trees  ${NC}"
+  echo -e ""
   echo "================================================================================="
-  echo "HybSuite v. 1.1.0 released by the Sun Lab."
+  echo "HybSuite v. ${hybsuite_version} released by the Sun Lab."
   echo "Latest version: https://github.com/Yuxuanliu-HZAU/HybSuite.git"
   echo "================================================================================="
   echo ""
 }
 
-# Subcommand processing function
-run_subcommand() {
-  local subcommand="$1"
-  shift  # Remove subcommand argument, pass remaining args to subcommand
-
-  case "$subcommand" in
-    "filter_seqs_by_length")
-      # Execute filter_seqs_by_length.py script
-      "${script_dir}/filter_seqs_by_length.py" "$@"
-      return $?
-      ;;
-    "filter_seqs_by_coverage")
-      # Execute filter_seqs_by_sample_and_locus_coverage.py script
-      "${script_dir}/filter_seqs_by_sample_and_locus_coverage.py" "$@"
-      return $?
-      ;;
-    "plot_paralog_heatmap")
-      # Execute plot_paralog_heatmap.py script
-      "${script_dir}/plot_paralog_heatmap.py" "$@"
-      return $?
-      ;;
-    "plot_recovery_heatmap")
-      # Execute plot_recovery_heatmap.py script
-      "${script_dir}/plot_recovery_heatmap.py" "$@"
-      return $?
-      ;;
-    "rlwp")
-      # Execute RLWP.py script
-      "${script_dir}/RLWP.py" "$@"
-      return $?
-      ;;
-    "fasta_formatter")
-      # Execute Fasta_formatter.py script
-      "${script_dir}/Fasta_formatter.py" "$@"
-      return $?
-      ;;
-    "mpp")
-      # Execute modified_phypartspiecharts.py script
-      "${script_dir}/modified_phypartspiecharts.py" "$@"
-      return $?
-      ;;
-    "full_pipeline")
-      full_pipeline=true
-      ;;
-    "run_to_stage1")
-      run_to_stage1=true
-      ;;
-    "run_to_stage2")
-      run_to_stage2=true
-      ;;
-    "run_to_stage3")
-      run_to_stage3=true
-      ;;
-    "run_to_stage4")
-      run_to_stage4=true
-      ;;
-    "retrieve_results")
-      retrieve_results=true
-      ;;
-  esac
-}
 
 display_help() {
-  echo ""
-  echo "........>>>> One Single Run"
-  echo " _     _                 _          ________               _     "
-  echo "| |   | |               | |        / _______|             |_|     _  "
-  echo "| |   | |               | |        | |_         _     _    _    _| |_    ______        "
-  echo "| |___| |  __      __   | |____     \_ \_      | |   | |  | |  |_   _|  /  ____|    "
-  echo "|  ___  |  \ \    / /   |  ___ \      \_ \_    | |   | |  | |    | |    | |____    "
-  echo "| |   | |   \ \  / /    | |   \ \       \_ \   | |   | |  | |    | |    |  ____|"
-  echo "| |   | |    \ \/ /     | |___/ /   ______| |  | |___| |  | |    | |_   | |____  "
-  echo "|_|   |_|     \  /      |______/   |________/   \_____/   |_|    |__/   \______|              "
-  echo "              / /                                     "
-  echo "             / /        "
-  echo "            /_/         NGS raw data ATGCTACTGATCCAACCT......  >>>>  Trees  "
-  echo ""
-  sed -n '1,$p' $config_dir/HybSuite_help.txt
+  local subcommand="$1"
+  
+  PURPLE_HEADER='\033[0;38;5;129m'
+  PURPLE_BOLD='\033[1;38;5;141m'       
+  PURPLE_DARK='\033[0;38;5;99m'        
+  PURPLE_LIGHT='\033[0;38;5;183m'    
+  PURPLE_ACCENT='\033[0;38;5;147m'    
+  CYAN_ACCENT='\033[0;36m'            
+  NC='\033[0m'                        
+
+  echo -e ""
+  echo -e "${PURPLE_HEADER}.....>>>> Hyb-Seq Phylogenomics Pipeline${NC}"
+  echo -e "${PURPLE_DARK} _     _                 _          ________               _     ${NC}"
+  echo -e "${PURPLE_DARK}| |   | |               | |        / _______|             |_|     _  ${NC}"
+  echo -e "${PURPLE_BOLD}| |   | |               | |        | |_         _     _    _    _| |_    ______        ${NC}"
+  echo -e "${PURPLE_BOLD}| |___| |  __      __   | |____     \_ \_      | |   | |  | |  |_   _|  /  ____|    ${NC}"
+  echo -e "${PURPLE_LIGHT}|  ___  |  \ \    / /   |  ___ \      \_ \_    | |   | |  | |    | |    | |____    ${NC}"
+  echo -e "${PURPLE_LIGHT}| |   | |   \ \  / /    | |   \ \       \_ \   | |   | |  | |    | |    |  ____|${NC}"
+  echo -e "${PURPLE_DARK}| |   | |    \ \/ /     | |___/ /   ______| |  | |___| |  | |    | |_   | |____  ${NC}"
+  echo -e "${PURPLE_DARK}|_|   |_|     \  /      |______/   |________/   \_____/   |_|    |__/   \______|              ${NC}"
+  echo -e "${PURPLE_ACCENT}              / /                                     ${NC}"
+  echo -e "${PURPLE_ACCENT}             / /           ${NC}"
+  echo -e "${PURPLE_LIGHT}            /_/                       | ${CYAN_ACCENT}Transparent${PURPLE_LIGHT} | ${CYAN_ACCENT}Reproducible${PURPLE_LIGHT} | ${CYAN_ACCENT}Flexible${PURPLE_LIGHT} |  ${NC}"
+  echo -e "${PURPLE_HEADER}                                      NGS raw reads ATGCTATCCCT .....>>>> Trees  ${NC}"
+  echo -e ""
+  if [ -z "$subcommand" ]; then
+    sed -n '1,$p' $config_dir/HybSuite_help.txt
+  else
+    sed -n '1,$p' $config_dir/${subcommand}_help.txt
+  fi
 }
 
 # Function to display the version number
 display_version() {
-  echo ""
-  echo "........>>>> One Single Run"
-  echo " _     _                 _          ________               _     "
-  echo "| |   | |               | |        / _______|             |_|     _  "
-  echo "| |   | |               | |        | |_         _     _    _    _| |_    ______        "
-  echo "| |___| |  __      __   | |____     \_ \_      | |   | |  | |  |_   _|  /  ____|    "
-  echo "|  ___  |  \ \    / /   |  ___ \      \_ \_    | |   | |  | |    | |    | |____    "
-  echo "| |   | |   \ \  / /    | |   \ \       \_ \   | |   | |  | |    | |    |  ____|"
-  echo "| |   | |    \ \/ /     | |___/ /   ______| |  | |___| |  | |    | |_   | |____  "
-  echo "|_|   |_|     \  /      |______/   |________/   \_____/   |_|    |__/   \______|              "
-  echo "              / /                                     "
-  echo "             / /        "
-  echo "            /_/            NGS raw data ATGCTACTGATCCAACCT......  >>>>  Trees  "
-  echo ""
-  echo "                           HybSuite Version: 1.1.0"
-  echo ""
+  PURPLE_HEADER='\033[0;38;5;129m'
+  PURPLE_BOLD='\033[1;38;5;141m'       
+  PURPLE_DARK='\033[0;38;5;99m'        
+  PURPLE_LIGHT='\033[0;38;5;183m'    
+  PURPLE_ACCENT='\033[0;38;5;147m'    
+  CYAN_ACCENT='\033[0;36m'            
+  NC='\033[0m'                        
+
+  echo -e ""
+  echo -e "${PURPLE_HEADER}.....>>>> Hyb-Seq Phylogenomics Pipeline${NC}"
+  echo -e "${PURPLE_DARK} _     _                 _          ________               _     ${NC}"
+  echo -e "${PURPLE_DARK}| |   | |               | |        / _______|             |_|     _  ${NC}"
+  echo -e "${PURPLE_BOLD}| |   | |               | |        | |_         _     _    _    _| |_    ______        ${NC}"
+  echo -e "${PURPLE_BOLD}| |___| |  __      __   | |____     \_ \_      | |   | |  | |  |_   _|  /  ____|    ${NC}"
+  echo -e "${PURPLE_LIGHT}|  ___  |  \ \    / /   |  ___ \      \_ \_    | |   | |  | |    | |    | |____    ${NC}"
+  echo -e "${PURPLE_LIGHT}| |   | |   \ \  / /    | |   \ \       \_ \   | |   | |  | |    | |    |  ____|${NC}"
+  echo -e "${PURPLE_DARK}| |   | |    \ \/ /     | |___/ /   ______| |  | |___| |  | |    | |_   | |____  ${NC}"
+  echo -e "${PURPLE_DARK}|_|   |_|     \  /      |______/   |________/   \_____/   |_|    |__/   \______|              ${NC}"
+  echo -e "${PURPLE_ACCENT}              / /                                     ${NC}"
+  echo -e "${PURPLE_ACCENT}             / /           ${NC}"
+  echo -e "${PURPLE_LIGHT}            /_/                       | ${CYAN_ACCENT}Transparent${PURPLE_LIGHT} | ${CYAN_ACCENT}Reproducible${PURPLE_LIGHT} | ${CYAN_ACCENT}Flexible${PURPLE_LIGHT} |  ${NC}"
+  echo -e "${PURPLE_HEADER}                                      NGS raw reads ATGCTATCCCT .....>>>> Trees  ${NC}"
+  echo -e ""
+  echo -e "${PURPLE_DARK}Version: ${PURPLE_BOLD}${hybsuite_version}${NC}"
+  echo -e ""
 }
 
 if [ "$#" -eq 0 ]; then
@@ -144,133 +117,119 @@ fi
 
 # Parse command line arguments and set variables
 # Set conditional statements so that options "-h" and "-v" are in play
+if [ "$1" = "stage1" ] && ([ "$2" = "-h" ] || [ "$2" = "--help" ]); then
+  display_help "Stage1"
+  exit 0
+fi
+
+if [ "$1" = "stage2" ] && ([ "$2" = "-h" ] || [ "$2" = "--help" ]); then
+  display_help "Stage2"
+  exit 0
+fi
+
+if [ "$1" = "stage3" ] && ([ "$2" = "-h" ] || [ "$2" = "--help" ]); then
+  display_help "Stage3"
+  exit 0
+fi
+
+if [ "$1" = "stage4" ] && ([ "$2" = "-h" ] || [ "$2" = "--help" ]); then
+  display_help "Stage4"
+  exit 0
+fi
+
+if [ "$1" = "full_pipeline" ] && ([ "$2" = "-h" ] || [ "$2" = "--help" ]); then
+  display_help "Full_pipeline"
+  exit 0
+fi
+
+if { [ "$1" = "filter_seqs_by_length" ] || [ "$1" = "fsl" ]; } && { [ "$2" = "-h" ] || [ "$2" = "--help" ]; }; then
+  "${script_dir}/filter_seqs_by_length.py" "$@"
+  exit $?
+fi
+
+if { [ "$1" = "filter_seqs_by_coverage" ] || [ "$1" = "fsc" ]; } && { [ "$2" = "-h" ] || [ "$2" = "--help" ]; }; then
+  "${script_dir}/filter_seqs_by_sample_and_locus_coverage.py" "$@"
+  exit $?
+fi
+
+if { [ "$1" = "plot_paralog_heatmap" ] || [ "$1" = "pph" ]; } && { [ "$2" = "-h" ] || [ "$2" = "--help" ]; }; then
+  "${script_dir}/plot_paralog_heatmap.py" "$@"
+  exit $?
+fi
+
+if { [ "$1" = "plot_recovery_heatmap" ] || [ "$1" = "prh" ]; } && { [ "$2" = "-h" ] || [ "$2" = "--help" ]; }; then
+  "${script_dir}/plot_recovery_heatmap.py" "$@"
+  exit $?
+fi
+
+if { [ "$1" = "rlwp" ]; } && { [ "$2" = "-h" ] || [ "$2" = "--help" ]; }; then
+  "${script_dir}/RLWP.py" "$@"
+  exit $?
+fi
+
+if { [ "$1" = "fasta_formatter" ] || [ "$1" = "ff" ]; } && { [ "$2" = "-h" ] || [ "$2" = "--help" ]; }; then
+  "${script_dir}/Fasta_formatter.py" "$@"
+  exit $?
+fi
+
+if { [ "$1" = "rename_assembled_data" ] || [ "$1" = "rad" ]; } && { [ "$2" = "-h" ] || [ "$2" = "--help" ]; }; then
+  "${script_dir}/rename_assembled_data.py" "$@"
+  exit $?
+fi
+
+if { [ "$1" = "modified_phypartspiecharts" ] || [ "$1" = "mpp" ]; } && { [ "$2" = "-h" ] || [ "$2" = "--help" ]; }; then
+  "${script_dir}/modified_phypartspiecharts.py" "$@"
+  exit $?
+fi
+
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     display_help
-    exit 1
+    exit 0
 fi
 if [ "$1" = "-v" ] || [ "$1" = "--version" ]; then
     display_version
-    exit 1
-fi
-
-# Check if the subcommand is used
-full_pipeline=false
-run_to_stage1=false
-run_to_stage2=false
-run_to_stage3=false
-run_to_stage4=false
-if [ "$#" -gt 0 ]; then
-  case "$1" in
-    "filter_seqs_by_length"|"filter_seqs_by_coverage"|"plot_paralog_heatmap"|"plot_recovery_heatmap"|"rlwp"|"fasta_formatter"|"mpp")
-      print_welcome_phrases
-      run_subcommand "$@"
-      exit $?
-      ;;
-    "full_pipeline"|"run_to_stage1"|"run_to_stage2"|"run_to_stage3"|"run_to_stage4")
-      run_subcommand "$@"
-      ;;
-    "retrieve_results")
-      if [ "$2" = "-h" ]; then
-        echo "Usage: HybSuite --retrieve_results"
-        echo "Retrieve all tree files and figures generated by HybSuite."
-        echo "Options:"
-        echo "  -h, --help    Show this help message and exit"
-        echo "  -i            Specify the directory containing the results generated by HybSuite."
-        echo "  -o            Specify the output directory, all retrieved files will be saved in this directory."
-        exit 1
-      fi
-      if [ "$2" != "-i" ] && [ "$2" != "-o" ]; then
-        echo "[HybSuite-ERROR]:   You didn't specify the input directory (-i) or output directory (-o)."
-        echo "                    HybSuite exits."
-        echo ""
-        exit 1 
-      else
-        if [ "$2" = "-i" ]; then
-          eval "retrieve_input_dir=\"$3\""
-          eval "retrieve_output_dir=\"$5\""
-        fi
-        if [ "$2" = "-o" ]; then
-          eval "retrieve_output_dir=\"$3\""
-          eval "retrieve_input_dir=\"$5\""
-        fi
-        if [ ! -d "${retrieve_input_dir}" ]; then
-          echo "[HybSuite-ERROR]:   The input directory does not exist."
-          echo "                    HybSuite exits."
-          echo ""
-          exit 1
-        fi
-        mkdir -p "${retrieve_output_dir}"
-        retrieve_input_dir=${retrieve_input_dir%/}
-        find "${retrieve_input_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/" -name "Filtered_paralog_heatmap.png" -exec cp {} "${retrieve_output_dir}" 2>/dev/null \; || true
-        cp ${retrieve_input_dir}/05-Supermatrix/*/AMAS_reports_*_final.tsv "${retrieve_output_dir}" 2>/dev/null || true
-        cp ${retrieve_input_dir}/07-Concatenation-based_trees/*/IQ-TREE/IQ-TREE_rr* "${retrieve_output_dir}" 2>/dev/null || true
-        cp ${retrieve_input_dir}/07-Concatenation-based_trees/*/RAxML-NG/RAxML-NG_rr* "${retrieve_output_dir}" 2>/dev/null || true
-        cp ${retrieve_input_dir}/07-Concatenation-based_trees/*/RAxML/RAxML_rr* "${retrieve_output_dir}" 2>/dev/null || true
-        cp ${retrieve_input_dir}/08-Coalescent-based_trees/*/04-Species_tree_files/*_sorted_rr.tre "${retrieve_output_dir}" 2>/dev/null || true
-        cp ${retrieve_input_dir}/08-Coalescent-based_trees/*/05-Recalculated_bl_species_tree/*_sorted_bl_rr.tre "${retrieve_output_dir}" 2>/dev/null || true
-        cp ${retrieve_input_dir}/08-Coalescent-based_trees/*/06-PhyParts_PieCharts/*_phypartspiecharts_*.svg "${retrieve_output_dir}" 2>/dev/null || true
-        cp ${retrieve_input_dir}/08-Coalescent-based_trees/*/06-PhyParts_PieCharts/*_phypartspiecharts_*.tsv "${retrieve_output_dir}" 2>/dev/null || true
-        exit 0
-      fi
-      ;;
-      *)
-        echo "ERROR: Unknown HybSuite subcommand: $1."
-        echo "Command mode 1 (for conda version):"
-        echo "  hybsuite [subcommand] [options] ..."
-        echo "Command mode 2 (for local version):"
-        echo "  bash HybSuite.sh [subcommand] [options] ..."
-        echo "Available subcommands for running HybSuite pipeline:"
-        echo "  full_pipeline                       - Run all stages (stage1-5)"
-        echo "  run_to_stage1                       - Run stage 1"
-        echo "  run_to_stage2                       - Run stage 2"
-        echo "  run_to_stage3                       - Run stage 3"
-        echo "  run_to_stage4                       - Run stage 4"
-        echo "  retrieve_results                    - Retrieve results"
-        echo "Available subcommands for running HybSuite extension tools:"
-        echo "  filter_seqs_by_length               - Filter sequences by length (filter_seqs_by_length.py)"
-        echo "  filter_seqs_by_coverage             - Filter sequences by sample and locus coverage (filter_seqs_by_sample_and_locus_coverage.py)"
-        echo "  plot_paralog_heatmap                - Plot paralog heatmap (plot_paralog_heatmap.py)"
-        echo "  plot_recovery_heatmap               - Plot recovery heatmap (plot_recovery_heatmap.py)"
-        echo "  rlwp                                - RLWP tool (RLWP.py)"
-        echo "  fasta_formatter                     - FASTA formatting tool (Fasta_formatter.py)"
-        exit 1
-      ;;
-  esac
+    exit 0
 fi
 
 #Print welcome phrases
-  print_welcome_phrases
-  echo "================================================================================="
-  echo "HybSuite User input command:"
-  echo "$0 $@"
-  echo "================================================================================="
-  echo ""
+print_welcome_phrases
+echo "================================================================================="
+echo "HybSuite User input command:"
+echo "$0 $@"
+input_command="$0 $@"
+echo "================================================================================="
+echo ""
 
-# Switch to the script path
-while IFS= read -r line || [ -n "$line" ]; do
-  var=$(echo "${line}" | awk '{print $1}')
-  default=$(echo "${line}" | awk '{print $2}')
-  eval "${var}=''" > /dev/null 2>&1
-  eval "Default_${var}='${default}'" > /dev/null 2>&1
-  eval "found_${var}=false" > /dev/null 2>&1
-done < "${config_dir}/HybSuite_options_list.txt"
+check_error() {
+  local message="$1"
+  local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+  local red_color='\033[0;31m'
+  local reset_color='\033[0m'
 
-if [ "$#" -eq 1 ]; then
-  echo "[HybSuite-ERROR]: Except the subcommand, you didn't set any other required options."
-  echo "                  Please set required options to run HybSuite. (use -h to check options)"
-  echo "                  HybSuite exits."
-  echo ""
-  exit 1
-fi
+  echo -e "${red_color}[${timestamp}] [ERROR] ${message}${reset_color}"
+}
 
-while [ "$#" -gt 1 ]; do
+# Main function for configuring the HybSuite
+config_main() {
+  local config_file="$1"
+  # Switch to the script path
+  while IFS= read -r line || [ -n "$line" ]; do
+    var=$(echo "${line}" | awk '{print $1}')
+    default=$(echo "${line}" | awk '{print $2}')
+    eval "${var}=''" > /dev/null 2>&1
+    eval "Default_${var}='${default}'" > /dev/null 2>&1
+    eval "found_${var}=false" > /dev/null 2>&1
+  done < "${config_dir}/${config_file}"
+
+  shift 1
+  while [ "$#" -gt 1 ]; do
     case "$2" in
         -*)
             option="${2#-}"
             vars=""
             while IFS= read -r line; do
                 vars="$vars $(echo "$line" | awk '{print $1}')"
-            done < "${config_dir}/HybSuite_options_list.txt"
+            done < "${config_dir}/${config_file}"
             #echo "                    -$option: $3"
             case "$3" in
               -*)
@@ -336,30 +295,195 @@ while [ "$#" -gt 1 ]; do
             exit 1
             ;;
     esac
-done
-cut -f 1 $config_dir/HybSuite_options_list.txt > $config_dir/Option-all-list.txt
-sort $config_dir/Option-all-list.txt $config_dir/Option-list.txt|uniq -u > $config_dir/Option-default-list.txt
+  done
+  cut -f 1 $config_dir/${config_file} > $config_dir/Option-all-list.txt
+  sort $config_dir/Option-all-list.txt $config_dir/Option-list.txt 2>/dev/null |uniq -u 2>/dev/null > $config_dir/Option-default-list.txt
 
-while read -r line; do
-    default_var="Default_${line}"
-    eval "default_value=\$$default_var"
-    eval "default_value=${default_value}" > /dev/null 2>&1
-    eval "${line}=\"${default_value}\"" > /dev/null 2>&1
-    #echo "                    Default argument for -${line}: ${default_value}"
-done < "$config_dir/Option-default-list.txt"
-rm "$config_dir"/Option*
+  while read -r line; do
+      default_var="Default_${line}"
+      eval "default_value=\$$default_var"
+      eval "default_value=${default_value}" > /dev/null 2>&1
+      eval "${line}=\"${default_value}\"" > /dev/null 2>&1
+      #echo "                    Default argument for -${line}: ${default_value}"
+  done < "$config_dir/Option-default-list.txt"
+  rm "$config_dir"/Option*
 
-for var in input_data output_dir NGS_dir eas_dir t iqtree_constraint_tree raxml_constraint_tree rng_constraint_tree wastral_dir; do
-  eval "val=\$$var"
-  if [ ! -z "$val" ] && [ "$val" != "_____" ]; then
-    case "$val" in
-      /*) ;;
-      *) abs_path=$(cd "$(dirname "$val")" && pwd)/$(basename "$val")
-         eval "$var=$abs_path"
-         ;;
-    esac
-  fi
-done
+  for var in input_data output_dir NGS_dir eas_dir t iqtree_constraint_tree raxml_constraint_tree rng_constraint_tree aln_dir; do
+    eval "val=\$$var"
+    if [ ! -z "$val" ] && [ "$val" != "_____" ]; then
+      case "$val" in
+        /*) ;;
+        *) abs_path=$(cd "$(dirname "$val")" && pwd)/$(basename "$val")
+          eval "$var=$abs_path"
+          ;;
+      esac
+    fi
+  done
+}
+
+# Check if the subcommand is used
+full_pipeline="FALSE"
+run_stage1="FALSE"
+run_stage2="FALSE"
+run_stage3="FALSE"
+run_stage4="FALSE"
+if [ "$#" -gt 0 ]; then
+  case "$1" in
+    "filter_seqs_by_length"|"fsl")
+      print_welcome_phrases
+      shift
+      # Execute filter_seqs_by_length.py script
+      "${script_dir}/filter_seqs_by_length.py" "$@"
+      exit $?
+      ;;
+    "filter_seqs_by_coverage"|"fsc")
+      print_welcome_phrases
+      shift
+      # Execute filter_seqs_by_coverage.py script
+      "${script_dir}/filter_seqs_by_sample_and_locus_coverage.py" "$@"
+      exit $?
+      ;;
+    "plot_paralog_heatmap"|"pph")
+      print_welcome_phrases
+      shift
+      # Execute plot_paralog_heatmap.py script
+      "${script_dir}/plot_paralog_heatmap.py" "$@"
+      exit $?
+      ;;
+    "plot_recovery_heatmap"|"prh")
+      print_welcome_phrases
+      shift
+      # Execute plot_recovery_heatmap.py script
+      "${script_dir}/plot_recovery_heatmap.py" "$@"
+      exit $?
+      ;;
+    "rlwp")
+      print_welcome_phrases
+      shift
+      # Execute RLWP.py script
+      "${script_dir}/RLWP.py" "$@"
+      exit $?
+      ;;
+    "fasta_formatter"|"ff")
+      print_welcome_phrases
+      shift
+      # Execute Fasta_formatter.py script
+      "${script_dir}/Fasta_formatter.py" "$@"
+      exit $?
+      ;;
+    "rename_assembled_data"|"rad")
+      print_welcome_phrases
+      shift
+      # Execute rename_assembled_data.py script
+      "${script_dir}/rename_assembled_data.py" "$@"
+      exit $?
+      ;;
+    "modified_phypartspiecharts"|"mpp")
+      print_welcome_phrases
+      shift
+      # Execute modified_phypartspiecharts.py script
+      "${script_dir}/modified_phypartspiecharts.py" "$@"
+      exit $?
+      ;;
+    "full_pipeline")
+      config_main "Full_pipeline.config"
+      full_pipeline="TRUE"
+      ;;
+    "stage1")
+      config_main "Stage1.config" "$@"
+      run_stage1="TRUE"
+      ;;
+    "stage2")
+      config_main "Stage2.config" "$@"
+      run_stage2="TRUE"
+      ;;
+    "stage3")
+      config_main "Stage3.config" "$@"
+      run_stage3="TRUE"
+      ;;
+    "stage4")
+      config_main "Stage4.config" "$@"
+      run_stage4="TRUE"
+      ;;
+    "retrieve_results")
+      if [ "$2" = "-h" ]; then
+        echo "Usage: HybSuite retrieve_results"
+        echo "Retrieve all tree files and figures generated by HybSuite."
+        echo "Options:"
+        echo "  -h, --help    Show this help message and exit"
+        echo "  -i            Specify the directory containing the results generated by HybSuite."
+        echo "  -o            Specify the output directory, all retrieved files will be saved in this directory."
+        exit 0
+      fi
+      if [ "$2" != "-i" ] && [ "$2" != "-o" ]; then
+        echo "[HybSuite-ERROR]:   You didn't specify the input directory (-i) or output directory (-o)."
+        echo "                    HybSuite exits."
+        echo ""
+        exit 1 
+      else
+        if [ "$2" = "-i" ]; then
+          eval "retrieve_input_dir=\"$3\""
+          eval "retrieve_output_dir=\"$5\""
+        fi
+        if [ "$2" = "-o" ]; then
+          eval "retrieve_output_dir=\"$3\""
+          eval "retrieve_input_dir=\"$5\""
+        fi
+        if [ ! -d "${retrieve_input_dir}" ]; then
+          echo "[HybSuite-ERROR]:   The input directory does not exist."
+          echo "                    HybSuite exits."
+          echo ""
+          exit 1
+        fi
+        mkdir -p "${retrieve_output_dir}"
+        retrieve_input_dir=${retrieve_input_dir%/}
+        find "${retrieve_input_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/" -name "Filtered_paralog_heatmap.png" -exec cp {} "${retrieve_output_dir}" 2>/dev/null \; || true
+        cp ${retrieve_input_dir}/07-Concatenated_analysis/*/02-Species_tree/IQ-TREE/IQ-TREE*rr.tre "${retrieve_output_dir}" 2>/dev/null || true
+        cp ${retrieve_input_dir}/07-Concatenated_analysis/*/02-Species_tree/RAxML-NG/RAxML-NG*rr.tre "${retrieve_output_dir}" 2>/dev/null || true
+        cp ${retrieve_input_dir}/07-Concatenated_analysis/*/02-Species_tree/RAxML/RAxML*rr.tre "${retrieve_output_dir}" 2>/dev/null || true
+        cp ${retrieve_input_dir}/08-Coalescent_analysis/*/03-Species_tree/*/*rr.tre "${retrieve_output_dir}" 2>/dev/null || true
+        cp ${retrieve_input_dir}/08-Coalescent_analysis/*/04-PhyParts_PieCharts/*_phypartspiecharts_*.svg "${retrieve_output_dir}" 2>/dev/null || true
+        cp ${retrieve_input_dir}/08-Coalescent_analysis/*/04-PhyParts_PieCharts/*_phypartspiecharts_*.tsv "${retrieve_output_dir}" 2>/dev/null || true
+        exit 0
+      fi
+      ;;
+      *)
+        check_error "ERROR: Unknown HybSuite subcommand: $1."
+        check_error "HybSuite exits."
+        echo "Command mode 1 (for conda version):"
+        echo "  hybsuite [subcommand] [options] ..."
+        echo "Command mode 2 (for local version):"
+        echo "  bash HybSuite.sh [subcommand] [options] ..."
+        echo "Available subcommands for running HybSuite pipeline:"
+        echo "  full_pipeline                       - Run all stages (stage1-4)"
+        echo "  stage1                              - Run stage 1"
+        echo "  stage2                              - Run stage 2"
+        echo "  stage3                              - Run stage 3"
+        echo "  stage4                              - Run stage 4"
+        echo "  retrieve_results                    - Retrieve treefiles and figures generated by HybSuite"
+        echo "Available subcommands for running HybSuite extension tools:"
+        echo "  filter_seqs_by_length | fsl         - Filter sequences by length (filter_seqs_by_length.py)"
+        echo "  filter_seqs_by_coverage | fsc       - Filter sequences by sample and locus coverage (filter_seqs_by_sample_and_locus_coverage.py)"
+        echo "  plot_paralog_heatmap | pph          - Plot paralog heatmap (plot_paralog_heatmap.py)"
+        echo "  plot_recovery_heatmap | prh         - Plot recovery heatmap (plot_recovery_heatmap.py)"
+        echo "  rlwp | rlwp                         - RLWP tool (RLWP.py)"
+        echo "  fasta_formatter | ff                - FASTA formatting tool (Fasta_formatter.py)"
+        echo "  rename_assembled_data | rad         - Rename HybPiper assembled data directory (rename_assembled_data.py)"
+        echo "  modified_phypartspiecharts | mpp    - modified_phypartspiecharts.py"
+        echo ""
+        exit 1
+      ;;
+  esac
+fi
+
+if [ "$#" -eq 1 ]; then
+  check_error "ERROR: Missing required parameters for '$1' subcommand."
+  check_error "Usage: hybsuite $1 [required_options] (use -h for help)"
+  check_error "Or: $0 $1 [required_options] (use -h for help)"
+  check_error "HybSuite exits."
+  echo ""
+  exit 1
+fi
 
 #################===========================================================================
 # Define OI and tree
@@ -371,36 +495,36 @@ MI="FALSE"
 RT="FALSE"
 one_to_one="FALSE"
 
-if echo "${OI}" | grep -q "1"; then
+if echo "${PH}" | grep -q "1"; then
   HRS="TRUE"
 fi
-if echo "${OI}" | grep -q "2"; then
+if echo "${PH}" | grep -q "2"; then
   RLWP="TRUE"
 fi
-if echo "${OI}" | grep -q "3"; then
+if echo "${PH}" | grep -q "3"; then
   LS="TRUE"
 fi
-if echo "${OI}" | grep -q "4"; then
+if echo "${PH}" | grep -q "4"; then
   MI="TRUE"
 fi
-if echo "${OI}" | grep -q "5"; then
+if echo "${PH}" | grep -q "5"; then
   MO="TRUE"
 fi
-if echo "${OI}" | grep -q "6"; then
+if echo "${PH}" | grep -q "6"; then
   RT="TRUE"
 fi
-if echo "${OI}" | grep -q "7"; then
+if echo "${PH}" | grep -q "7"; then
   one_to_one="TRUE"
 fi
-if echo "${OI}" | grep -q "a"; then
+if echo "${PH}" | grep -q "a"; then
   run_phylopypruner="TRUE"
   run_paragone="FALSE"
 fi
-if echo "${OI}" | grep -q "b"; then
+if echo "${PH}" | grep -q "b"; then
   run_paragone="TRUE"
   run_phylopypruner="FALSE"
 fi
-if [ "${OI}" = "all" ]; then
+if [ "${PH}" = "all" ]; then
   HRS="TRUE"
   RLWP="TRUE"
   LS="TRUE"
@@ -418,53 +542,35 @@ run_iqtree="FALSE"
 run_raxml="FALSE"
 run_raxml_ng="FALSE"
 run_astral="FALSE"
+run_astral4="FALSE"
 run_wastral="FALSE"
+run_astral_pro="FALSE"
 
-if echo "${tree}" | grep -q "1"; then
+if echo "${sp_tree}" | grep -q "1"; then
   run_iqtree="TRUE"
 fi
-if echo "${tree}" | grep -q "2"; then
+if echo "${sp_tree}" | grep -q "2"; then
   run_raxml="TRUE"
 fi
-if echo "${tree}" | grep -q "3"; then
+if echo "${sp_tree}" | grep -q "3"; then
   run_raxml_ng="TRUE"
 fi
-if echo "${tree}" | grep -q "4"; then
-  run_astral="TRUE"
+if echo "${sp_tree}" | grep -q "4"; then
+  run_astral4="TRUE"
 fi
-if echo "${tree}" | grep -q "5"; then
+if echo "${sp_tree}" | grep -q "5"; then
   run_wastral="TRUE"
 fi
-if [ "${tree}" = "all" ]; then
+if echo "${sp_tree}" | grep -q "6"; then
+  run_astral_pro="TRUE"
+fi
+if [ "${sp_tree}" = "all" ]; then
   run_iqtree="TRUE"
   run_raxml="TRUE"
   run_raxml_ng="TRUE"
   run_astral="TRUE"
+  run_astral4="TRUE"
   run_wastral="TRUE"
-fi
-#################===========================================================================
-
-#################===========================================================================
-# Define skipping running
-skip_checking="FALSE"
-skip_stage1="FALSE"
-skip_stage12="FALSE"
-skip_stage123="FALSE"
-skip_stage1234="FALSE"
-if echo "${skip_stage}" | grep -q "0"; then
-  skip_checking="TRUE"
-fi
-if echo "${skip_stage}" | grep -q "1"; then
-  skip_stage1="TRUE"
-fi
-if echo "${skip_stage}" | grep -q "12"; then
-  skip_stage12="TRUE"
-fi
-if echo "${skip_stage}" | grep -q "123"; then
-  skip_stage123="TRUE"
-fi
-if echo "${skip_stage}" | grep -q "1234"; then
-  skip_stage1234="TRUE"
 fi
 #################===========================================================================
 
@@ -472,7 +578,7 @@ fi
 # Define threads
 define_threads() {
   local software="$1"
-  local stage_log_file="${output_dir}/00-logs_and_checklists/logs/HybSuite_logfile_${current_time}.log"
+  local stage_log_file="${output_dir}/hybsuite_logs/hybsuite_${current_time}.log"
     
     # Get available CPU cores (compatibility modification)
     if command -v nproc >/dev/null 2>&1; then
@@ -554,7 +660,6 @@ define_threads() {
         fi
     fi
 }
-
 #################===========================================================================
 
 #################===========================================================================
@@ -581,16 +686,37 @@ fi
 
 ############################################################################################
 # Preparation
+mkdir -p "${output_dir}/hybsuite_logs"
+mkdir -p "${output_dir}/hybsuite_checklists"
 ############################################################################################
 
-mkdir -p "${output_dir}/00-logs_and_checklists/logs"
 #################===========================================================================
 # Function: Output information to log file
-stage_logfile="${output_dir}/00-logs_and_checklists/logs/HybSuite_logfile_${current_time}.log"
-stage_cmd_logfile="${output_dir}/00-logs_and_checklists/logs/HybSuite_cmd_${current_time}.log"
+stage_logfile="${output_dir}/hybsuite_logs/hybsuite_${current_time}.log"
 stage_info_main() {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${stage_logfile}"
 }
+
+stage_info_main_success() {
+  local message="$1"
+  local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+  local green_color='\033[0;32m'
+  local reset_color='\033[0m'
+  
+  echo -e "${green_color}[${timestamp}] [INFO] ${message}${reset_color}"
+  echo "[${timestamp}] [INFO] ${message}" >> "${stage_logfile}"
+}
+
+stage_success() {
+  local message="$1"
+  local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+  local green_color='\033[0;32m'
+  local reset_color='\033[0m'
+  
+  echo -e "${green_color}[${timestamp}] [SUCCESS] ${message}${reset_color}"
+  echo "[${timestamp}] [SUCCESS] ${message}" >> "${stage_logfile}"
+}
+
 stage_info() {
   local log_mode="$1"
   local message="$2"
@@ -598,23 +724,54 @@ stage_info() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $message" | tee -a "${stage_logfile}"
   fi
 }
+
 stage_error() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${stage_logfile}"
+  local message="$1"
+  local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+  local red_color='\033[0;31m'
+  local reset_color='\033[0m'
+
+  echo -e "${red_color}[${timestamp}] [ERROR] ${message}${reset_color}"
+  echo "[${timestamp}] [ERROR] ${message}" >> "${stage_logfile}"
 }
+
+stage_warning() {
+  local message="$1"
+  local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+  local yellow_color='\033[0;33m'
+  local reset_color='\033[0m'
+
+  echo -e "${yellow_color}[${timestamp}] [WARNING] ${message}${reset_color}"
+  echo "[${timestamp}] [WARNING] ${message}" >> "${stage_logfile}"
+}
+
+stage_attention() {
+  local message="$1"
+  local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+  local blue_color='\033[0;34m'
+  local reset_color='\033[0m'
+
+  echo -e "${blue_color}[${timestamp}] [ATTENTION] ${message}${reset_color}"
+  echo "[${timestamp}] [ATTENTION] ${message}" >> "${stage_logfile}"
+}
+
 stage_cmd_main() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $1" | tee -a "${stage_cmd_logfile}"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $1" | tee -a "${stage_logfile}"
 }
+
 stage_cmd() {
   local log_mode="$1"
   local message="$2"
   
   if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $message" >> "${stage_cmd_logfile}"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $message" >> "${stage_logfile}"
   fi
 }
+
 stage_blank_main() {
   echo "$1" | tee -a "${stage_logfile}"
 }
+
 stage_blank() {
   local log_mode="$1"
   local message="$2"
@@ -622,79 +779,100 @@ stage_blank() {
     echo "$message" | tee -a "${stage_logfile}"
   fi
 }
-echo "HybSuite input command:" >> "${stage_logfile}"
-echo "$0 $@" >> "${stage_logfile}"
+
+echo "HybSuite Version: ${hybsuite_version}" >> "${stage_logfile}"
+echo "HybSuite input command (reuse or change these parameters for next run):" >> "${stage_logfile}"
+echo "${input_command}" >> "${stage_logfile}"
+echo "[${current_time}]" >> "${stage_logfile}"
+echo "---------------------" >> "${stage_logfile}"
+echo "" >> "${stage_logfile}"
 #################===========================================================================
 
 #HybSuite CHECKING
 #Step 1: Check necessary options
-if [ "${skip_checking}" = "TRUE" ]; then
-  stage_info_main "HybSuite Checking is skipped."
-else
-  stage0_info() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" | tee -a "${stage_logfile}"
-  }
-  stage0_error() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" | tee -a "${stage_logfile}"
-  }
-  stage0_warning() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [WARNING] $1" | tee -a "${stage_logfile}"
-  }
-  stage0_attention() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ATTENTION] $1" | tee -a "${stage_logfile}"
-  }
-  stage0_cmd() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [CMD] $1" | tee -a "${stage_logfile}"
-  }
-  stage0_blank() {
-    echo "$1" | tee -a "${stage_logfile}"
-  }
-  stage0_info "<<<======= HybSuite CHECKING =======>>>"
-  stage0_info "HybSuite will provide tips with [ATTENTION]."
-  stage0_info "HybSuite will alert you to incorrect arguments with [WARNING]."
-  stage0_info "HybSuite will notify you of missing software with [ERROR], and then exit."
-  stage0_blank ""
-  stage0_info "=> Step 1: Check all input parameters" 
-  stage0_info "01-Verify if the user has entered the necessary options ..."
-  stage0_info "Checking results:"
-  ###Verify if the user has entered the necessary parameters
-  if [ "${run_to_stage1}" = "true" ]; then
+check_necessary_options() {
+  if [ "${run_stage1}" = "TRUE" ]; then
     if [ "${input_list}" = "_____" ] || [ "${output_dir}" = "_____" ]; then
-      stage0_error "You haven't set all the necessary options."
-      stage0_error "All necessary options must be set."
-      stage0_error "Including: "
-      stage0_error "-input_list"
-      stage0_error "-output_dir"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
-      exit 1
-    fi
-  else
-    if [ "${input_list}" = "_____" ] || [ "${t}" = "_____" ] || [ "${output_dir}" = "_____" ]; then
-      stage0_info "After checking:"
-      stage0_error "You haven't set all the necessary options."
-      stage0_error "All necessary options must be set."
-      stage0_error "Including: "
-      stage0_error "-input_list"
-      stage0_error "-output_dir"
-      stage0_error "-t"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "ERROR: Missing required parameters for running subcommand: stage1"
+      stage_error "The following mandatory options must be specified:"
+      stage_error "-input_list -input_data (required when including user-provided data) -output_dir"
+      stage_error "Use 'hybsuite stage1 -h' or 'hybsuite stage1 --help' for usage instructions."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     fi
   fi
-  stage0_info "Well done!"
-  stage0_info "All necessary options have been set."
-  stage0_info "Proceeding to the next step ..."
-  stage0_blank ""
+  if [ "${run_stage2}" = "TRUE" ]; then
+    if [ "${input_list}" = "_____" ] || [ "${NGS_dir}" = "_____" ] || [ "${output_dir}" = "_____" ] || [ "${t}" = "_____" ]; then
+      stage_error "ERROR: Missing required parameters for running subcommand: stage2"
+      stage_error "The following mandatory options must be specified:"
+      stage_error "-input_list -NGS_dir -t -output_dir"
+      stage_error "Use 'hybsuite stage2 -h' or 'hybsuite stage2 --help' for usage instructions."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+  fi
+  if [ "${run_stage3}" = "TRUE" ]; then
+    if [ "${input_list}" = "_____" ] || [ "${eas_dir}" = "_____" ] || [ "${paralogs_dir}" = "_____" ] || [ "${output_dir}" = "_____" ] || [ "${t}" = "_____" ]; then
+      stage_error "ERROR: Missing required parameters for running subcommand: stage3"
+      stage_error "The following mandatory options must be specified:"
+      stage_error "-input_list -eas_dir -paralogs_dir -t -output_dir"
+      stage_error "Use 'hybsuite stage3 -h' or 'hybsuite stage3 --help' for usage instructions."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+  fi
+  if [ "${run_stage4}" = "TRUE" ]; then
+    if [ "${input_list}" = "_____" ] || [ "${aln_dir}" = "_____" ] || [ "${output_dir}" = "_____" ]; then
+      stage_error "ERROR: Missing required parameters for running subcommand: stage4"
+      stage_error "The following mandatory options must be specified:"
+      stage_error "-input_list -aln_dir -output_dir"
+      stage_error "Use 'hybsuite stage4 -h' or 'hybsuite stage4 --help' for usage instructions."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+  fi
+  if [ "${full_pipeline}" = "TRUE" ]; then
+    if [ "${input_list}" = "_____" ] || [ "${t}" = "_____" ] || [ "${output_dir}" = "_____" ]; then
+      stage_error "ERROR: Missing required parameters for running subcommand: full_pipeline"
+      stage_error "The following mandatory options must be specified:"
+      stage_error "-input_list -t -output_dir"
+      stage_error "Use 'hybsuite full_pipeline -h' or 'hybsuite full_pipeline --help' for usage instructions."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+  fi
+}
+if [ "${check}" = "FALSE" ]; then
+  stage_info_main "HybSuite Checking is skipped."
+elif [ "${check}" = "TRUE" ]; then
+  stage_info_main "<<<======= HybSuite CHECKING =======>>>"
+  stage_info_main "Message Severity Convention:"
+  stage_info_main "[ATTENTION]  Important notices requiring user awareness"
+  stage_info_main "[WARNING]    Configuration issues that may impact analysis"
+  stage_info_main "[ERROR]      Fatal errors causing pipeline termination (e.g. missing dependencies)"
+  stage_blank_main ""
+  stage_info_main "=> Step 1: Input Parameter Validation"
+  stage_info_main "01-Verifying required command-line options..."
+  stage_info_main "Validation results:"
+  ###Verify if the user has entered the necessary parameters
+  check_necessary_options
+  stage_info_main "PASS"
   
   if [ -s "${input_list}" ]; then
     sed -i 's/\r$//; /^$/d' "${input_list}"
   fi
 
-  stage0_info "02-Check other parameters ..."
-  stage0_info "Checking results:"
-  stage0_info "<threads control>:"
+  # 02-Checking other parameters
+  stage_info_main "02-Checking other parameters ..."
+  stage_info_main "Checking results:"
+  ################===========================================
+  check_threads() {
+    stage_info_main "<threads control>:"
   # Get available CPU cores (compatibility modification)
     if command -v nproc >/dev/null 2>&1; then
         available_cores=$(nproc)
@@ -726,526 +904,564 @@ else
     fi
   # Check the number of threads
   if [ "${nt}" = "AUTO" ]; then
-    stage0_info "All programs will use the recommended number of threads."
+    stage_info_main "All programs will use the recommended number of threads."
   elif [ "${nt}" -eq "${nt}" ] 2>/dev/null && [ "${nt}" -ge 0 ]; then
-    stage0_info "All programs will use the specified number of threads: ${nt}."
+    stage_info_main "All programs will use the specified number of threads: ${nt}."
     if [ "${nt}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified threads (${nt}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified threads (${nt}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
     if [ "${nt_fasterq_dump}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified fasterq-dump threads (${nt_fasterq_dump}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified fasterq-dump threads (${nt_fasterq_dump}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
     if [ "${nt_pigz}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified pigz threads (${nt_pigz}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified pigz threads (${nt_pigz}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
     if [ "${nt_trimmomatic}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified Trimmomatic threads (${nt_trimmomatic}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified Trimmomatic threads (${nt_trimmomatic}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
     if [ "${nt_hybpiper}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified HybPiper threads (${nt_hybpiper}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified HybPiper threads (${nt_hybpiper}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
     if [ "${nt_paragone}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified ParaGone threads (${nt_paragone}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified ParaGone threads (${nt_paragone}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
     if [ "${nt_phylopypruner}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified PhyloPyPruner threads (${nt_phylopypruner}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified PhyloPyPruner threads (${nt_phylopypruner}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
     if [ "${nt_mafft}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified MAFFT threads (${nt_mafft}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified MAFFT threads (${nt_mafft}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
     if [ "${nt_modeltest_ng}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified ModelTest-NG threads (${nt_modeltest_ng}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified ModelTest-NG threads (${nt_modeltest_ng}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
     if [ "${nt_iqtree}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified IQ-TREE threads (${nt_iqtree}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified IQ-TREE threads (${nt_iqtree}) exceed available free CPU threads (${free_threads}). This may impact performance."
+    fi
+    if [ "${nt_fasttree}" -gt "${free_threads}" ]; then
+      stage_warning "Specified FastTree threads (${nt_fasttree}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
     if [ "${nt_raxml_ng}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified RAxML-NG threads (${nt_raxml_ng}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified RAxML-NG threads (${nt_raxml_ng}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
     if [ "${nt_raxml}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified RAxML threads (${nt_raxml}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified RAxML threads (${nt_raxml}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
     if [ "${nt_astral}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified ASTRAL threads (${nt_astral}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified ASTRAL threads (${nt_astral}) exceed available free CPU threads (${free_threads}). This may impact performance."
+    fi
+    if [ "${nt_astral4}" -gt "${free_threads}" ]; then
+      stage_warning "Specified ASTRAL-IV threads (${nt_astral4}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
     if [ "${nt_wastral}" -gt "${free_threads}" ]; then
-      stage0_warning "Specified wASTRAL threads (${nt_wastral}) exceed available free CPU threads (${free_threads}). This may impact performance."
+      stage_warning "Specified wASTRAL threads (${nt_wastral}) exceed available free CPU threads (${free_threads}). This may impact performance."
     fi
   fi
-  stage0_blank ""
-
-  stage0_info "<Other common parameters>:"
-  if ([ ! -d "${eas_dir}" ] && [ "${eas_dir}" != "_____" ]) || ([ ! -d "${NGS_dir}" ] && [ "${NGS_dir}" != "_____" ]); then
-    if [ ! -d "${eas_dir}" ] && [ "${eas_dir}" != "_____" ]; then
-      stage0_error "The directory for sequences which have been generated by 'hybpiper assemble' does not exist."
-      stage0_error "Please check and correct the '-eas_dir' parameter."
-    elif [ ! -d "${NGS_dir}" ] && [ "${NGS_dir}" != "_____" ]; then
-      stage0_error "The directory encompassing NGS raw data and clean data does not exist."
-      stage0_error "Please check and correct the '-NGS_dir' parameter."
-    fi
-    stage0_error "HybSuite exits."
-    stage0_blank ""
-    exit 1
-  fi
-
-  if [ "$(echo "${min_sample_coverage} >= 0" | bc -l)" -eq 1 ] && [ "$(echo "${min_sample_coverage} <= 1" | bc -l)" -eq 1 ]; then
-    :
-  else
-    stage0_error "The -sample_coverage value must be greater than 0 and less than 1."
-    stage0_error "Please correct it."
-    stage0_error "HybSuite will exit."
-    stage0_blank ""
-    exit 1
-  fi
+  stage_blank_main ""
+  }
+  ################===========================================
   
-  if [ "$(echo "${min_locus_coverage} >= 0" | bc -l)" -eq 1 ] && [ "$(echo "${min_locus_coverage} <= 1" | bc -l)" -eq 1 ]; then
-    :
-  else
-    stage0_error "The -min_locus_coverage value must be greater than 0 and less than 1."
-    stage0_error "Please correct it."
-    stage0_error "HybSuite will exit."
-    stage0_blank ""
-    exit 1
-  fi
-  stage0_info "PASS"
-  stage0_blank ""
-
-  stage0_info "<Orthology inference control>:"
-  stage0_info "According to your input command, the chosen ortholog inference methods are:"
-  if [ "${HRS}" = "TRUE" ]; then
-    stage0_info "HRS"
-  fi
-  if [ "${RLWP}" = "TRUE" ]; then
-    stage0_info "RLWP"
-  fi
-  if [ "${LS}" = "TRUE" ]; then
-    stage0_info "LS"
-  fi
-  if [ "${MI}" = "TRUE" ]; then
-    stage0_info "MI"
-  fi
-  if [ "${MO}" = "TRUE" ]; then
-    stage0_info "MO"
-  fi
-  if [ "${RT}" = "TRUE" ]; then
-    stage0_info "RT"
-  fi
-  if [ "${one_to_one}" = "TRUE" ]; then
-    stage0_info "1to1"
-  fi
-
-  stage0_blank ""
-  stage0_info "<Phylogenetic tree inference control>:  "
-  stage0_info "According to your input command, the chosen phylogenetic tree inference tools are:"
-  if [ "${run_iqtree}" = "TRUE" ]; then
-    stage0_info "IQ-TREE"
-  fi
-  if [ "${run_raxml}" = "TRUE" ]; then
-    stage0_info "RAxML"
-  fi
-  if [ "${run_raxml_ng}" = "TRUE" ]; then
-    stage0_info "RAxML-NG"
-  fi
-  if [ "${run_astral}" = "TRUE" ]; then
-    stage0_info "ASTRAL-III"
-  fi
-  if [ "${run_wastral}" = "TRUE" ]; then
-    stage0_info "wASTRAL"
-  fi
-  if [ "${tree}" = "0" ]; then
-    stage0_info "None"
-  fi
-  stage0_blank ""
-  stage0_info "Well done!"
-  stage0_info "All parameters are valid."
-  stage0_info "Proceeding to the next step ..."
-  stage0_blank ""
-
-
-  ######################################################
-  ### Step 2: Check all the input files ################
-  ######################################################
-  stage0_info "=> Step 2: Check all the input files" 
-  # 01-Check the form of the input list file
-  stage0_info "01-Check the form of the input list file (specified by '-input_list') ..."
-  stage0_info "Checking results:"
-  found_public=$(awk -F'\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/ { print 1; exit }' "${input_list}")
-  found_own=$(awk -F'\t' '$2 == "A" { print 1; exit }' "${input_list}")
-  found_pre=$(awk -F'\t' '$2 == "B" { print 1; exit }' "${input_list}")
-  found_outgroup=$(awk -F'\t' '$3 == "Outgroup" { print 1; exit }' "${input_list}")
-  found_other=$(awk -F'\t' '$2 !~ /^(SRR|ERR|DRR|KRR|LRR)/ && $2 != "A" && $2 != "B" { print 1; exit }' "${input_list}")
-  if [ "${found_other}" = "1" ] || ([ "${found_public}" != "1" ] && [ "${found_own}" != "1" ]); then
-    if [ "${found_other}" = "1" ]; then
-      stage0_error "The second column of ${input_list} should start with 'SRR','ERR','DRR','KRR','LRR', or be 'A' or 'B'."
-    elif [ "${found_public}" != "1" ] && [ "${found_own}" != "1" ]; then
-      stage0_error "At least one type of data (public/your own) must be provided in ${input_list}."
-    fi
-    stage0_error "HybSuite exits."
-    stage0_blank ""
-    exit 1
-  fi
-  if [ "${found_outgroup}" != "1" ]; then
-    stage0_warning "No outgroup species name is provided (the third column) in ${input_list}."
-    stage0_warning "HybSuite will not reroot the phylogenetic tree in stage 5."
-  fi
-  if [ "${found_public}" = "1" ]; then
-    stage0_info "Public sample names to download are provided."
-  elif [ "${found_own}" = "1" ]; then
-    stage0_info "The names of samples with existing raw data are provided."
-  elif [ "${found_pre}" = "1" ]; then
-    stage0_info "The names of samples with pre-assembled sequences are provided."
-  fi
-  stage0_info "PASS"
-
-  # 02-Check the input data
-  stage0_info "02-Checking the input data (specified by '-input_data') ..."
-  stage0_info "Checking results:"
-  # Check if the path to the input data is provided.
-  if ([ "${found_pre}" = "1" ] || [ "${found_own}" = "1" ]) && [ ! -d "${input_data}" ]; then
-    stage0_error "You need to specify the correct path to your data by using '-input_data'."
-    stage0_error "HybSuite exits."
-    stage0_blank ""
-    exit 1
-  fi
-
-  # Check if the input list is provided when users offer the input data
-  if [ "${found_own}" = "1" ] && [ ! -d "${input_data}" ]; then
-    stage0_error "The names of samples with your existing raw data should be provided in the input data directory (${input_data})."
-    stage0_error "HybSuite exits."
-    stage0_blank ""
-    exit 1
-  fi
-
-  # Check if all sample names in the input list have corresponding correct name of input data
-  awk -F'\t' '$2 == "A" {print $1}' "${input_list}" | while IFS= read -r sample; do
-    if ([ -s "${input_data}/${sample}_1.fastq" ] && [ -s "${input_data}/${sample}_2.fastq" ]) || \
-       ([ -s "${input_data}/${sample}_1.fastq.gz" ] && [ -s "${input_data}/${sample}_2.fastq.gz" ]) || \
-       ([ -s "${input_data}/${sample}_1.fq" ] && [ -s "${input_data}/${sample}_2.fq" ]) || \
-       ([ -s "${input_data}/${sample}_1.fq.gz" ] && [ -s "${input_data}/${sample}_2.fq.gz" ]) || \
-       [ -s "${input_data}/${sample}.fastq" ] || \
-       [ -s "${input_data}/${sample}.fastq.gz" ] || \
-       [ -s "${input_data}/${sample}.fq" ] || \
-       [ -s "${input_data}/${sample}.fq.gz" ]; then
-       :
+  # check parameters for inputs
+  stage_info_main "<Parameters for inputs and outputs>"
+  if [ "${run_stage1}" = "TRUE" ]; then
+    if [ ! -s "${input_list}" ]; then
+      stage_error "The input list file (specified by '-input_list') does not exist."
+      stage_error "Please check and correct the '-input_list' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
     else
-      stage0_error "No FASTQ/FASTQ.GZ/FQ/FQ.GZ files found for sample $sample in the input data directory (${input_data})."
-      stage0_error "Please adjust the format of your input data to the acquired format (use -h to check the correct format)."
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      found_own=$(awk -F'\t' '$2 == "A" { print 1; exit }' "${input_list}")
+      found_pre=$(awk -F'\t' '$2 == "B" { print 1; exit }' "${input_list}")
+      if [ "${found_own}" = "1" ] || [ "${found_pre}" = "1" ]; then
+        if [ ! -d "${input_data}" ]; then
+        stage_error "The input data directory (specified by '-input_data') does not exist."
+        stage_error "Please check and correct the '-input_data' parameter."
+        stage_error "HybSuite exits."
+        stage_blank_main ""
+        exit 1
+        fi
+      fi
+    fi
+    if [ ! -d "${output_dir}" ]; then
+      stage_error "The output directory (specified by '-output_dir') does not exist."
+      stage_error "Please check and correct the '-output_dir' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     fi
-  done
-  awk -F'\t' '$2 == "B" {print $1}' "${input_list}" | while IFS= read -r sample; do
-    if [ -s "${input_data}/${sample}.fasta" ]; then
-      :
-    else
-      stage0_error "No FASTA file found for sample $sample in the input data directory (${input_data})."
-      stage0_error "Please adjust the format of your input data to the acquired format (use -h to check the correct format)."
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+  fi
+  if [ "${run_stage2}" = "TRUE" ]; then
+    if [ ! -s "${input_list}" ]; then
+      stage_error "The input list file (specified by '-input_list') does not exist."
+      stage_error "Please check and correct the '-input_list' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     fi
-  done
-  stage0_info "PASS"
-
-  # 03-Check the target file
-  stage0_info "03-Checking the target file (specified by '-t') ..."
-  stage0_info "Checking results:"
-  if [ ! -s "${t}" ] && [ "${run_to_stage1}" != "true" ]; then
-    stage0_error "The target file (reference for HybPiper) you specified does not exist."
-    stage0_error "HybSuite exits."
-    stage0_blank ""
-    exit 1
-  elif [ ! -s "${t}" ] && [ "${run_to_stage1}" = "true" ]; then
-    stage0_info "The target file is not provided. It is still OK since you only plan to run HybSuite stage 1."
-  else
-    ref_num=$(grep -c '>' "${t}")
-    stage0_info "The target file is (specified by '-t'): ${t}"
-    stage0_info "It contains ${ref_num} sequences"
-    stage0_info "PASS"
+    if [ ! -s "${t}" ]; then
+      stage_error "The target file (specified by '-t') does not exist."
+      stage_error "Please check and correct the '-t' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    if [ ! -d "${NGS_dir}" ] && [ "${NGS_dir}" != "${output_dir}/NGS_dataset" ]; then
+      stage_error "The NGS dataset directory generated in stage 1 (specified by '-NGS_dir') does not exist."
+      stage_error "Please check and correct the '-NGS_dir' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    if [ ! -d "${output_dir}" ]; then
+      stage_error "The output directory (specified by '-output_dir') does not exist."
+      stage_error "Please check and correct the '-output_dir' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    if [ ! -d "${eas_dir}" ] && [ "${eas_dir}" != "${output_dir}/01-Assembled_data" ]; then
+      stage_error "The output directory for sequences generated by 'hybpiper assemble' (specified by '-eas_dir') does not exist."
+      stage_error "Please check and correct the '-eas_dir' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
   fi
+  if [ "${run_stage3}" = "TRUE" ]; then
+    if [ ! -s "${input_list}" ]; then
+      stage_error "The input list file (specified by '-input_list') does not exist."
+      stage_error "Please check and correct the '-input_list' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    if [ ! -s "${t}" ]; then
+      stage_error "The target file (specified by '-t') does not exist."
+      stage_error "Please check and correct the '-t' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    if [ ! -d "${output_dir}" ]; then
+      stage_error "The output directory (specified by '-output_dir') does not exist."
+      stage_error "Please check and correct the '-output_dir' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    if [ ! -d "${eas_dir}" ] && [ "${eas_dir}" != "${output_dir}/01-Assembled_data" ]; then
+      stage_error "The output directory for sequences generated by 'hybpiper assemble' (specified by '-eas_dir') does not exist."
+      stage_error "Please check and correct the '-eas_dir' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    if [ ! -d "${paralogs_dir}" ] && [ "${paralogs_dir}" != "${output_dir}/02-All_paralogs/03-Filtered_paralogs" ]; then
+      stage_error "The directory containing all putative paralog sequences generated in stage 2 or by users themselves (specified by '-paralogs_dir') does not exist."
+      stage_error "Please check and correct the '-paralogs_dir' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+  fi
+  if [ "${run_stage4}" = "TRUE" ]; then
+    if [ ! -s "${input_list}" ]; then
+      stage_error "The input list file (specified by '-input_list') does not exist."
+      stage_error "Please check and correct the '-input_list' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    if [ ! -d "${aln_dir}" ] && [ "${aln_dir}" != "${output_dir}/06-Final_alignments" ]; then
+      stage_error "The directory containing all aligned sequences (specified by '-aln_dir') does not exist."
+      stage_error "Please check and correct the '-aln_dir' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    if [ ! -d "${output_dir}" ]; then
+      stage_error "The output directory (specified by '-output_dir') does not exist."
+      stage_error "Please check and correct the '-output_dir' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+  fi
+  if [ "${full_pipeline}" = "TRUE" ]; then
+    if [ ! -s "${input_list}" ]; then
+      stage_error "The input list file (specified by '-input_list') does not exist."
+      stage_error "Please check and correct the '-input_list' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    if [ ! -d "${output_dir}" ]; then
+      stage_error "The output directory (specified by '-output_dir') does not exist."
+      stage_error "Please check and correct the '-output_dir' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    if [ ! -d "${NGS_dir}" ] && [ "${NGS_dir}" != "${output_dir}/NGS_dataset" ]; then
+      stage_error "The NGS dataset directory generated in stage 1 (specified by '-NGS_dir') does not exist."
+      stage_error "Please check and correct the '-NGS_dir' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    if [ ! -d "${eas_dir}" ] && [ "${eas_dir}" != "${output_dir}/01-Assembled_data" ]; then
+      stage_error "The directory containing all sequences generated by 'hybpiper assemble' (specified by '-eas_dir') does not exist."
+      stage_error "Please check and correct the '-eas_dir' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    if [ ! -s "${t}" ]; then
+      stage_error "The target file (specified by '-t') does not exist."
+      stage_error "Please check and correct the '-t' parameter."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+  fi
+  stage_info_main "PASS"
   
-  # Deliver congratulations messages
-  stage0_blank ""
-  stage0_info "Well done!"
-  stage0_info "All necessary folders and files are prepared."
-  stage0_info "Proceeding to the next step ..."
-  stage0_blank ""
-  
+  # check other general parameters
+  if [ "${run_stage2}" = "TRUE" ] || [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
+    stage_info_main "<Parameters for sequences and alignments filtering control>"
+    stage_info_main "Checking results:"
+    if [ "${run_stage2}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
+      if [ "$(echo "${seqs_locus_filter} >= 0" | bc -l)" -eq 1 ] && [ "$(echo "${seqs_locus_filter} <= 1" | bc -l)" -eq 1 ]; then
+        :
+      else
+        stage_error "The '-seqs_locus_filter' value must be greater than 0 and less than 1."
+        stage_error "Please correct it."
+        stage_error "HybSuite exits."
+        stage_blank_main ""
+        exit 1
+      fi
+      if [ "$(echo "${seqs_sample_filter} >= 0" | bc -l)" -eq 1 ] && [ "$(echo "${seqs_sample_filter} <= 1" | bc -l)" -eq 1 ]; then
+        :
+      else
+        stage_error "The '-seqs_sample_filter' value must be greater than 0 and less than 1."
+        stage_error "Please correct it."
+        stage_error "HybSuite exits."
+        stage_blank_main ""
+        exit 1
+      fi
+    fi
+
+    if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
+      if [ "$(echo "${aln_sample_filter} >= 0" | bc -l)" -eq 1 ] && [ "$(echo "${aln_sample_filter} <= 1" | bc -l)" -eq 1 ]; then
+        :
+      else
+        stage_error "The '-aln_sample_filter' value must be greater than 0 and less than 1."
+        stage_error "Please correct it."
+        stage_error "HybSuite exits."
+        stage_blank_main ""
+        exit 1
+      fi
+
+      if [ "$(echo "${aln_locus_filter} >= 0" | bc -l)" -eq 1 ] && [ "$(echo "${aln_locus_filter} <= 1" | bc -l)" -eq 1 ]; then
+        :
+      else
+        stage_error "The '-aln_locus_filter' value must be greater than 0 and less than 1."
+        stage_error "Please correct it."
+        stage_error "HybSuite exits."
+        stage_blank_main ""
+        exit 1
+      fi
+    fi
+    stage_info_main "PASS"
+  fi
+
+  if [ "${run_stage3}" = "TRUE" ] || [ "${run_stage4}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
+    stage_info_main "<Parameters for orthology inference control>:"
+    stage_info_main "According to your input command, the chosen ortholog inference methods are:"
+    if [ "${HRS}" = "TRUE" ]; then
+      stage_info_main "HRS"
+    fi
+    if [ "${RLWP}" = "TRUE" ]; then
+      stage_info_main "RLWP"
+    fi
+    if [ "${LS}" = "TRUE" ]; then
+      stage_info_main "LS"
+    fi
+    if [ "${MI}" = "TRUE" ]; then
+      stage_info_main "MI"
+    fi
+    if [ "${MO}" = "TRUE" ]; then
+      stage_info_main "MO"
+    fi
+    if [ "${RT}" = "TRUE" ]; then
+      stage_info_main "RT"
+    fi
+    if [ "${one_to_one}" = "TRUE" ]; then
+      stage_info_main "1to1"
+    fi
+    stage_info_main "PASS"
+  fi
+
+  if [ "${run_stage4}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
+    stage_info_main "<Parameters for species tree inference control>:"
+    stage_info_main "According to your input command, the chosen species tree inference tools are:"
+    if [ "${run_iqtree}" = "TRUE" ]; then
+      stage_info_main "IQ-TREE"
+    fi
+    if [ "${run_raxml}" = "TRUE" ]; then
+      stage_info_main "RAxML"
+    fi
+    if [ "${run_raxml_ng}" = "TRUE" ]; then
+      stage_info_main "RAxML-NG"
+    fi
+    if [ "${run_astral}" = "TRUE" ]; then
+      stage_info_main "ASTRAL-I"
+    fi
+    if [ "${run_wastral}" = "TRUE" ]; then
+      stage_info_main "wASTRAL"
+    fi
+    if [ "${sp_tree}" = "0" ]; then
+      stage_info_main "None"
+    fi
+    stage_info_main "PASS"
+  fi
+  stage_success "Well done!"
+  stage_success "All parameters are valid."
+  stage_success "Moving on to the next step ..."
+  stage_blank_main ""
+
   ###################################
-  ### Step 3: Check dependencies ####
+  ### Step 2: Check dependencies ####
   ###################################
-  stage0_info "=> Step 3: Check dependencies" 
-  stage0_info "01-Check required software in all conda environments..."
+  stage_info_main "=> Step 2: Check dependencies" 
+  stage_info_main "01-Check required software in all conda environments..."
   # sra-tools
   check_sra_tools() {
     if ! command -v prefetch >/dev/null 2>&1 && ! command -v fasterq-dump >/dev/null 2>&1; then
-      stage0_error "'sra-tools' is not found in your conda environment."
-      stage0_error "Please install 'sra-tools' in your conda environment."
-      stage0_error "Recommended command for installation:"
-      stage0_error "mamba install bioconda::sra-tools -y"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "'sra-tools' is not found in your conda environment."
+      stage_error "Please install 'sra-tools' in your conda environment."
+      stage_error "Recommended command for installation:"
+      stage_error "mamba install bioconda::sra-tools -y"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     else
-      stage0_info "'sra-tools' existed, pass"
+      stage_info_main "'sra-tools' existed, pass"
     fi
   }
 
   check_pigz() {
     if ! command -v pigz >/dev/null 2>&1; then
-      stage0_error "'pigz' is not found in your conda environment."
-      stage0_error "Please install 'pigz' in your conda environment."
-      stage0_error "Recommended command for installation:"
-      stage0_error "mamba install conda-forge::pigz -y"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "'pigz' is not found in your conda environment."
+      stage_error "Please install 'pigz' in your conda environment."
+      stage_error "Recommended command for installation:"
+      stage_error "mamba install conda-forge::pigz -y"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     else
-      stage0_info "'pigz' existed, pass"
+      stage_info_main "'pigz' existed, pass"
     fi
   }
   
   check_trimmomatic() {
     if ! command -v trimmomatic >/dev/null 2>&1; then
-      stage0_error "'trimmomatic' is not found in your conda environment."
-      stage0_error "Please install 'trimmomatic' in your conda environment."
-      stage0_error "Recommended command for installation:"
-      stage0_error "mamba install conda-forge::trimmomatic -y"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "'trimmomatic' is not found in your conda environment."
+      stage_error "Please install 'trimmomatic' in your conda environment."
+      stage_error "Recommended command for installation:"
+      stage_error "mamba install conda-forge::trimmomatic -y"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     else
-      stage0_info "'trimmomatic' existed, pass"
+      stage_info_main "'trimmomatic' existed, pass"
     fi
   }
 
   check_hybpiper() {
     if ! command -v hybpiper >/dev/null 2>&1; then
-      stage0_error "'hybpiper' is not found in your conda environment."
-      stage0_error "Please install 'hybpiper' in your conda environment."
-      stage0_error "Recommended command for installation:"
-      stage0_error "mamba install bioconda::hybpiper -y"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "'hybpiper' is not found in your conda environment."
+      stage_error "Please install 'hybpiper' in your conda environment."
+      stage_error "Recommended command for installation:"
+      stage_error "mamba install bioconda::hybpiper -y"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     else
-      stage0_info "'hybpiper' existed, pass"
+      stage_info_main "'hybpiper' existed, pass"
     fi
   }
 
   check_amas() {
     if ! command -v AMAS.py >/dev/null 2>&1; then
-      stage0_error "'amas' is not found in your conda environment."
-      stage0_error "Please install 'amas' in your conda environment."
-      stage0_error "Recommended command for installation:"
-      stage0_error "mamba install bioconda::amas -y"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "'amas' is not found in your conda environment."
+      stage_error "Please install 'amas' in your conda environment."
+      stage_error "Recommended command for installation:"
+      stage_error "mamba install bioconda::amas -y"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     else
-      stage0_info "'amas' existed, pass"
+      stage_info_main "'amas' existed, pass"
     fi
   }
 
   check_mafft() {
     if ! command -v mafft >/dev/null 2>&1; then
-      stage0_error "'mafft' is not found in your conda environment."
-      stage0_error "Please install 'mafft' in your conda environment."
-      stage0_error "Recommended command for installation:"
-      stage0_error "mamba install bioconda::mafft -y"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "'mafft' is not found in your conda environment."
+      stage_error "Please install 'mafft' in your conda environment."
+      stage_error "Recommended command for installation:"
+      stage_error "mamba install bioconda::mafft -y"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     else
-      stage0_info "'mafft' existed, pass"
+      stage_info_main "'mafft' existed, pass"
     fi
   }
 
   check_trimal() {
     if ! command -v trimal >/dev/null 2>&1; then
-      stage0_error "'trimal' is not found in your conda environment."
-      stage0_error "Please install 'trimal' in your conda environment."
-      stage0_error "Recommended command for installation:"
-      stage0_error "mamba install bioconda::trimal -y"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "'trimal' is not found in your conda environment."
+      stage_error "Please install 'trimal' in your conda environment."
+      stage_error "Recommended command for installation:"
+      stage_error "mamba install bioconda::trimal -y"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     else
-      stage0_info "'trimal' existed, pass"
+      stage_info_main "'trimal' existed, pass"
     fi
   }
   
   check_paragone() {
     if ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "$one_to_one" = "TRUE" ]) && [ "${run_paragone}" = "TRUE" ]; then
       if ! command -v paragone >/dev/null 2>&1; then
-        stage0_error "'ParaGone' is not found in your conda environment."
-        stage0_error "Please install 'ParaGone' in your conda environment."
-        stage0_error "Recommended command for installation:"
-        stage0_error "mamba install bioconda::paragone -y"
-        stage0_error "HybSuite exits."
-        stage0_blank ""
+        stage_error "'ParaGone' is not found in your conda environment."
+        stage_error "Please install 'ParaGone' in your conda environment."
+        stage_error "Recommended command for installation:"
+        stage_error "mamba install bioconda::paragone -y"
+        stage_error "HybSuite exits."
+        stage_blank_main ""
         exit 1
       else
-        stage0_info "'paragone' existed, pass"
+        stage_info_main "'paragone' existed, pass"
       fi
     fi
   }
 
   check_modeltest_ng() {
     if ! command -v modeltest-ng >/dev/null 2>&1; then
-      stage0_error "'modeltest-ng' is not found in your conda environment."
-      stage0_error "Please install 'modeltest-ng' in your conda environment."
-      stage0_error "Recommended command for installation:"
-      stage0_error "mamba install bioconda::modeltest-ng -y"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "'modeltest-ng' is not found in your conda environment."
+      stage_error "Please install 'modeltest-ng' in your conda environment."
+      stage_error "Recommended command for installation:"
+      stage_error "mamba install bioconda::modeltest-ng -y"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     else
-      stage0_info "'modeltest-ng' existed, pass"
+      stage_info_main "'modeltest-ng' existed, pass"
     fi
   }
 
   check_iqtree() {
     if ! command -v iqtree >/dev/null 2>&1; then
-      stage0_error "'iqtree' is not found in your conda environment."
-      stage0_error "Please install 'iqtree' in your conda environment."
-      stage0_error "Recommended command for installation:"
-      stage0_error "mamba install bioconda::iqtree -y"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "'iqtree' is not found in your conda environment."
+      stage_error "Please install 'iqtree' in your conda environment."
+      stage_error "Recommended command for installation:"
+      stage_error "mamba install bioconda::iqtree -y"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     else
-      stage0_info "'iqtree' existed, pass"
+      stage_info_main "'iqtree' existed, pass"
     fi
   }
 
   check_raxml() {
     if ! command -v raxmlHPC >/dev/null 2>&1; then
-      stage0_error "'raxml' is not found in your conda environment."
-      stage0_error "Please install 'raxml' in your conda environment."
-      stage0_error "Recommended command for installation:"
-      stage0_error "mamba install bioconda::raxml -y"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "'raxml' is not found in your conda environment."
+      stage_error "Please install 'raxml' in your conda environment."
+      stage_error "Recommended command for installation:"
+      stage_error "mamba install bioconda::raxml -y"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     else
-      stage0_info "'raxml' existed, pass"
+      stage_info_main "'raxml' existed, pass"
     fi
   }
   
   check_raxml_ng() {
     if ! command -v raxml-ng >/dev/null 2>&1; then
-      stage0_error "'raxml-ng' is not found in your conda environment."
-      stage0_error "Please install 'raxml-ng' in your conda environment."
-      stage0_error "Recommended command for installation:"
-      stage0_error "mamba install bioconda::raxml-ng -y"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "'raxml-ng' is not found in your conda environment."
+      stage_error "Please install 'raxml-ng' in your conda environment."
+      stage_error "Recommended command for installation:"
+      stage_error "mamba install bioconda::raxml-ng -y"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     else
-      stage0_info "'raxm-ng' existed, pass"
+      stage_info_main "'raxm-ng' existed, pass"
     fi
   }
 
-  check_wastral() {
-    if [ "${run_wastral}" = "TRUE" ]; then
-      stage0_info "Checking wASTRAL..."
-      if [ ! -s "${wastral_dir}/bin/wastral" ]; then
-        stage0_blank ""
-        stage0_error "To run wASTRAL, 'wASTRAL' must be installed in ${wastral_dir} (specified by option -wastral_dir)."
-        stage0_error "Please ensure 'wASTRAL' is installed and the correct directory is specified."
-        stage0_error "Install 'wASTRAL' and add its root directory to the system environment variables."
-        stage0_error "HybSuite exits."
-        stage0_blank ""
-        exit 1
-      else
-        stage0_info "'wASTRAL' existed, pass"
-      fi
+  check_aster() {
+
+    if ! command -v astral4 >/dev/null 2>&1; then
+      stage_error "'aster' is not found in your conda environment."
+      stage_error "Please install 'aster' in your conda environment."
+      stage_error "Recommended command for installation:"
+      stage_error "mamba install bioconda::aster -y"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    else
+      stage_info_main "'aster' existed, pass"
     fi
   }
 
   check_newick_utilis() {
     if ! command -v nw_reroot >/dev/null 2>&1; then
-      stage0_error "'newick_utils' must be installed in your conda environment."
-      stage0_error "'newick_utils' is not found in your conda environment."
-      stage0_error "Please install 'newick_utils' in your conda environment."
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "'newick_utils' must be installed in your conda environment."
+      stage_error "'newick_utils' is not found in your conda environment."
+      stage_error "Please install 'newick_utils' in your conda environment."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     else
-      stage0_info "'newick_utilis' existed, pass"
-    fi
-  }
-
-  check_r_phytools() {
-    if Rscript -e "if (!requireNamespace('phytools', quietly = TRUE)) { quit(status = 1) }"; then
-      stage0_info "R package 'phytools' existed, pass"
-    else
-      stage0_error "'phytools' must be installed in your conda environment."
-      stage0_error "Please install 'phytools' using install.packages('phytools')."
-      stage0_error "Recommended command for installation:"
-      stage0_error "conda install conda-forge::r-phytools -y"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
-      exit 1
-    fi
-  }
-  
-  check_r_ape() {
-    if Rscript -e "if (!requireNamespace('ape', quietly = TRUE)) { quit(status = 1) }"; then
-      stage0_info "R package 'ape' existed, pass"
-    else
-      stage0_error "To run wASTRAL/ASTRAL-III, 'ape' must be installed in your conda environment."
-      stage0_error "Please install 'ape' using install.packages('ape')."
-      stage0_error "HybSuite exits."
-      stage0_blank ""
-      exit 1
+      stage_info_main "'newick_utilis' existed, pass"
     fi
   }
 
   check_py_install() {
     local pyinstall="$1"
     if pip show "${pyinstall}" >/dev/null 2>&1; then
-      stage0_info "Python dependency ${pyinstall} existed, pass"
+      stage_info_main "Python dependency ${pyinstall} existed, pass"
     else
-      stage0_error "Python package "${pyinstall}" is not installed."
-      stage0_error "Recommended command for installation:"
-      stage0_error "pip install ${pyinstall}"
-      stage0_error "HybSuite exits."
-      stage0_blank ""
+      stage_error "Python package "${pyinstall}" is not installed."
+      stage_error "Recommended command for installation:"
+      stage_error "pip install ${pyinstall}"
+      stage_error "HybSuite exits."
+      stage_blank_main ""
       exit 1
     fi
   }
 
   check_py_phylopypruner() {
       if pip show "phylopypruner" >/dev/null 2>&1; then
-        stage0_info "Python dependency 'phylopypruner' existed, pass"
+        stage_info_main "Python dependency 'phylopypruner' existed, pass"
       else
-        stage0_error "Python package 'phylopypruner' is not installed."
-        stage0_error "Recommended command for installation:"
-        stage0_error "pip install phylopypruner"
-        stage0_error "HybSuite exits."
-        stage0_blank ""
+        stage_error "Python package 'phylopypruner' is not installed."
+        stage_error "Recommended command for installation:"
+        stage_error "pip install phylopypruner"
+        stage_error "HybSuite exits."
+        stage_blank_main ""
         exit 1
       fi
   }
-    
-  check_r() {
-    if ! command -v R >/dev/null 2>&1; then
-        stage0_error "'r' is not installed in the current environment."
-        stage0_error "Please install 'r' in your conda environment."
-        stage0_error "Recommended command for installation:"
-        stage0_error "mamba install r -y"
-        stage0_error "HybSuite exits."
-        stage0_blank ""
-        exit 1
-    else
-        stage0_info "'r-base' existed, pass"
-    fi
-  }
 
-  stage0_info "Checking dependencies in your conda environment..."
+  stage_info_main "Checking dependencies in your conda environment..."
   check_sra_tools
   check_pigz
   check_trimmomatic
@@ -1257,10 +1473,10 @@ else
   check_raxml
   check_raxml_ng
   check_hybpiper
-  # check r/python
-  check_r
-  check_r_phytools
-  check_r_ape
+  check_paragone
+  check_aster
+  check_newick_utilis
+  # check python
   check_py_install "PyQt5"
   check_py_install "ete3"
   check_py_install "pandas"
@@ -1268,86 +1484,178 @@ else
   check_py_install "matplotlib"
   check_py_install "numpy"
   check_py_install "phylopypruner"
-  if [ "${run_wastral}" = "TRUE" ]; then
-    # wastral
-    check_wastral
+  stage_success "Well done!"
+  stage_success "All dependencies have been successfully installed in your conda environment."
+  stage_success "Proceeding to the next step..."
+  stage_blank_main ""
+
+  ######################################################
+  ### Step 3: Check the inputs #########################
+  ######################################################
+  stage_info_main "=> Step 3: Check the inputs" 
+  # 01-Check the form of the input list file
+  stage_info_main "01-Check the form of the input list file (specified by '-input_list') ..."
+  stage_info_main "Checking results:"
+  found_public=$(awk -F'\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/ { print 1; exit }' "${input_list}")
+  found_own=$(awk -F'\t' '$2 == "A" { print 1; exit }' "${input_list}")
+  found_pre=$(awk -F'\t' '$2 == "B" { print 1; exit }' "${input_list}")
+  found_outgroup=$(awk -F'\t' '$3 == "Outgroup" { print 1; exit }' "${input_list}")
+  found_other=$(awk -F'\t' '$2 !~ /^(SRR|ERR|DRR|KRR|LRR)/ && $2 != "A" && $2 != "B" { print 1; exit }' "${input_list}")
+  if [ "${found_other}" = "1" ] || ([ "${found_public}" != "1" ] && [ "${found_own}" != "1" ] && [ "${found_pre}" != "1" ]); then
+    if [ "${found_other}" = "1" ]; then
+      stage_error "The second column of ${input_list} should start with 'SRR','ERR','DRR','KRR','LRR', or be 'A' or 'B'."
+    elif [ "${found_public}" != "1" ] && [ "${found_own}" != "1" ] && [ "${found_pre}" != "1" ]; then
+      stage_error "At least one type of data (public raw data/existing raw data/pre-assembled sequences) must be provided in ${input_list}."
+    fi
+    stage_error "HybSuite exits."
+    stage_blank_main ""
+    exit 1
   fi
-  check_paragone
-  stage0_blank ""
-  stage0_info "Well done!"
-  stage0_info "All dependencies have been successfully installed in your conda environment."
-  stage0_info "Proceeding to the next step..."
-  stage0_blank ""
+  if [ "${found_outgroup}" != "1" ]; then
+    stage_warning "No outgroup species name is provided (the third column) in ${input_list}."
+    stage_warning "HybSuite will not reroot the phylogenetic tree in stage 4."
+  fi
+  if [ "${found_public}" = "1" ]; then
+    stage_info_main "Public sample names to download are provided."
+  elif [ "${found_own}" = "1" ]; then
+    stage_info_main "The names of samples with existing raw data are provided."
+  elif [ "${found_pre}" = "1" ]; then
+    stage_info_main "The names of samples with pre-assembled sequences are provided."
+  fi
+  stage_info_main "PASS"
+
+  if [ "${run_stage1}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
+    # 02-Check the input data
+    stage_info_main "02-Checking the input data (specified by '-input_data') ..."
+    stage_info_main "Checking results:"
+    # Check if the path to the input data is provided.
+    if ([ "${found_pre}" = "1" ] || [ "${found_own}" = "1" ]) && [ ! -d "${input_data}" ]; then
+      stage_error "You need to specify the correct path to your data by using '-input_data'."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    # Check if the input list is provided when users offer the input data
+    if [ "${found_own}" = "1" ] && [ ! -d "${input_data}" ]; then
+      stage_error "The names of samples with your existing raw data should be provided in the input data directory (${input_data})."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+
+    # Check if all sample names in the input list have corresponding correct name of input data
+    awk -F'\t' '$2 == "A" {print $1}' "${input_list}" | while IFS= read -r sample; do
+      if ([ -s "${input_data}/${sample}_1.fastq" ] && [ -s "${input_data}/${sample}_2.fastq" ]) || \
+        ([ -s "${input_data}/${sample}_1.fastq.gz" ] && [ -s "${input_data}/${sample}_2.fastq.gz" ]) || \
+        ([ -s "${input_data}/${sample}_1.fq" ] && [ -s "${input_data}/${sample}_2.fq" ]) || \
+        ([ -s "${input_data}/${sample}_1.fq.gz" ] && [ -s "${input_data}/${sample}_2.fq.gz" ]) || \
+        [ -s "${input_data}/${sample}.fastq" ] || \
+        [ -s "${input_data}/${sample}.fastq.gz" ] || \
+        [ -s "${input_data}/${sample}.fq" ] || \
+        [ -s "${input_data}/${sample}.fq.gz" ]; then
+        :
+      else
+        stage_error "No FASTQ/FASTQ.GZ/FQ/FQ.GZ files found for sample $sample in the input data directory (${input_data})."
+        stage_error "Please adjust the format of your input data to the acquired format (use -h to check the correct format)."
+        stage_error "HybSuite exits."
+        stage_blank_main ""
+        exit 1
+      fi
+    done
+    awk -F'\t' '$2 == "B" {print $1}' "${input_list}" | while IFS= read -r sample; do
+      if [ -s "${input_data}/${sample}.fasta" ]; then
+        :
+      else
+        stage_error "No FASTA file found for sample $sample in the input data directory (${input_data})."
+        stage_error "Please adjust the format of your input data to the acquired format (use -h to check the correct format)."
+        stage_error "HybSuite exits."
+        stage_blank_main ""
+        exit 1
+      fi
+    done
+    stage_info_main "PASS"
+  fi
+  if [ -s "${t}" ]; then
+    # 03-Check the target file
+    stage_info_main "03-Checking the target file (specified by '-t') ..."
+    stage_info_main "Checking results:"
+    if [ ! -s "${t}" ] && [ "${run_to_stage1}" != "true" ]; then
+      stage_error "The target file (reference for HybPiper) you specified does not exist."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    elif [ ! -s "${t}" ] && [ "${run_to_stage1}" = "true" ]; then
+      stage_info_main "The target file is not provided. It is still OK since you only plan to run HybSuite stage 1."
+    else
+      ref_num=$(grep -c '>' "${t}")
+      stage_info_main "The target file is (specified by '-t'): ${t}"
+      stage_info_main "It contains ${ref_num} sequences"
+      stage_info_main "PASS"
+    fi
+  fi
+  
+  # Deliver congratulations messages
+  stage_success "Well done!"
+  stage_success "All inputs are checked and no errors are found."
+  stage_success "Proceeding to the next step ..."
+  stage_blank_main ""
 fi
 
-if [ "${skip_checking}" != "TRUE" ]; then
-  stage0_info "=> Step 4: Check Species Checklists"
-  all_sp_num=$(grep -c '^' "${input_list}" || wc -l < "${input_list}")
-  all_genus_num=$(awk -F '_' '{print $1}' "${input_list}" | sort -u | grep -c '^')
-  awk -F '_' '{print $1}' "${input_list}" | sort -u > "${output_dir}/00-logs_and_checklists/checklists/All_Genus_name_list.txt"
-  if [ "${found_public}" = "1" ]; then
-    SRR_sp_num=$(awk -F'\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/' "${input_list}" | grep -c '^')
-    SRR_genus_num=$(awk -F'\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/ {print $1}' "${input_list}" | awk -F'_' '{print $1}' | sort -u | grep -c '^')
+if [ "${check}" = "TRUE" ]; then
+  if [ -s "${input_list}" ]; then
+    stage_info_main "=> Step 4: Check species checklists"
+    all_sp_num=$(grep -c '^' "${input_list}" || wc -l < "${input_list}")
+    all_genus_num=$(awk -F '_' '{print $1}' "${input_list}" | sort -u | grep -c '^')
+    awk -F '_' '{print $1}' "${input_list}" | sort -u >> "${output_dir}/hybsuite_checklists/All_Genus_name_list.txt"
+    if [ "${found_public}" = "1" ]; then
+      SRR_sp_num=$(awk -F'\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/' "${input_list}" | grep -c '^')
+      SRR_genus_num=$(awk -F'\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/ {print $1}' "${input_list}" | awk -F'_' '{print $1}' | sort -u | grep -c '^')
+    fi
+    if [ "${found_own}" = "1" ]; then
+      Add_sp_num=$(awk -F'\t' '$2 == "A"' "${input_list}" | grep -c '^')
+      Add_genus_num=$(awk -F'\t' '$2 == "A" {print $1}' "${input_list}" | awk -F'_' '{print $1}' | sort -u | grep -c '^')
+    fi
+    if [ "${found_pre}" = "1" ]; then
+      Other_sp_num=$(awk -F'\t' '$2 == "B"' "${input_list}" | grep -c '^')
+      Other_genus_num=$(awk -F'\t' '$2 == "B" {print $1}' "${input_list}" | awk -F'_' '{print $1}' | sort -u | grep -c '^')
+    fi
+    stage_info_main "Checking results:"
+    stage_info_main "(1) Taxonomy:"
+    stage_info_main "You plan to construct phylogenetic trees for ${all_sp_num} taxa belonging to ${all_genus_num} genera."
+    stage_info_main "(2) Data sources:"
+    if [ "${found_public}" = "1" ]; then
+      stage_info_main "Downloaded raw data: ${SRR_sp_num} species from ${SRR_genus_num} genera."
+    elif [ "${found_own}" = "1" ]; then
+      stage_info_main "Your own raw data: ${Add_sp_num} species from ${Add_genus_num} genera."
+    elif [ "${found_pre}" = "1" ]; then
+      stage_info_main "Your pre-assembled sequences: ${Other_sp_num} species from ${Other_genus_num} genera."
+    fi
   fi
-  if [ "${found_own}" = "1" ]; then
-    Add_sp_num=$(awk -F'\t' '$2 == "A"' "${input_list}" | grep -c '^')
-    Add_genus_num=$(awk -F'\t' '$2 == "A" {print $1}' "${input_list}" | awk -F'_' '{print $1}' | sort -u | grep -c '^')
-  fi
-  if [ "${found_pre}" = "1" ]; then
-    Other_sp_num=$(awk -F'\t' '$2 == "B"' "${input_list}" | grep -c '^')
-    Other_genus_num=$(awk -F'\t' '$2 == "B" {print $1}' "${input_list}" | awk -F'_' '{print $1}' | sort -u | grep -c '^')
-  fi
-fi
-
-if [ "${skip_checking}" != "TRUE" ]; then
-  stage0_info "Checking results:"
-  stage0_info "(1) Taxonomy:"
-  stage0_info "You plan to construct phylogenetic trees for ${all_sp_num} taxa belonging to ${all_genus_num} genera."
-  stage0_info "(2) Data sources:"
-  if [ "${found_public}" = "1" ]; then
-    stage0_info "Downloaded raw data: ${SRR_sp_num} species from ${SRR_genus_num} genera."
-  else
-    :
-  fi
-  if [ "${found_own}" = "1" ]; then
-    stage0_info "Your own raw data: ${Add_sp_num} species from ${Add_genus_num} genera."
-  else
-    :
-  fi
-  if [ "${found_pre}" = "1" ]; then
-    stage0_info "Your pre-assembled sequences: ${Other_sp_num} species from ${Other_genus_num} genera."
-  else
-    :
-  fi
-  stage0_info "PASS"
-
-  #Read the answer entered by the user
-  stage0_info "All in all, the final results will be outputted to ${output_dir}/"
-  stage0_blank ""
-  stage0_info "=> According to the above feedbacks,"
-  stage0_info "proceed to run HybSuite? ([y]/n)"
+  stage_info_main "All in all, final outputs will be saved to: ${output_dir}/"
+  stage_info_main "Based on the above configuration:"
+  stage_info_main_success "Confirm to execute HybSuite pipeline $1? ([y]/n)"
   read answer
   answer_HybSuite=$(echo "$answer" | tr '[:upper:]' '[:lower:]')
   # Check the user's answers
-  if [ "$answer_HybSuite" = "y" ]; then
-    stage0_blank ""
-    stage0_info "Fantastic! HybSuite will run according to your request ..."
-    stage0_info "Let's start it, good luck!"
-    stage0_blank ""
-  elif [ "$answer_HybSuite" = "n" ]; then
-    stage0_blank ""
-    stage0_warning "It might be something dosen't satisfy your needs."
-    stage0_warning "You can adjust the parameter settings or correct the filenames."
-    stage0_warning "HybSuite exits."
-    stage0_blank ""
-    exit 1
+  if [[ -z "$answer_HybSuite" || "$answer_HybSuite" = "y" ]]; then
+    stage_blank_main ""
+    stage_info_main "Initializing '$0 $1' analysis ..."
+    stage_info_main_success "Starting processing - good luck with your analysis!"
+    stage_blank_main ""
+  elif [[ "$answer_HybSuite" = "n" ]]; then
+      stage_blank_main ""
+      stage_warning "Configuration may not meet your requirements"
+      stage_warning "Suggested actions:"
+      stage_warning "1. Adjust parameters via command-line options"
+      stage_warning "2. Verify input file names and paths"
+      stage_warning "HybSuite pipeline terminated by user request"
+      stage_blank_main ""
+      exit 0
   else
-    stage0_blank ""
-    stage0_error "Sorry, ${answer} is not a valid answer."
-    stage0_error "Please input y (yes) or n (no)."
-    stage0_error "HybSuite exits."
-    stage0_blank ""
-    exit 1
+      stage_warning "Invalid input. Please answer with 'y' or 'n'."
+      stage_warning "HybSuite pipeline terminated."
+      stage_blank_main ""
+      exit 1
   fi
 fi
 
@@ -1357,33 +1665,35 @@ fi
 stage_info "<<<======= Preparation: Create desired folders and define functions =======>>>"
 if [ "${eas_dir}" = "_____" ]; then
   eas_dir="${output_dir}/01-Assembled_data"
-  stage0_info "Assembled data directory was not specified, set to: ${eas_dir} by default"
+  stage_info "Assembled data directory was not specified, set to: ${eas_dir} by default"
 fi
 if [ "${NGS_dir}" = "_____" ]; then
   NGS_dir="${output_dir}/NGS_dataset"
-  stage0_info "NGS dataset directory was not specified, set to: ${NGS_dir} by default"
+  stage_info "NGS dataset directory was not specified, set to: ${NGS_dir} by default"
 fi
-if [ -d "${output_dir}/00-logs_and_checklists/checklists" ]; then
-  rm "${output_dir}/00-logs_and_checklists/checklists"/* > /dev/null 2>&1
-fi
-mkdir -p "${output_dir}/00-logs_and_checklists/checklists"
-found_public=$(awk -F'\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/ { print 1; exit }' "${input_list}")
-found_own=$(awk -F'\t' '$2 == "A" { print 1; exit }' "${input_list}")
-found_pre=$(awk -F'\t' '$2 == "B" { print 1; exit }' "${input_list}")
-found_outgroup=$(awk -F'\t' '$3 == "Outgroup" { print 1; exit }' "${input_list}")
-found_other=$(awk -F'\t' '$2 !~ /^(SRR|ERR|DRR|KRR|LRR)/ && $2 != "A" && $2 != "B" { print 1; exit }' "${input_list}")
-if [ "${found_public}" = "1" ]; then
-  awk -F'\t' -v OFS='\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/ {print $1, $2}' "${input_list}" > "${output_dir}/00-logs_and_checklists/checklists/Public_Spname_SRR.txt"
-  awk -F'\t' -v OFS='\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/ {print $1}' "${input_list}" > "${output_dir}/00-logs_and_checklists/checklists/Public_Spname.txt"
-fi
-if [ "${found_outgroup}" = "1" ]; then
-  awk -F'\t' -v OFS='\t' '$3 == "Outgroup" {print $1}' "${input_list}" > "${output_dir}/00-logs_and_checklists/checklists/Outgroup.txt"
-fi
-if [ "${found_own}" = "1" ]; then
-  awk -F'\t' '$2 == "A" {print $1}' "${input_list}" > "${output_dir}/00-logs_and_checklists/checklists/My_Spname.txt"
-fi
-if [ "${found_pre}" = "1" ]; then
-  awk -F'\t' '$2 == "B" {print $1}' "${input_list}" > "${output_dir}/00-logs_and_checklists/checklists/Pre-assembled_Spname.txt"
+if [ -s "${input_list}" ]; then
+  if [ -d "${output_dir}/hybsuite_checklists" ]; then
+    rm "${output_dir}/hybsuite_checklists"/* > /dev/null 2>&1
+  fi
+  mkdir -p "${output_dir}/hybsuite_checklists"
+  found_public=$(awk -F'\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/ { print 1; exit }' "${input_list}")
+  found_own=$(awk -F'\t' '$2 == "A" { print 1; exit }' "${input_list}")
+  found_pre=$(awk -F'\t' '$2 == "B" { print 1; exit }' "${input_list}")
+  found_outgroup=$(awk -F'\t' '$3 == "Outgroup" { print 1; exit }' "${input_list}")
+  found_other=$(awk -F'\t' '$2 !~ /^(SRR|ERR|DRR|KRR|LRR)/ && $2 != "A" && $2 != "B" { print 1; exit }' "${input_list}")
+  if [ "${found_public}" = "1" ]; then
+    awk -F'\t' -v OFS='\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/ {print $1, $2}' "${input_list}" > "${output_dir}/hybsuite_checklists/Public_Spname_SRR.txt"
+    awk -F'\t' -v OFS='\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/ {print $1}' "${input_list}" > "${output_dir}/hybsuite_checklists/Public_Spname.txt"
+  fi
+  if [ "${found_outgroup}" = "1" ]; then
+    awk -F'\t' -v OFS='\t' '$3 == "Outgroup" {print $1}' "${input_list}" > "${output_dir}/hybsuite_checklists/Outgroup.txt"
+  fi
+  if [ "${found_own}" = "1" ]; then
+    awk -F'\t' '$2 == "A" {print $1}' "${input_list}" > "${output_dir}/hybsuite_checklists/My_Spname.txt"
+  fi
+  if [ "${found_pre}" = "1" ]; then
+    awk -F'\t' '$2 == "B" {print $1}' "${input_list}" > "${output_dir}/hybsuite_checklists/Pre-assembled_Spname.txt"
+  fi
 fi
 
 # set the process:
@@ -1402,7 +1712,7 @@ if [ "${process}" != "all" ]; then
 fi
 
 # Define working directory (for stage 1-4)
-work_dir="${output_dir}/00-logs_and_checklists/logs"
+work_dir="${output_dir}/hybsuite_logs"
 
   #################===========================================================================
   # Function: Record skipped samples
@@ -1782,9 +2092,41 @@ work_dir="${output_dir}/00-logs_and_checklists/logs"
       # Clean up temporary file
       rm -f "$sorted_log"
   }
+  #################===========================================================================
+
+  #################===========================================================================
+  # Function: Display only failed log
+  display_only_failed_log() {
+    local log_file="$1"
+    local failing_prefix="$2"
+
+    # Display failed sample information
+      if [ -s "$failed_log" ]; then
+          failed_time=$(cat "${failed_log}.time" 2>/dev/null || echo "[$(date '+%Y-%m-%d %H:%M:%S')]")
+          failed_samples=$(tr '\n' ' ' < "$failed_log")
+          sed -i "/*\[LOG\] ${failing_prefix}*/d" "$log_file"
+          echo "${failed_time} [LOG] ${failing_prefix} ${failed_samples}" >> "$log_file"
+      fi
+  }
 
   #################===========================================================================
   
+  # Function: Remove fasta with less than 4 seqs
+  remove_fasta_with_less_than_4_seqs() {
+    local target_dir=$1
+    local log_file_name=$2
+
+    > "${log_file_name}"
+    echo -e "Removed_fasta_with_less_than_4_seqs:\tNumber_of_sequences" >> "${log_file_name}"
+    for fasta_file in "${target_dir}"/*.fasta; do
+      seq_count=$(grep -c "^>" "$fasta_file")
+      if [ "$seq_count" -lt 4 ]; then
+        echo -e "$fasta_file\t$seq_count" >> "${log_file_name}"
+        rm -f "$fasta_file"
+      fi
+    done
+  }
+
   #################===========================================================================
   # Function: Running MAFFT and TrimAl
   remove_n() {
@@ -1860,7 +2202,7 @@ work_dir="${output_dir}/00-logs_and_checklists/logs"
       if [ -s "${output}" ]; then
           return 0
       else
-          stage_error "MAFFT alignment failed"
+          stage_warning "MAFFT alignment failed: ${input}"
           return 1
       fi
   }
@@ -1944,21 +2286,45 @@ work_dir="${output_dir}/00-logs_and_checklists/logs"
       fi
       eval "${trimal_cmd}" 2>/dev/null
   }
-stage_info "Finish"
 
-
+run_hmmcleaner() {
+    local input_file=$1
+    local cost=$2
+    
+    IFS='_' read -r cost1 cost2 cost3 cost4 <<< "$cost"
+    seq_num=$(grep -c ">" "${input_file}")
+    
+    if (( $(echo "${cost1} < 0 && ${cost2} < 0 && ${cost3} > 0 && ${cost4} > 0 && \
+             ${cost1} < ${cost2} && ${cost3} < ${cost4} && ${cost2} < ${cost3}" | bc -l) )); then
+        if [ "${seq_num}" -lt 2 ]; then
+            stage_blank_main ""
+            stage_error "The number of sequences in ${input_file} is less than 2, Please check the input file."
+        elif [ "${seq_num}" -lt 50 ]; then
+            stage_cmd "${log_mode}" "HmmCleaner.pl ${input_file} -costs ${cost1} ${cost2} ${cost3} ${cost4} --noX"
+            #HmmCleaner.pl "${input_file}" -costs ${cost1} ${cost2} ${cost3} ${cost4} --noX 2>&1 >/dev/null
+            #script -q -c 'HmmCleaner.pl "${input_file}" -costs "${cost1}" "${cost2}" "${cost3}" "${cost4}" --noX' /dev/null | grep -v "WARNING"
+            HmmCleaner.pl "${input_file}" -costs "${cost1}" "${cost2}" "${cost3}" "${cost4}" --noX 2>&1 >/dev/null | grep -v "WARNING\|at reader Bio\|line"
+        else
+            stage_cmd "${log_mode}" "HmmCleaner.pl ${input_file} -costs ${cost1} ${cost2} ${cost3} ${cost4} --noX --large"
+            #HmmCleaner.pl "${input_file}" -costs ${cost1} ${cost2} ${cost3} ${cost4} --noX --large 2>&1 >/dev/null
+            #script -q -c 'HmmCleaner.pl "${input_file}" -costs "${cost1}" "${cost2}" "${cost3}" "${cost4}" --noX --large' /dev/null | grep -v "WARNING"
+            HmmCleaner.pl "${input_file}" -costs "${cost1}" "${cost2}" "${cost3}" "${cost4}" --noX --large 2>&1 >/dev/null | grep -v "WARNING\|at reader Bio\|line"
+        fi
+    else
+        stage_blank_main ""
+        stage_error "The cost values are not valid, Please check the cost values."
+        stage_error "Expected format: negative_negative_positive_positive (e.g., -0.15_-0.08_0.15_0.45)"
+        stage_error "Current value: $cost"
+    fi
+}
 # Stage 1: NGS dataset construction
-if [ "${skip_stage1}" = "TRUE" ] || [ "${skip_stage12}" = "TRUE" ] || [ "${skip_stage123}" = "TRUE" ] || [ "${skip_stage1234}" = "TRUE" ]; then
-  stage_info_main "Stage 1 NGS dataset construction is skipped."
-  stage_info_main "Moving on to the next stage..."
-  stage_blank_main ""
-else
+if [ "${run_stage1}" = "TRUE" ]; then
   ############################################################################################
   #===> Stage 1 NGS dataset construction <===#################################################
   ############################################################################################
 
   #################===========================================================================
-  mkdir -p "${output_dir}/00-logs_and_checklists/logs" "${output_dir}/00-logs_and_checklists/checklists" "${NGS_dir}/01-Downloaded_raw_data/01-Raw-reads_sra" "${NGS_dir}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz" "${NGS_dir}/02-Downloaded_clean_data" "${NGS_dir}/03-My_clean_data"
+  mkdir -p "${output_dir}/hybsuite_logs" "${output_dir}/hybsuite_checklists" "${NGS_dir}/01-Downloaded_raw_data/01-Raw-reads_sra" "${NGS_dir}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz" "${NGS_dir}/02-Downloaded_clean_data" "${NGS_dir}/03-My_clean_data"
   #################===========================================================================
   stage_info_main "<<<======= Stage 1 NGS dataset construction=======>>>"
   #################===========================================================================
@@ -1967,11 +2333,11 @@ else
   # Stage1-Step1: Download NGS raw data from NCBI via SRAToolKit (sra-tools) #################
   ############################################################################################
   # Use sratoolkit to batch download sra data, then use fasterq-dump to convert the original sra data to fastq/fastq.gz format, and decide whether to delete sra data according to the parameters provided by the user
-  if [ -s "${output_dir}/00-logs_and_checklists/checklists/Public_Spname_SRR.txt" ]; then
+  if [ -s "${output_dir}/hybsuite_checklists/Public_Spname_SRR.txt" ]; then
       # Define total samples number
-      total_sps=$(awk 'NF' "${output_dir}/00-logs_and_checklists/checklists/Public_Spname_SRR.txt" | grep -c '^')
+      total_sps=$(awk 'NF' "${output_dir}/hybsuite_checklists/Public_Spname_SRR.txt" | grep -c '^')
       # Initialize parallel environment
-      init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/00-logs_and_checklists/checklists/Public_Spname_SRR.txt" || exit 1
+      init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/hybsuite_checklists/Public_Spname_SRR.txt" || exit 1
       define_threads "pigz"
       define_threads "fasterq_dump"
       stage_info_main "Step1: Downloading raw data for ${total_sps} samples with ${process_num} parallel processes from NCBI..."
@@ -1979,18 +2345,42 @@ else
       while IFS= read -r sample || [ -n "$sample" ]; do
           spname=$(echo "${sample}" | awk '{print $1}')
           srr=$(echo "${sample}" | awk '{print $2}')
+          if [ -s "${NGS_dir}/02-Downloaded_clean_data/${spname}_1_clean.paired.fq.gz" ] && [ -s "${NGS_dir}/02-Downloaded_clean_data/${spname}_2_clean.paired.fq.gz" ]; then
+              check_paired_clean_data="TRUE"
+          else
+              check_paired_clean_data="FALSE"
+          fi
+
+          if [ -s "${NGS_dir}/02-Downloaded_clean_data/${spname}_clean.single.fq.gz" ]; then
+              check_single_clean_data="TRUE"
+          else
+              check_single_clean_data="FALSE"
+          fi
+
+          if ([ -s "${NGS_dir}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}_1.fastq.gz" ] && [ -s "${NGS_dir}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}_2.fastq.gz" ]) || ([ -s "${NGS_dir}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}_1.fastq" ] && [ -s "${NGS_dir}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}_2.fastq" ]); then
+              check_paired_raw_data="TRUE"
+          else
+              check_paired_raw_data="FALSE"
+          fi
+
+          if ([ -s "${NGS_dir}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}.fastq.gz" ] || [ -s "${NGS_dir}/01-Downloaded_raw_data/02-Raw-reads_fastq_gz/${spname}.fastq" ]); then
+              check_single_raw_data="TRUE"
+          else
+              check_single_raw_data="FALSE"
+          fi
+          
           if [ "${process}" != "all" ]; then
               read -u1000
           fi
-          # check paired-end compressed files
-          if [ -s "${NGS_dir}/02-Downloaded_clean_data/${spname}_1_clean.paired.fq.gz" ] && [ -s "${NGS_dir}/02-Downloaded_clean_data/${spname}_2_clean.paired.fq.gz" ]; then
-              record_skipped_sample "$spname" "Skipped downloading existing samples with adapters removed:" "$stage_logfile"
+          # check the existed clean and raw data
+          if [ "${check_paired_clean_data}" = "TRUE" ] || [ "${check_single_clean_data}" = "TRUE" ] || [ "${check_paired_raw_data}" = "TRUE" ] || [ "${check_single_raw_data}" = "TRUE" ]; then
+              record_skipped_sample "$spname" "Skipped downloading existing samples:" "$stage_logfile"
               if [ "${process}" != "all" ]; then
                   echo >&1000
               fi
               continue
           fi
-          {  
+          {
               # Update start count
               update_start_count "$spname" "$stage_logfile"
               # download raw data
@@ -2073,7 +2463,10 @@ else
                   echo >&1000
               fi
           } &
-      done < "${output_dir}/00-logs_and_checklists/checklists/Public_Spname_SRR.txt"
+        if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
+          display_only_failed_log "$stage_logfile" "Failed to download raw data:"
+        fi
+      done < "${output_dir}/hybsuite_checklists/Public_Spname_SRR.txt"
       # Wait for all tasks to complete
       wait
       echo
@@ -2093,10 +2486,10 @@ else
   stage_info_main "Step2: Removing adapters of raw data via Trimmomatic-0.39 ..."
   cd ${NGS_dir}
   define_threads "trimmomatic"
-  if [ -s "${output_dir}/00-logs_and_checklists/checklists/Public_Spname_SRR.txt" ]; then
-      total_sps=$(awk 'NF' "${output_dir}/00-logs_and_checklists/checklists/Public_Spname_SRR.txt" | grep -c '^')
+  if [ -s "${output_dir}/hybsuite_checklists/Public_Spname_SRR.txt" ]; then
+      total_sps=$(awk 'NF' "${output_dir}/hybsuite_checklists/Public_Spname_SRR.txt" | grep -c '^')
       # Initialize parallel environment
-      init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/00-logs_and_checklists/checklists/Public_Spname_SRR.txt" || exit 1
+      init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/hybsuite_checklists/Public_Spname_SRR.txt" || exit 1
       stage_info_main "====>> Removing adapters for downloaded raw data of ${total_sps} samples (${process} in parallel) ====>>"
       stage_info_main "Sequences that have already had adapters removed will not be trimmed for adapters again!!!"
       while IFS= read -r sample || [ -n "$sample" ]; do
@@ -2162,20 +2555,24 @@ else
               echo >&1000
           fi
         } &
-      done < "${output_dir}/00-logs_and_checklists/checklists/Public_Spname_SRR.txt"
+        if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
+          display_only_failed_log "$stage_logfile" "Failed to remove adapters for public samples:"
+        fi
+      done < "${output_dir}/hybsuite_checklists/Public_Spname_SRR.txt"
       wait
       echo
       # Display processing log
       if [ "${log_mode}" = "full" ]; then
-        display_process_log "$stage_logfile" "Failed to remove adapters for samples:"
+        display_process_log "$stage_logfile" "Failed to remove adapters for public samples:"
       fi
+      stage_blank_main ""
   fi
 
-  if [ -s "${output_dir}/00-logs_and_checklists/checklists/My_Spname.txt" ] && [ -e "${input_data}" ]; then
+  if [ -s "${output_dir}/hybsuite_checklists/My_Spname.txt" ] && [ -e "${input_data}" ]; then
     # Define total samples number
-    total_sps=$(awk 'NF' "${output_dir}/00-logs_and_checklists/checklists/My_Spname.txt" | grep -c '^')
+    total_sps=$(awk 'NF' "${output_dir}/hybsuite_checklists/My_Spname.txt" | grep -c '^')
     # Initialize parallel environment
-    init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/00-logs_and_checklists/checklists/My_Spname.txt"
+    init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/hybsuite_checklists/My_Spname.txt"
     stage_info_main "====>> Removing adapters for existing (user-provided) raw data of ${total_sps} samples (${process} in parallel) ====>>"
     stage_info_main "Sequences that have already had adapters removed will not be trimmed for adapters again!!!"
     while IFS= read -r sample || [ -n "$sample" ]; do
@@ -2235,47 +2632,52 @@ else
               echo >&1000
           fi
       } &
-    done < "${output_dir}/00-logs_and_checklists/checklists/My_Spname.txt"
+      if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
+        display_only_failed_log "$stage_logfile" "Failed to remove adapters for user-provided samples:"
+      fi
+    done < "${output_dir}/hybsuite_checklists/My_Spname.txt"
     # Wait for all tasks to complete
     wait
     echo
     # Display processing log
     if [ "${log_mode}" = "full" ]; then
-      display_process_log "$stage_logfile" "Failed to remove adapters for samples:"
+      display_process_log "$stage_logfile" "Failed to remove adapters for user-provided samples:"
     fi
+    stage_blank_main ""
   fi
 
   ############################################################################################
   # End of Stage 1
-  stage_info_main "Successfully finishing running stage1: 'NGS database construction'. "
-  stage_info_main "The NGS raw data and clean data have been output to ${NGS_dir}"
-  if [ "${run_to_stage1}" = "true" ]; then
+  stage_info_main_success "Stage 1 completed: NGS database construction"
+  stage_info_main_success "Output directories: ${NGS_dir}"
+  stage_info_main_success " (1) Downloaded raw data: ${NGS_dir}/01-Downloaded_raw_data/"
+  stage_info_main_success " (2) Downloaded clean data: ${NGS_dir}/02-Downloaded_clean_data/"
+  stage_info_main_success " (3) User-provided samples' clean data: ${NGS_dir}/03-My_clean_data/"
+  ############################################################################################
+  if [ "${full_pipeline}" = "FALSE" ]; then
     # Clean up environment
     cleanup_parallel_env "$work_dir"
-    stage_info_main "You set subcommand 'run_to_stage1' to specify HybSuite to run only stage 1."
-    stage_info_main "Consequently, HybSuite will stop and exit right now."
-    stage_info_main "Thank you for using HybSuite! Enjoy your research!"
+    stage_success "HybSuite execution completed successfully, please reference our publication in your work."
     stage_blank_main ""
-    exit 1
-  else
+    exit 0
+  elif [ "${full_pipeline}" = "TRUE" ]; then
     stage_info_main "Now moving on to the next stage ..."
     stage_blank_main ""
   fi
   ############################################################################################
 fi
 
+
 ############################################################################################
-# Data assembly and filtered paralogs retrieving ###################################
+# Stage 2 Data assembly and filtering ######################################################
 ############################################################################################
-if [ "${skip_stage12}" = "TRUE" ] || [ "${skip_stage123}" = "TRUE" ] || [ "${skip_stage1234}" = "TRUE" ]; then
-  stage_info_main "Stage 2 Data assembly and filtered paralogs retrieving is skipped."
-else
+if [ "${run_stage2}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
   ############################################################################################
   # 0.Preparation
   # (1) Change working directory and conda environment
   mkdir -p "${eas_dir}"
   cd "${eas_dir}"
-  stage_info_main "<<<======= Stage 2 Data assembly and filtered paralogs retrieving =======>>>"
+  stage_info_main "<<<======= Stage 2 Data assembly and filtering =======>>>"
   # (2) Define threads
   define_threads "hybpiper"
   stage_blank "${log_mode}" ""
@@ -2289,13 +2691,13 @@ else
   # (6) Process namelist based on input files
   if [ "${found_public}" = "1" ] && [ "${found_own}" != "1" ]; then
     # When only SRR data exists, use NCBI species list directly
-    cp "${output_dir}/00-logs_and_checklists/checklists/Public_Spname.txt" "${eas_dir}/Assembled_data_namelist.txt"
+    cp "${output_dir}/hybsuite_checklists/Public_Spname.txt" "${eas_dir}/Assembled_data_namelist.txt"
   elif [ "${found_own}" = "1" ] && [ "${found_public}" != "1" ]; then
     # When only custom data exists, use My_Spname directly
-    cp "${output_dir}/00-logs_and_checklists/checklists/My_Spname.txt" "${eas_dir}/Assembled_data_namelist.txt"
+    cp "${output_dir}/hybsuite_checklists/My_Spname.txt" "${eas_dir}/Assembled_data_namelist.txt"
   elif [ "${found_own}" = "1" ] && [ "${found_public}" = "1" ]; then
     # When both types of data exist, merge the lists
-    cat "${output_dir}/00-logs_and_checklists/checklists/Public_Spname.txt" "${output_dir}/00-logs_and_checklists/checklists/My_Spname.txt" | sed '/^$/d' > "${eas_dir}/Assembled_data_namelist.txt"
+    cat "${output_dir}/hybsuite_checklists/Public_Spname.txt" "${output_dir}/hybsuite_checklists/My_Spname.txt" | sed '/^$/d' > "${eas_dir}/Assembled_data_namelist.txt"
   fi
   #################===========================================================================
 
@@ -2309,8 +2711,8 @@ else
   cd "${eas_dir}"
   #################===========================================================================
   if [ "${found_public}" = "1" ]; then
-    total_sps=$(awk 'END {print NR}' "${output_dir}/00-logs_and_checklists/checklists/Public_Spname.txt")
-    init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/00-logs_and_checklists/checklists/Public_Spname.txt" || exit 1
+    total_sps=$(awk 'END {print NR}' "${output_dir}/hybsuite_checklists/Public_Spname.txt")
+    init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/hybsuite_checklists/Public_Spname.txt" || exit 1
     stage_info_main "====>> Running 'hybpiper assemble' to assemble public data (${process} in parallel) ====>>"
     while IFS= read -r Spname || [ -n "$Spname" ]; do
       if [ "${process}" != "all" ]; then
@@ -2413,20 +2815,22 @@ else
             echo >&1000
         fi
       } &
-    done < "${output_dir}/00-logs_and_checklists/checklists/Public_Spname.txt"
+      if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
+        display_only_failed_log "$stage_logfile" "Failed to assemble data for public samples:"
+      fi
+    done < "${output_dir}/hybsuite_checklists/Public_Spname.txt"
     # Wait for all tasks to complete
     wait
     echo
     # Display processing log
     if [ "${log_mode}" = "full" ]; then
-      display_process_log "$stage_logfile" "Failed to assemble data:"
+      display_process_log "$stage_logfile" "Failed to assemble data for public samples:"
     fi
-    stage_blank_main ""
   fi
 
-  if [ -s "${output_dir}/00-logs_and_checklists/checklists/My_Spname.txt" ]; then
-    total_sps=$(awk 'END {print NR}' "${output_dir}/00-logs_and_checklists/checklists/My_Spname.txt")
-    init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/00-logs_and_checklists/checklists/My_Spname.txt" || exit 1
+  if [ -s "${output_dir}/hybsuite_checklists/My_Spname.txt" ]; then
+    total_sps=$(awk 'END {print NR}' "${output_dir}/hybsuite_checklists/My_Spname.txt")
+    init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/hybsuite_checklists/My_Spname.txt" || exit 1
     stage_info_main "====>> Running 'hybpiper assemble' to assemble user-provided data (${process} in parallel) ====>>"
     while IFS= read -r Spname || [ -n "$Spname" ]; do
       if [ "${process}" != "all" ]; then
@@ -2529,30 +2933,39 @@ else
             echo >&1000
         fi
       } &
-    done < "${output_dir}/00-logs_and_checklists/checklists/My_Spname.txt"
+      if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
+        display_only_failed_log "$stage_logfile" "Failed to assemble data for user-provided samples:"
+      fi
+    done < "${output_dir}/hybsuite_checklists/My_Spname.txt"
     # Wait for all tasks to complete
     wait
     echo
     # Display processing log
     if [ "${log_mode}" = "full" ]; then
-      display_process_log "$stage_logfile" "Failed to assemble data:"
+      display_process_log "$stage_logfile" "Failed to assemble data for user-provided samples:"
     fi
-    stage_blank_main ""
   fi
 
-  grep '>' ${t} | awk -F'-' '{print $NF}' | sort | uniq > "${output_dir}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt"
+  grep '>' ${t} | awk -F'-' '{print $NF}' | sort | uniq > "${output_dir}/hybsuite_checklists/Ref_gene_name_list.txt"
   # Recovered_locus_num_for_samples.tsv
-  printf "Sample\tRecovered_locus_num\n" > "${eas_dir}/Recovered_locus_num_for_samples.tsv"
+  stage_info_main "Generating the tsv file listing the number of recovered loci for each sample..."
+  printf "Sample\tRecovered_locus_num\n" > "${output_dir}/hybsuite_checklists/Recovered_locus_num_for_samples.tsv"
   while IFS= read -r Spname || [ -n "$Spname" ]; do
     if [ -s "${eas_dir}/${Spname}/genes_with_seqs.txt" ]; then
-        printf "%s\t%s\n" "$Spname" "$(wc -l < "${eas_dir}/${Spname}/genes_with_seqs.txt")" >> "${eas_dir}/Recovered_locus_num_for_samples.tsv"
+        printf "%s\t%s\n" "$Spname" "$(wc -l < "${eas_dir}/${Spname}/genes_with_seqs.txt")" >> "${output_dir}/hybsuite_checklists/Recovered_locus_num_for_samples.tsv"
     else
-        printf "%s\t0\n" "$Spname" >> "${eas_dir}/Recovered_locus_num_for_samples.tsv"
+        printf "%s\t0\n" "$Spname" >> "${output_dir}/hybsuite_checklists/Recovered_locus_num_for_samples.tsv"
     fi
   done < "${eas_dir}/Assembled_data_namelist.txt"
+  if [ -s "${output_dir}/hybsuite_checklists/Recovered_locus_num_for_samples.tsv" ]; then
+    stage_info_main "Succeed -> ${output_dir}/hybsuite_checklists/Recovered_locus_num_for_samples.tsv"
+  else
+    stage_warning "Failed to generate the tsv file listing the number of recovered loci for each sample."
+  fi
   
   # Recovered_sample_num_for_loci.tsv
-  printf "Locus\tRecovered_sample_num\n" > "${eas_dir}/Recovered_sample_num_for_loci.tsv"
+  stage_info_main "Generating the tsv file listing the number of recovered samples for each locus..."
+  printf "Locus\tRecovered_sample_num\n" > "${output_dir}/hybsuite_checklists/Recovered_sample_num_for_loci.tsv"
   while IFS= read -r locus || [ -n "$locus" ]; do
     count=0
     while IFS= read -r Spname || [ -n "$Spname" ]; do
@@ -2562,16 +2975,21 @@ else
             fi
         fi
     done < "${eas_dir}/Assembled_data_namelist.txt"
-   printf "%s\t%d\n" "$locus" "$count"  >> "${eas_dir}/Recovered_sample_num_for_loci.tsv"
-  done < "${output_dir}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt"
+   printf "%s\t%d\n" "$locus" "$count"  >> "${output_dir}/hybsuite_checklists/Recovered_sample_num_for_loci.tsv"
+  done < "${output_dir}/hybsuite_checklists/Ref_gene_name_list.txt"
+  if [ -s "${output_dir}/hybsuite_checklists/Recovered_sample_num_for_loci.tsv" ]; then
+    stage_info_main "Succeed -> ${output_dir}/hybsuite_checklists/Recovered_sample_num_for_loci.tsv"
+  else
+    stage_warning "Failed to generating the tsv file listing the number of recovered samples for each locus"
+  fi
+  stage_blank_main ""
 
   ############################################################################################
   #Stage2-Step2: retrieving all original paralogs via HybPiper ###################################
   ############################################################################################
 
   #################===========================================================================
-  if [ "$LS" = "TRUE" ] || [ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ] || [ "${RLWP}" = "TRUE" ] || [ "${HRS}" = "TRUE" ]; then
-    stage_info_main "Step 2: retrieving all original paralogs via HybPiper..."
+    stage_info_main "Step 2: retrieving all putative paralogs via HybPiper..."
     if [ -d "${output_dir}/02-All_paralogs/" ]; then
       rm -rf "${output_dir}/02-All_paralogs/"
     fi
@@ -2584,7 +3002,7 @@ else
       --hybpiper_dir "${eas_dir}" \
       --no_heatmap > /dev/null 2>&1
     if [ ! -s "./paralog_report.tsv" ] && [ ! -s "./paralogs_above_threshold_report.txt" ]; then
-      stage_error "Fail to recover original paralogs via HybPiper."
+      stage_error "Failed to retrieve putative paralogs via HybPiper."
       stage_error "HybSuite exits."
       stage_blank "${log_mode}" ""
       exit 1
@@ -2600,17 +3018,18 @@ else
   #Stage2-Optional step: Adding additional sequences to the dataset ##########################
   ############################################################################################
     if [ "${found_pre}" = "1" ]; then
+      process_add = "1"
       stage_info_main "Optional step: Adding other sequences with single copy orthologs ..."
-      stage_info_main "====>> Adding other sequences with single copy orthologs (${process} in parallel) ====>>"
+      stage_info_main "====>> Adding other sequences with single copy orthologs (${process_add} in parallel) ====>>"
       
       # 01-Initialize parallel environment
-      total_sps=$(grep -c '^' "${output_dir}/00-logs_and_checklists/checklists/Pre-assembled_Spname.txt")
-      init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/00-logs_and_checklists/checklists/Pre-assembled_Spname.txt" || exit 1
-
+      total_sps=$(grep -c '^' "${output_dir}/hybsuite_checklists/Pre-assembled_Spname.txt")
+      
+      init_parallel_env "$work_dir" "$total_sps" "$process_add" "${output_dir}/hybsuite_checklists/Pre-assembled_Spname.txt" || exit 1
       # 02-Run the main loop
       while IFS= read -r add_sp || [ -n "$add_sp" ]; do
-        total_genes=$(awk 'END {print NR}' "${output_dir}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt")
-        if [ "${process}" != "all" ]; then
+        total_genes=$(awk 'END {print NR}' "${output_dir}/hybsuite_checklists/Ref_gene_name_list.txt")
+        if [ "${process_add}" != "all" ]; then
               read -u1000
         fi
         {
@@ -2628,7 +3047,7 @@ else
             "${output_dir}/02-All_paralogs/01-Original_paralogs/${add_sp}_${add_gene}_single_hit.fa" >> "${output_dir}/02-All_paralogs/01-Original_paralogs/${add_gene}_paralogs_all.fasta" 
             sed -i "s|${add_gene}|${add_sp}|g;/^$/d" "${output_dir}/02-All_paralogs/01-Original_paralogs/${add_gene}_paralogs_all.fasta"
           fi
-        done < "${output_dir}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt"
+        done < "${output_dir}/hybsuite_checklists/Ref_gene_name_list.txt"
         find . -type f -name "*.fa" -exec rm -f {} +
         # Update failed sample list
         if ! grep -q "${add_sp}" "${output_dir}"/02-All_paralogs/01-Original_paralogs/*_paralogs_all.fasta; then
@@ -2637,16 +3056,19 @@ else
             # Update finish count
             update_finish_count "$add_sp" "$stage_logfile"
         fi
-        if [ "${process}" != "all" ]; then
+        if [ "${process_add}" != "all" ]; then
               echo >&1000
         fi
         } &
-      done < "${output_dir}/00-logs_and_checklists/checklists/Pre-assembled_Spname.txt"
+        if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
+          display_only_failed_log "$stage_logfile" "Failed to integrate pre-assembled sequences into all putative paralogs:"
+        fi
+      done < "${output_dir}/hybsuite_checklists/Pre-assembled_Spname.txt"
       wait
       echo
       # 03-Display processing log
       if [ "${log_mode}" = "full" ]; then
-        display_process_log "$stage_logfile" "Failed to add other sequences:"
+        display_process_log "$stage_logfile" "Failed to integrate pre-assembled sequences into all putative paralogs:"
       fi
       stage_blank_main ""
 
@@ -2665,17 +3087,17 @@ else
     mkdir -p "${output_dir}/02-All_paralogs/03-Filtered_paralogs" "${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap"
     cd "${eas_dir}"
   #################===========================================================================
-    # 01-Filtering out paralogs with low length
-    stage_info_main "01-Filtering out paralogs with low length via 'filter_seqs_by_length.py'..."
-    stage_cmd "${log_mode}" "python ${script_dir}/filter_seqs_by_length.py -i ${output_dir}/02-All_paralogs/01-Original_paralogs -or ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_out_paralogs_with_low_length_info.tsv --output_dir ${output_dir}/02-All_paralogs/03-Filtered_paralogs --ref ${t} --min_length ${min_length} --mean_length_ratio ${mean_length_ratio} --max_length_ratio ${max_length_ratio} --threads ${nt}"
+    # 01-Removing paralogs with low length
+    stage_info_main "01-Removing paralogs with low length via 'filter_seqs_by_length.py'..."
+    stage_cmd "${log_mode}" "python ${script_dir}/filter_seqs_by_length.py -i ${output_dir}/02-All_paralogs/01-Original_paralogs -or ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Removed_paralogs_with_low_length_info.tsv --output_dir ${output_dir}/02-All_paralogs/03-Filtered_paralogs --ref ${t} --min_length ${seqs_min_length} --mean_length_ratio ${seqs_mean_length_ratio} --max_length_ratio ${seqs_max_length_ratio} --threads ${nt}"
     stage2_01="python ${script_dir}/filter_seqs_by_length.py \
     -i ${output_dir}/02-All_paralogs/01-Original_paralogs \
-    -or ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_out_paralogs_with_low_length_info.tsv \
+    -or ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Removed_paralogs_with_low_length_info.tsv \
     --output_dir ${output_dir}/02-All_paralogs/03-Filtered_paralogs \
     --ref ${t} \
-    --min_length ${min_length} \
-    --mean_length_ratio ${mean_length_ratio} \
-    --max_length_ratio ${max_length_ratio} \
+    --min_length ${seqs_min_length} \
+    --mean_length_ratio ${seqs_mean_length_ratio} \
+    --max_length_ratio ${seqs_max_length_ratio} \
     --threads ${nt}"
     if [ "${log_mode}" = "full" ]; then
       eval "${stage2_01}"
@@ -2683,15 +3105,15 @@ else
       eval "${stage2_01} > /dev/null 2>&1"
     fi
 
-    # 02-Filtering out taxa with low locus coverage and loci with low sample coverage
-    stage_info_main "02-Filtering out taxa with low locus coverage and loci with low sample coverage via 'filter_seqs_by_sample_and_locus_coverage.py'..."
-    stage_cmd "${log_mode}" "python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py -i ${output_dir}/02-All_paralogs/03-Filtered_paralogs --min_locus_coverage ${min_locus_coverage} --min_sample_coverage ${min_sample_coverage} --removed_samples_info ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_out_samples_with_low_locus_coverage_info.tsv --removed_loci_info ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_out_loci_with_low_sample_coverage_info.tsv --threads ${nt}"
+    # 02-Removing taxa with low locus coverage and loci with low sample coverage
+    stage_info_main "02-Removing taxa with low locus coverage and loci with low sample coverage via 'filter_seqs_by_sample_and_locus_coverage.py'..."
+    stage_cmd "${log_mode}" "python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py -i ${output_dir}/02-All_paralogs/03-Filtered_paralogs --min_locus_coverage ${seqs_sample_filter} --min_sample_coverage ${seqs_locus_filter} --removed_samples_info ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Removed_samples_with_low_locus_coverage_info.tsv --removed_loci_info ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Removed_loci_with_low_sample_coverage_info.tsv --threads ${nt}"
     stage2_02="python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py \
     -i ${output_dir}/02-All_paralogs/03-Filtered_paralogs \
-    --min_locus_coverage ${min_locus_coverage} \
-    --min_sample_coverage ${min_sample_coverage} \
-    --removed_samples_info ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_out_samples_with_low_locus_coverage_info.tsv \
-    --removed_loci_info ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_out_loci_with_low_sample_coverage_info.tsv \
+    --min_locus_coverage ${seqs_sample_filter} \
+    --min_sample_coverage ${seqs_locus_filter} \
+    --removed_samples_info ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Removed_samples_with_low_locus_coverage_info.tsv \
+    --removed_loci_info ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Removed_loci_with_low_sample_coverage_info.tsv \
     --threads ${nt}"
     if [ "${log_mode}" = "full" ]; then
       eval "${stage2_02}"
@@ -2699,14 +3121,21 @@ else
       eval "${stage2_02} > /dev/null 2>&1"
     fi
 
+    stage_info_main "03-Removing fasta with less than 4 sequences ..."
+    remove_fasta_with_less_than_4_seqs "${output_dir}/02-All_paralogs/03-Filtered_paralogs" "${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Removed_all_paralogs_files_with_less_than_4_seqs.tsv"
+
     stage_info "${log_mode}" "Finish"
-    stage_info "${log_mode}" "The information of filtered out paralog sequences with low length has been written to:"
-    stage_info "${log_mode}" "${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_out_paralogs_with_low_length_info.tsv"
-    stage_info "${log_mode}" "The information of filtered out taxa with low locus coverage has been written to:"
-    stage_info "${log_mode}" "${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_out_samples_with_low_locus_coverage_info.tsv"
-    stage_info "${log_mode}" "The information of filtered out loci with low sample coverage has been written to:"
-    stage_info "${log_mode}" "${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_out_loci_with_low_sample_coverage_info.tsv"
+    stage_info "${log_mode}" "The information of removed paralog sequences with low length has been written to:"
+    stage_info "${log_mode}" "${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Removed_paralogs_with_low_length_info.tsv"
+    stage_info "${log_mode}" "The information of removed taxa with low locus coverage has been written to:"
+    stage_info "${log_mode}" "${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Removed_samples_with_low_locus_coverage_info.tsv"
+    stage_info "${log_mode}" "The information of removed loci with low sample coverage has been written to:"
+    stage_info "${log_mode}" "${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Removed_loci_with_low_sample_coverage_info.tsv"
+    stage_info "${log_mode}" "The information of removed all paralogs files with less than 4 sequences has been written to:"
+    stage_info "${log_mode}" "${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Removed_all_paralogs_files_with_less_than_4_seqs.tsv"
+    
     stage_blank_main ""
+    
     ############################################################################################
     #Stage2-Step4: Producing the paralog report and plotting the paralog heatmap ###############
     ############################################################################################
@@ -2726,6 +3155,16 @@ else
     else
       eval "${stage2_03} > /dev/null 2>&1"
     fi
+    if [ -s "${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap/Original_paralog_heatmap.png" ]; then
+      stage_info_main "Succeed -> ${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap/Original_paralog_heatmap.png"
+    else
+      stage_warning "Fail to produce the paralogs heatmap for the original paralogs."
+    fi
+    if [ -s "${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap/Original_paralog_report.tsv" ]; then
+      stage_info_main "Succeed -> ${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap/Original_paralog_report.tsv"
+    else
+      stage_warning "Fail to produce the paralogs report for the original paralogs."
+    fi
 
     # 02-Producing the paralogs report and plotting the paralogs heatmap for the filtered paralogs
     stage_info_main "02-Producing the paralogs report and plotting the paralogs heatmap for the filtered paralogs..."
@@ -2742,84 +3181,507 @@ else
     else
       eval "${stage2_04} > /dev/null 2>&1"
     fi
-  fi
+    if [ -s "${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_paralog_heatmap.png" ]; then
+      stage_info_main "Succeed -> ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_paralog_heatmap.png"
+    else
+      stage_warning "Fail to produce the paralogs heatmap for the filtered paralogs."
+    fi
+    if [ -s "${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_paralog_report.tsv" ]; then
+      stage_info_main "Succeed -> ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_paralog_report.tsv"
+    else
+      stage_warning "Fail to produce the paralogs report for the filtered paralogs."
+    fi
+    stage_blank_main ""
 
   ############################################################################################
   # End of Stage 2
-  stage_info_main "Successfully finishing the stage2: 'Data assembly and filtered paralogs retrieving'."
-  stage_info_main "The resulting files have been saved in ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap"
+  stage_info_main_success "Stage 2 completed: Data assembly and filtering."
+  stage_info_main_success "Output directorie 1: ${output_dir}/01-Assembled_data/"  
+  stage_info_main_success "(1) HybPiper assembled data directory: ${output_dir}/01-Assembled_data/<sample_name>"
+  stage_info_main_success "Output directorie 2: ${output_dir}/02-All_paralogs/"
+  stage_info_main_success "(1) Original paralogs: ${output_dir}/02-All_paralogs/01-Original_paralogs/"
+  stage_info_main_success "(2) Original paralog reports and heatmap: ${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap"
+  stage_info_main_success "(3) Filtered paralogs: ${output_dir}/02-All_paralogs/03-Filtered_paralogs/"
+  stage_info_main_success "(4) Filtered paralogs reports and heatmap: ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap"
+  if [ "${full_pipeline}" = "FALSE" ]; then
+    # Clean up environment
+    cleanup_parallel_env "$work_dir"
+    stage_success "HybSuite execution completed successfully, please reference our publication in your work."
+    stage_blank_main ""
+    exit 0
+  else
+    stage_info_main "Moving on to the next stage..."
+    stage_blank_main ""
+  fi
 fi
-if [ "${run_to_stage2}" = "true" ]; then
-  # Clean up environment
-  cleanup_parallel_env "$work_dir"
-  stage_info_main "You set subcommand 'run_to_stage2' to specify HybSuite to run only stage 2."
-  stage_info_main "Consequently, HybSuite will stop and exit right now."
-  stage_info_main "Thank you for using HybSuite! Enjoy your research!"
-  stage_blank_main ""
-  exit 1
-else
-  stage_info_main "Moving on to the next stage..."
-  stage_blank_main ""
-fi
+
 ############################################################################################
 
-
 ############################################################################################
-# Stage 3: Orthology inference #############################################################
+# Stage 3 Paralogs handling ################################################################
 ############################################################################################
-if [ "${skip_stage1234}" = "TRUE" ] || [ "${skip_stage123}" = "TRUE" ]; then
-  stage_info_main "Stage 3 Orthology inference is skipped."
-else
+if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
   #################===========================================================================
   # 0.Preparation
-  stage_info_main "<<<======= Stage 3 Orthology inference =======>>>"
+  stage_info_main "<<<======= Stage 3 Paralogs handling =======>>>"
+  if [ "${full_pipeline}" = "TRUE" ]; then
+    paralogs_dir="${output_dir}/02-All_paralogs/03-Filtered_paralogs"
+  fi
+  #################===========================================================================
+  
+  #################===========================================================================
+  # Function retrieve_hybpiper_sequences()
+  retrieve_hybpiper_sequences() {
+    ortho_method="$1"
+    
+    mkdir -p "${output_dir}/03-Paralogs_handling/${ortho_method}/01-Original_${ortho_method}_sequences/"
+    stage_cmd "${log_mode}" "hybpiper retrieve_sequences "-t_${hybpiper_tt}" ${t} dna --sample_names ${eas_dir}/Assembled_data_namelist.txt --fasta_dir ${output_dir}/03-Paralogs_handling/${ortho_method}/01-Original_${ortho_method}_sequences/"
+    hybpiper retrieve_sequences "-t_${hybpiper_tt}" ${t} dna \
+    --hybpiper_dir "${eas_dir}" \
+    --sample_names ${eas_dir}/Assembled_data_namelist.txt \
+    --fasta_dir ${output_dir}/03-Paralogs_handling/${ortho_method}/01-Original_${ortho_method}_sequences/ > /dev/null 2>&1
+    if find "${output_dir}/03-Paralogs_handling/${ortho_method}/01-Original_${ortho_method}_sequences/" -type f -name "*.FNA" -size +0c -quit 2>/dev/null; then
+      stage_success "Finished."
+      stage_blank_main ""
+    else
+      stage_error "Sequence retrieval via HybPiper failed. Ensure ${eas_dir} has assembled data folders."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+  }  
+  #################===========================================================================
+
+  #################===========================================================================
+  # Function filter_seqs_by_llsc()
+  filter_seqs_by_llsc() {
+    local ortho_method="$1"
+    
+    mkdir -p "${output_dir}/03-Paralogs_handling/${ortho_method}/03-Filtered_${ortho_method}_sequences/" "${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/"
+    # 01-Removing ${ortho_method} sequences with low length
+    stage_info_main "01-Removing ${ortho_method} sequences with low length..."
+    stage_cmd "${log_mode}" "python ${script_dir}/filter_seqs_by_length.py -i ${output_dir}/03-Paralogs_handling/${ortho_method}/01-Original_${ortho_method}_sequences/ -or ${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Removed_${ortho_method}_seqs_with_low_length_info.tsv --output_dir ${output_dir}/03-Paralogs_handling/${ortho_method}/03-Filtered_${ortho_method}_sequences/ --ref ${t} --min_length ${seqs_min_length} --mean_length_ratio ${seqs_mean_length_ratio} --max_length_ratio ${seqs_max_length_ratio} --threads ${nt}"
+    stage3_01="python ${script_dir}/filter_seqs_by_length.py \
+    -i ${output_dir}/03-Paralogs_handling/${ortho_method}/01-Original_${ortho_method}_sequences/ \
+    -or ${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Removed_${ortho_method}_seqs_with_low_length_info.tsv \
+    --output_dir ${output_dir}/03-Paralogs_handling/${ortho_method}/03-Filtered_${ortho_method}_sequences/ \
+    --ref ${t} \
+    --min_length ${seqs_min_length} \
+    --mean_length_ratio ${seqs_mean_length_ratio} \
+    --max_length_ratio ${seqs_max_length_ratio} \
+    --threads ${nt}"
+    if [ "${log_mode}" = "full" ]; then
+      eval "${stage3_01}"
+    else
+      eval "${stage3_01} > /dev/null 2>&1"
+    fi
+
+    if ! find "${output_dir}/03-Paralogs_handling/${ortho_method}/03-Filtered_${ortho_method}_sequences/" -maxdepth 1 -type f -name "*.FNA" | grep -q .; then
+      stage_error "Failed to Remove ${ortho_method} sequences with length than ${seqs_min_length}."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    else
+      if [ -s "${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Removed_${ortho_method}_seqs_with_low_length_info.tsv" ]; then
+        stage_info_main "The information of removed ${ortho_method} sequences with low length has been written to:"
+        stage_info_main "${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Removed_${ortho_method}_seqs_with_low_length_info.tsv"
+      else
+        stage_info_main "No ${ortho_method} sequence with low length was removed."
+      fi
+    fi
+
+    # Step 2.2: Removing samples with low locus coverage and loci with low sample coverage
+    stage_info_main "02-Removing taxa with low locus coverage and loci with low sample coverage..."
+    stage_cmd "${log_mode}" "python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py -i ${output_dir}/03-Paralogs_handling/${ortho_method}/03-Filtered_${ortho_method}_sequences/ --min_locus_coverage ${seqs_sample_filter} --min_sample_coverage ${seqs_locus_filter} --removed_samples_info ${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Removed_samples_with_low_locus_coverage_info.tsv --removed_loci_info ${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Removed_loci_with_low_sample_coverage_info.tsv --threads ${nt}"
+    stage3_02="python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py \
+    -i ${output_dir}/03-Paralogs_handling/${ortho_method}/03-Filtered_${ortho_method}_sequences/ \
+    --min_locus_coverage ${seqs_sample_filter} \
+    --min_sample_coverage ${seqs_locus_filter} \
+    --removed_samples_info ${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Removed_samples_with_low_locus_coverage_info.tsv \
+    --removed_loci_info ${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Removed_loci_with_low_sample_coverage_info.tsv \
+    --threads ${nt}"
+    if [ "${log_mode}" = "full" ]; then
+      eval "${stage3_02}"
+    else
+      eval "${stage3_02} > /dev/null 2>&1"
+    fi
+
+    if ! find "${output_dir}/03-Paralogs_handling/${ortho_method}/03-Filtered_${ortho_method}_sequences/" -maxdepth 1 -type f -name "*.FNA" | grep -q .; then
+      stage_error "Failed to Remove ${ortho_method} sequences with length than ${seqs_min_length}."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    else
+      if [ -s "${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Removed_samples_with_low_locus_coverage_info.tsv" ]; then
+        stage_info_main "The information of removed taxa with low locus coverage has been written to:"
+        stage_info_main "${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Removed_samples_with_low_locus_coverage_info.tsv"
+      else
+        stage_info_main "No sample was removed."
+      fi
+      if [ -s "${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Removed_loci_with_low_sample_coverage_info.tsv" ]; then
+        stage_info_main "The information of removed loci with low sample coverage has been written to:"
+        stage_info_main "${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Removed_loci_with_low_sample_coverage_info.tsv"
+      else
+        stage_info_main "No locus was removed."
+      fi
+      stage_success "Finished."
+      stage_blank_main ""
+    fi
+  }
+  #################===========================================================================
+
+  #################===========================================================================
+  # Function MSA_and_trim()
+  MSA_and_trim() {
+    local ortho_method="$1"
+    local seq_dir="$2"
+    local seq_suffix="$3"
+
+    # 01-Aligning ${ortho_method} sequences via MAFFT...
+    stage_info_main "01-Aligning ${ortho_method} sequences via MAFFT..."
+    stage_info_main "====>> Aligning ${ortho_method} sequences via MAFFT (${process} in parallel) ====>>"
+    cd "${seq_dir}"
+    if [ -d "${output_dir}/04-Alignments/${ortho_method}" ]; then
+      rm -rf "${output_dir}/04-Alignments/${ortho_method}"
+    fi
+    mkdir -p "${output_dir}/04-Alignments/${ortho_method}"
+    temp_file="fna_file_list.txt"
+    find . -maxdepth 1 -type f -name "*.${seq_suffix}" -exec basename {} \; > "$temp_file"
+    total_sps=$(wc -l < "$temp_file")
+    init_parallel_env "$work_dir" "$total_sps" "$process" "$temp_file" || exit 1
+    while IFS= read -r file || [ -n "$file" ]; do
+      if [ "${process}" != "all" ]; then
+        read -u1000
+      fi
+      {
+      if [ "${run_paragone}" = "TRUE" ] && ([ "${ortho_method}" = "MO" ] || [ "${ortho_method}" = "MI" ] || [ "${ortho_method}" = "RT" ] || [ "${ortho_method}" = "1to1" ]); then 
+        file_name=$(basename "${file}" ."selected_stripped.aln.trimmed.fasta")
+      elif [ "${run_phylopypruner}" = "TRUE" ] && ([ "${ortho_method}" = "LS" ] || [ "${ortho_method}" = "MO" ] || [ "${ortho_method}" = "MI" ] || [ "${ortho_method}" = "RT" ] || [ "${ortho_method}" = "1to1" ]); then
+        file_name="${file%%.*}"
+        file_name="${file_name%_paralogs_all*}"
+      elif [ "${ortho_method}" = "HRS" ] || [ "${ortho_method}" = "RLWP" ]; then
+        file_name="${file%.FNA}"
+      fi
+      # Update start count
+      update_start_count "$file_name" "$stage_logfile"
+      sed -e 's/ single_hit//g;s/ multi_hit_stitched_contig_comprising_.*_hits//g' "${file}" > "${output_dir}/04-Alignments/${ortho_method}/${file_name}.fasta"
+      run_mafft "${output_dir}/04-Alignments/${ortho_method}/${file_name}.fasta" "${output_dir}/04-Alignments/${ortho_method}/${file_name}.aln.fasta" "${nt_mafft}"
+      rm -f "${output_dir}/04-Alignments/${ortho_method}/${file_name}.fasta"
+      remove_n "${output_dir}/04-Alignments/${ortho_method}/${file_name}.aln.fasta"
+      # Update failed count
+      if [ ! -s "${output_dir}/04-Alignments/${ortho_method}/${file_name}.aln.fasta" ]; then
+        record_failed_sample "$file_name"
+      else
+        # Update finish count
+        update_finish_count "$file_name" "$stage_logfile"
+      fi
+      if [ "${process}" != "all" ]; then
+        echo >&1000
+      fi
+      } &
+      if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
+        display_only_failed_log "$stage_logfile" "Failed to align ${ortho_method} sequences via MAFFT:"
+      fi
+    done < "$temp_file"
+    wait
+    echo
+    # Display processing log
+    if [ "${log_mode}" = "full" ]; then
+      display_process_log "$stage_logfile" "Failed to align ${ortho_method} sequences via MAFFT:"
+    fi
+    if ! find "${output_dir}/04-Alignments/${ortho_method}/" -maxdepth 1 -type f -name "*.fasta" | grep -q .; then
+      stage_error "No any alignments were generated in ${output_dir}/04-Alignments/${ortho_method}/."
+      stage_error "Please check the parameters for MAFFT."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    
+    # 02-Trimming ${ortho_method} alignments via trimAl
+    if [ "${trim_tool}" = "1" ]; then
+      stage_info_main "02-Trimming ${ortho_method} alignments via trimAl..."
+      stage_info_main "====>> Trimming ${ortho_method} alignments via trimAl (${process} in parallel) ====>>"
+    elif [ "${trim_tool}" = "2" ]; then
+      stage_info_main "02-Trimming ${ortho_method} alignments via HMMCleaner..."
+      stage_info_main "====>> Trimming ${ortho_method} alignments via HMMCleaner (${process} in parallel) ====>>"
+    fi
+    
+    rm -rf "${output_dir}/05-Trimmed_alignments/${ortho_method}"
+    mkdir -p "${output_dir}/05-Trimmed_alignments/${ortho_method}"
+    temp_file="fna_file_list.txt"
+    find . -maxdepth 1 -type f -name "*.${seq_suffix}" -exec basename {} \; > "$temp_file"
+    total_sps=$(wc -l < "$temp_file")
+    init_parallel_env "$work_dir" "$total_sps" "$process" "$temp_file" || exit 1
+    while IFS= read -r file || [ -n "$file" ]; do
+      if [ "${process}" != "all" ]; then
+        read -u1000
+      fi
+      {
+        if [ "${run_paragone}" = "TRUE" ] && ([ "${ortho_method}" = "MO" ] || [ "${ortho_method}" = "MI" ] || [ "${ortho_method}" = "RT" ] || [ "${ortho_method}" = "1to1" ]); then 
+          file_name=$(basename "${file}" ."selected_stripped.aln.trimmed.fasta")
+        elif [ "${run_phylopypruner}" = "TRUE" ] && ([ "${ortho_method}" = "LS" ] || [ "${ortho_method}" = "MO" ] || [ "${ortho_method}" = "MI" ] || [ "${ortho_method}" = "RT" ] || [ "${ortho_method}" = "1to1" ]); then
+          file_name="${file%%.*}"
+          file_name="${file_name%_paralogs_all*}"
+        elif [ "${ortho_method}" = "HRS" ] || [ "${ortho_method}" = "RLWP" ]; then
+          file_name="${file%.FNA}"
+        fi
+        # Update start count
+        update_start_count "$file_name" "$stage_logfile"
+        if [ "${trim_tool}" = "1" ]; then
+          run_trimal "${output_dir}/04-Alignments/${ortho_method}/${file_name}.aln.fasta" "${output_dir}/05-Trimmed_alignments/${ortho_method}/${file_name}.aln.trimmed.fasta" "${trimal_mode}" \
+          "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
+          "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
+          if [ ! -s "${output_dir}/05-Trimmed_alignments/${ortho_method}/${file_name}.aln.trimmed.fasta" ]; then
+            record_failed_sample "$file_name"
+          else
+            update_finish_count "$file_name" "$stage_logfile"
+          fi
+        fi
+        if [ "${trim_tool}" = "2" ]; then
+          run_hmmcleaner "${output_dir}/04-Alignments/${ortho_method}/${file_name}.aln.fasta" "${hmmcleaner_cost}"
+          if [ -s "${output_dir}/04-Alignments/${ortho_method}/${file_name}.aln_hmm.fasta" ]; then
+            update_finish_count "$file_name" "$stage_logfile"
+            mv "${output_dir}/04-Alignments/${ortho_method}/${file_name}.aln_hmm.fasta" "${output_dir}/05-Trimmed_alignments/${ortho_method}/${file_name}.aln.trimmed.fasta"
+            rm -f "${output_dir}/04-Alignments/${ortho_method}/${file_name}.aln_hmm"*
+          else
+            record_failed_sample "$file_name"
+          fi
+        fi
+        if [ "${process}" != "all" ]; then
+          echo >&1000
+        fi
+      } &
+      if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
+        if [ "${trimal_tool}" = "1" ]; then
+          display_only_failed_log "$stage_logfile" "Failed to trim ${ortho_method} alignments via trimAl:"
+        else
+          display_only_failed_log "$stage_logfile" "Failed to trim ${ortho_method} alignments via HMMCleaner:"
+        fi
+      fi
+    done < "$temp_file"
+    wait
+    echo
+    # Display processing log
+    if [ "${log_mode}" = "full" ]; then
+      if [ "${trimal_tool}" = "1" ]; then
+        display_process_log "$stage_logfile" "Failed to trim ${ortho_method} alignments via trimAl:"
+      else
+        display_process_log "$stage_logfile" "Failed to trim ${ortho_method} alignments via HMMCleaner:"
+      fi
+    fi
+    if ! find "${output_dir}/05-Trimmed_alignments/${ortho_method}/" -maxdepth 1 -type f -name "*.fasta" | grep -q .; then
+      stage_error "No any trimmed alignments were generated in ${output_dir}/05-Trimmed_alignments/${ortho_method}/."
+      stage_error "Please check the parameters for trimAl/HMMCleaner."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    else
+      stage_success "Finished."
+      stage_blank_main ""
+    fi
+    rm -rf "$temp_file"
+  }
+  #################===========================================================================
+
+  #################=========================================
+  # Function generate_reports_heatmap 
+  generate_reports_heatmap() {
+    ortho_method="$1"
+    
+    rm -rf "${output_dir}/03-Paralogs_handling/${ortho_method}/02-Original_${ortho_method}_sequences_reports_and_heatmap/"
+    mkdir -p "${output_dir}/03-Paralogs_handling/${ortho_method}/02-Original_${ortho_method}_sequences_reports_and_heatmap/"
+    # 01-Generating the reports and heatmap of the original ${ortho_method} sequences
+    stage_info_main "01-Generating the reports and heatmap of the original ${ortho_method} sequences..."
+    stage_cmd "${log_mode}" "python ${script_dir}/plot_recovery_heatmap.py -i ${output_dir}/03-Paralogs_handling/${ortho_method}/01-Original_${ortho_method}_sequences/ -r ${t} -osl ${output_dir}/03-Paralogs_handling/${ortho_method}/02-Original_${ortho_method}_sequences_reports_and_heatmap/Original_${ortho_method}_seq_lengths.tsv -oh ${output_dir}/03-Paralogs_handling/${ortho_method}/02-Original_${ortho_method}_sequences_reports_and_heatmap/Original_${ortho_method}_heatmap --threads ${nt} --color ${heatmap_color}"
+    stage3_03="python ${script_dir}/plot_recovery_heatmap.py \
+    -i ${output_dir}/03-Paralogs_handling/${ortho_method}/01-Original_${ortho_method}_sequences/ \
+    -r ${t} \
+    -osl ${output_dir}/03-Paralogs_handling/${ortho_method}/02-Original_${ortho_method}_sequences_reports_and_heatmap/Original_${ortho_method}_seq_lengths.tsv \
+    -oh ${output_dir}/03-Paralogs_handling/${ortho_method}/02-Original_${ortho_method}_sequences_reports_and_heatmap/Original_${ortho_method}_heatmap \
+    --threads ${nt} \
+    --color ${heatmap_color}"
+    if [ "${log_mode}" = "full" ]; then
+      eval "${stage3_03}"
+    else
+      eval "${stage3_03} > /dev/null 2>&1"
+    fi
+
+    if [ -s "${output_dir}/03-Paralogs_handling/${ortho_method}/02-Original_${ortho_method}_sequences_reports_and_heatmap/Original_${ortho_method}_heatmap.png" ]; then
+      stage_info "${log_mode}" "The reports and heatmap of the original ${ortho_method} sequences have been written to:"
+      stage_info "${log_mode}" "${output_dir}/03-Paralogs_handling/${ortho_method}/02-Original_${ortho_method}_sequences_reports_and_heatmap/"
+    else
+      stage_error "Failed to get the reports and heatmap of the original ${ortho_method} sequences."
+    fi
+
+    # 02-Generating the reports and heatmap of the filtered ${ortho_method} sequences
+    stage_info_main "02-Generating the reports and heatmap of the filtered ${ortho_method} sequences..."
+    stage_cmd "${log_mode}" "python ${script_dir}/plot_recovery_heatmap.py -i ${output_dir}/03-Paralogs_handling/${ortho_method}/03-Filtered_${ortho_method}_sequences/ -r ${t} -osl ${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Filtered_${ortho_method}_seq_lengths.tsv -oh ${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Filtered_${ortho_method}_heatmap --threads ${nt} --show_values --color ${heatmap_color}"
+    stage3_04="python ${script_dir}/plot_recovery_heatmap.py \
+    -i ${output_dir}/03-Paralogs_handling/${ortho_method}/03-Filtered_${ortho_method}_sequences/ \
+    -r ${t} \
+    -osl ${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Filtered_${ortho_method}_seq_lengths.tsv \
+    -oh ${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Filtered_${ortho_method}_heatmap \
+    --threads ${nt} \
+    --color ${heatmap_color}"
+    if [ "${log_mode}" = "full" ]; then
+      eval "${stage3_04}"
+    else
+      eval "${stage3_04} > /dev/null 2>&1"
+    fi
+    
+    if [ -s "${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/Filtered_${ortho_method}_heatmap.png" ]; then
+      stage_info "${log_mode}" "The reports and heatmap of the filtered ${ortho_method} sequences have been written to:"
+      stage_info "${log_mode}" "${output_dir}/03-Paralogs_handling/${ortho_method}/04-Filtered_${ortho_method}_sequences_reports_and_heatmap/"
+      stage_success "Finished."
+      stage_blank_main ""
+    else
+      stage_error "Failed to get reports and heatmap of the filtered ${ortho_method} sequences."
+      stage_blank_main ""
+    fi
+  }
+    
+  #################===========================================================================
+
+  ################===========================================================================
+  # Function count_species()
+  ################===========================================================================
+  count_species() {
+    local fasta_dir="$1"
+
+    temp_file="${fasta_dir}/species_list.txt"
+    for fasta_file in "$fasta_dir"/*.fasta; do
+      if [ -f "$fasta_file" ]; then
+          grep "^>" "$fasta_file" | sort | uniq >> "$temp_file"
+      fi
+    done
+    total_sps_num=$(sort "$temp_file" | uniq | wc -l)
+    rm "$temp_file"
+  }
+
+  #################===========================================================================
+  # Function summarize_and_filter_alignments()
+  summarize_and_filter_alignments() {
+    local ortho_method="$1"
+    
+    #01-Run AMAS.py to check every original and trimmed ${ortho_method} alignment
+    mkdir -p "${output_dir}/hybsuite_reports/Alignments_stats"
+    rm -f "${output_dir}/hybsuite_reports/Alignments_stats"${ortho_method}*
+    stage_info_main "01-Running AMAS.py to check every original ${ortho_method} alignment ..."
+    cd "${output_dir}/04-Alignments/${ortho_method}/"
+    stage_cmd "${log_mode}" "AMAS.py summary -f fasta -d dna -i ${output_dir}/04-Alignments/${ortho_method}/*.aln.trimmed.fasta -o ${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-01_Alignments_stats_AMAS.tsv"
+    AMAS.py \
+    summary -f fasta -d dna -i "${output_dir}"/04-Alignments/${ortho_method}/*.aln.fasta \
+    -o "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-01_Alignments_stats_AMAS.tsv > /dev/null 2>&1
+    if [ -s "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-01_Alignments_stats_AMAS.tsv" ]; then
+      num_filtered_a=$(awk 'END{print NR-1}' "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-01_Alignments_stats_AMAS.tsv")
+      stage_info_main "${num_filtered_a} trimmed ${ortho_method} alignments were detected."
+      stage_info_main "The AMAS summaries have been written to ${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-01_Alignments_stats_AMAS.tsv"
+    else
+      stage_error "Fail to run AMAS.py to check every original ${ortho_method} alignment."
+    fi
+
+    #02-Run AMAS.py to check every trimmed ${ortho_method} alignment
+    stage_info_main "02-Running AMAS.py to check every trimmed ${ortho_method} alignment ..."
+    cd "${output_dir}/05-Trimmed_alignments/${ortho_method}/"
+    stage_cmd "${log_mode}" "AMAS.py summary -f fasta -d dna -i ${output_dir}/05-Trimmed_alignments/${ortho_method}/*.aln.trimmed.fasta -o ${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-02_Trimmed_alignments_stats_AMAS.tsv"
+    AMAS.py \
+    summary -f fasta -d dna -i "${output_dir}"/05-Trimmed_alignments/${ortho_method}/*aln.trimmed.fasta \
+    -o "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-02_Trimmed_alignments_stats_AMAS.tsv > /dev/null 2>&1
+    if [ -s "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-02_Trimmed_alignments_stats_AMAS.tsv" ]; then
+      num_filtered_t=$(awk 'END{print NR-1}' "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-02_Trimmed_alignments_stats_AMAS.tsv")
+      stage_info_main "${num_filtered_t} trimmed ${ortho_method} alignments were detected."
+      stage_info_main "The AMAS summaries have been written to ${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-02_Trimmed_alignments_stats_AMAS.tsv"
+    else
+      stage_error "Fail to run AMAS.py to check every trimmed ${ortho_method} alignment."
+    fi
+
+    #03-Filtering alignments
+    stage_info_main "03-Filtering alignments for species tree inference ..."
+    # 03_Removed_alignments_without_parsimony_informative_sites.txt
+    awk '$9 == 0 {print $1}' "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-02_Trimmed_alignments_stats_AMAS.tsv" > "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-03_Removed_alignments_without_parsimony_informative_sites.txt
+    sed -i '1d' "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-03_Removed_alignments_without_parsimony_informative_sites.txt
+    num_filtered_p=$(wc -l < "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-03_Removed_alignments_without_parsimony_informative_sites.txt)
+    stage_info_main "Removed ${num_filtered_p} ${ortho_method} alignments without parsimony informative sites."
+
+    # 04_Removed_alignments_with_length_less_than_"${aln_min_length}".txt
+    awk -v cov_length_thresh="${aln_min_length}" '$9 != 0 && $3 < cov_length_thresh {print $1}' "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-02_Trimmed_alignments_stats_AMAS.tsv" > "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-04_Removed_alignments_with_length_less_than_"${aln_min_length}".txt
+    sed -i '1d' "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-04_Removed_alignments_with_length_less_than_"${aln_min_length}".txt
+    num_filtered_l=$(wc -l < "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-04_Removed_alignments_with_length_less_than_"${aln_min_length}".txt)
+    stage_info_main "Removed ${num_filtered_l} ${ortho_method} alignments with length less than ${aln_min_length}."
+
+    # 05_Removed_alignments_with_sample_coverage_less_than_${aln_locus_filter}.txt
+    count_species "${output_dir}/05-Trimmed_alignments/${ortho_method}"
+    awk -v all_sp="${total_sps_num}" -v cov_thresh="${aln_locus_filter}" -v cov_length_thresh="${aln_min_length}" \
+    '$9 != 0 && $3 >= cov_length_thresh && ($2 / all_sp) < cov_thresh {print $1}' \
+    "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-02_Trimmed_alignments_stats_AMAS.tsv" \
+    > "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-05_Removed_alignments_with_sample_coverage_less_than_${aln_locus_filter}.txt"
+    sed -i '1d' "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-05_Removed_alignments_with_sample_coverage_less_than_${aln_locus_filter}.txt
+    num_filtered_s=$(wc -l < "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-05_Removed_alignments_with_sample_coverage_less_than_${aln_locus_filter}.txt)
+    stage_info_main "Removed ${num_filtered_s} ${ortho_method} alignments with sample coverage less than ${aln_locus_filter}."
+
+    # 06_Final_alignments_list.txt
+    awk -v all_sp="${total_sps_num}" -v cov_thresh="${aln_locus_filter}" -v cov_length_thresh="${aln_min_length}" '$9!=0 && $3 >= cov_length_thresh && ($2 / all_sp) >= cov_thresh {print $1}' "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-02_Trimmed_alignments_stats_AMAS.tsv" > "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-06_Final_alignments_list.txt
+    sed -i '1d' "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-06_Final_alignments_list.txt
+    if [ ! -s "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-06_Final_alignments_list.txt" ]; then
+      stage_error "No final alignments were genereated. Maybe all trimmed alignments were removed."
+      stage_error "Please adjust the parameter '-aln_min_length' and '-aln_locus_filter', and run hybsuite again."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+
+    # 07_Final_alignments_stats.txt
+    awk -v all_sp="${total_sps_num}" -v cov_thresh="${aln_locus_filter}" -v cov_length_thresh="${aln_min_length}" '$9!=0 && $3 >= cov_length_thresh && ($2 / all_sp) >= cov_thresh {print $0}' "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-01_Alignments_stats_AMAS.tsv" > "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-07_Final_alignments_stats_AMAS.txt
+    rm -rf "${output_dir}/06-Final_alignments/${ortho_method}/"
+    mkdir -p "${output_dir}/06-Final_alignments/${ortho_method}/"
+    while IFS= read -r line || [ -n "$line" ]; do
+      cp "${output_dir}"/05-Trimmed_alignments/${ortho_method}/"${line}" "${output_dir}"/06-Final_alignments/${ortho_method}/
+    done < "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-06_Final_alignments_list.txt"
+
+    stage_success "Congratulations! Finished generating ${ortho_method} final alignments in ${output_dir}/06-Final_alignments/${ortho_method}/"
+    num_aln_final=$(wc -l < "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-06_Final_alignments_list.txt")
+    stage_info_main_success "Totally $num_aln_final ${ortho_method} final alignments were generated, which will be used for species tree inference in stage 4."
+    stage_blank_main ""
+  }
   #################===========================================================================
 
   ############################################################################################
   #Stage3-Optional method: HRS ###############################################################
   ############################################################################################
   if [ "${HRS}" = "TRUE" ]; then
-    stage_info_main "Running optional method: HRS ..."
-    if [ -d "${output_dir}/03-Orthology_inference/HRS/" ]; then
-      rm -rf "${output_dir}/03-Orthology_inference/HRS/"
+    #################===========================================================================
+    stage_info_main "====>> Running optional method: HRS <<===="
+    if [ -d "${output_dir}/03-Paralogs_handling/HRS/" ]; then
+      rm -rf "${output_dir}/03-Paralogs_handling/HRS/"
     fi
-    mkdir -p "${output_dir}/03-Orthology_inference/HRS/"
+    mkdir -p "${output_dir}/03-Paralogs_handling/HRS/"
     #################===========================================================================
 
-    # 01-Retrieving sequences
+    # Step 1: Retrieving sequences
     #################===========================================================================
     stage_info_main "Step 1: Retrieving sequences by running 'hybpiper retrieve_sequences' ..."
-    mkdir -p "${output_dir}/03-Orthology_inference/HRS/01-Original_HRS_sequences/"
     #################===========================================================================
-    stage_cmd "${log_mode}" "hybpiper retrieve_sequences "-t_${hybpiper_tt}" ${t} dna --sample_names ${eas_dir}/Assembled_data_namelist.txt --fasta_dir ${output_dir}/03-Orthology_inference/HRS/01-Original_HRS_sequences/"
-    hybpiper retrieve_sequences "-t_${hybpiper_tt}" ${t} dna \
-    --hybpiper_dir "${eas_dir}" \
-    --sample_names ${eas_dir}/Assembled_data_namelist.txt \
-    --fasta_dir ${output_dir}/03-Orthology_inference/HRS/01-Original_HRS_sequences/ > /dev/null 2>&1
-    if find "${output_dir}/03-Orthology_inference/HRS/01-Original_HRS_sequences/" -type f -name "*.FNA" -size +0c -quit 2>/dev/null; then
-      stage_info_main "Finish"
-      stage_blank "${log_mode}" ""
-    else
-      stage_error "Fail to retrieve sequences by running 'hybpiper retrieve_sequences'."
-      stage_error "HybSuite exits."
-      stage_blank_main ""
-      exit 1
-    fi
+    retrieve_hybpiper_sequences "HRS"
 
-    # Optional step-Adding other sequences
+    # Optional step: Integrating pre-assembled sequences
     #################===========================================================================
-    if [ "${found_pre}" = "1" ]; then
-      stage_info_main "Optional step: Adding other sequences ..." 
-      stage_info_main "====>> Adding other sequences (HRS) (${process} in parallel) ====>>"
-    #################=========================================================================== 
+    stage_info_main "Step 2: Integrating pre-assembled sequences ..."
+    #################===========================================================================
+    if [ "${found_pre}" != "1" ]; then
+      stage_info_main "No input pre-assembled sequences are detected."
+      stage_info_main "Skipped"
+      stage_blank_main ""
+    else 
+      process_integration="1"
+      stage_info_main "====>> Integrating pre-assembled sequences (HRS) (${process_integration} in parallel) ====>>"
       # 01-Initialize parallel environment
-      total_sps=$(grep -c '^' "${output_dir}/00-logs_and_checklists/checklists/Pre-assembled_Spname.txt")
-      init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/00-logs_and_checklists/checklists/Pre-assembled_Spname.txt" || exit 1
+      total_sps=$(grep -c '^' "${output_dir}/hybsuite_checklists/Pre-assembled_Spname.txt")
+      init_parallel_env "$work_dir" "$total_sps" "$process_integration" "${output_dir}/hybsuite_checklists/Pre-assembled_Spname.txt" || exit 1
       
       # 02-Run the main loop
       while IFS= read -r add_sp || [ -n "$add_sp" ]; do
-        total_genes=$(awk 'END {print NR}' "${output_dir}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt")
-        if [ "${process}" != "all" ]; then
+        total_genes=$(awk 'END {print NR}' "${output_dir}/hybsuite_checklists/Ref_gene_name_list.txt")
+        if [ "${process_integration}" != "all" ]; then
           read -u1000
         fi
         {
@@ -2829,158 +3691,70 @@ else
             if grep -qE ">$add_gene |\[gene=$add_gene\]" "${input_data}/${add_sp}.fasta"; then
               file="${input_data}/${add_sp}.fasta"
               if grep -q "\[gene=${add_gene}\]" "${file}"; then
-                sed -e "s|^.*[gene=${add_gene}].*$|>${add_gene} single_hit|g" "${file}" > "${output_dir}/03-Orthology_inference/HRS/01-Original_HRS_sequences/${add_sp}_${add_gene}_single_hit.fa"
+                sed -e "s|^.*[gene=${add_gene}].*$|>${add_gene} single_hit|g" "${file}" > "${output_dir}/03-Paralogs_handling/HRS/01-Original_HRS_sequences/${add_sp}_${add_gene}_single_hit.fa"
               elif grep -q ">${add_gene}" "${file}"; then
-                sed -e "s|>${add_gene}.*$|>${add_gene} single_hit|g" "${file}" > "${output_dir}/03-Orthology_inference/HRS/01-Original_HRS_sequences/${add_sp}_${add_gene}_single_hit.fa" 
+                sed -e "s|>${add_gene}.*$|>${add_gene} single_hit|g" "${file}" > "${output_dir}/03-Paralogs_handling/HRS/01-Original_HRS_sequences/${add_sp}_${add_gene}_single_hit.fa" 
               fi
               awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
-              "${output_dir}/03-Orthology_inference/HRS/01-Original_HRS_sequences/${add_sp}_${add_gene}_single_hit.fa" >> "${output_dir}/03-Orthology_inference/HRS/01-Original_HRS_sequences/${add_gene}.FNA"
-              sed -i "s|${add_gene} |${add_sp} |g;/^$/d" "${output_dir}/03-Orthology_inference/HRS/01-Original_HRS_sequences/${add_gene}.FNA"
+              "${output_dir}/03-Paralogs_handling/HRS/01-Original_HRS_sequences/${add_sp}_${add_gene}_single_hit.fa" >> "${output_dir}/03-Paralogs_handling/HRS/01-Original_HRS_sequences/${add_gene}.FNA"
+              sed -i "s|${add_gene} |${add_sp} |g;/^$/d" "${output_dir}/03-Paralogs_handling/HRS/01-Original_HRS_sequences/${add_gene}.FNA"
             fi
-          done < "${output_dir}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt"
+          done < "${output_dir}/hybsuite_checklists/Ref_gene_name_list.txt"
           find . -type f -name "*.fa" -exec rm -f {} +
           # Update failed sample list
-          if ! grep -q "${add_sp}" "${output_dir}"/03-Orthology_inference/HRS/01-Original_HRS_sequences/*.FNA; then
+          if ! grep -q "${add_sp}" "${output_dir}"/03-Paralogs_handling/HRS/01-Original_HRS_sequences/*.FNA; then
             record_failed_sample "$add_sp"
           else
             # Update finish count
             update_finish_count "$add_sp" "$stage_logfile"
           fi
-          if [ "${process}" != "all" ]; then
+          if [ "${process_integration}" != "all" ]; then
             echo >&1000
           fi
         } &
-      done < "${output_dir}/00-logs_and_checklists/checklists/Pre-assembled_Spname.txt"
+        if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
+          display_only_failed_log "$stage_logfile" "Failed to integrate pre-assembled sequences into HRS dataset:"
+        fi
+      done < "${output_dir}/hybsuite_checklists/Pre-assembled_Spname.txt"
       wait
       echo
       # Display processing log
       if [ "${log_mode}" = "full" ]; then
-        display_process_log "$stage_logfile" "Failed to add other sequences:"
+        display_process_log "$stage_logfile" "Failed to integrate pre-assembled sequences into HRS dataset:"
       fi
-      stage_blank_main ""
 
-      # 03-Formatting the output paralogs
-      cd "${output_dir}"/03-Orthology_inference/HRS/01-Original_HRS_sequences/
+      # 03-Formatting the output HRS sequences
+      cd "${output_dir}"/03-Paralogs_handling/HRS/01-Original_HRS_sequences/
       for file in *.FNA; do
         python "${script_dir}/Fasta_formatter.py" -i "${file}" -o "${file}" -nt "${nt}" --inter > /dev/null 2>&1
       done
+      stage_info_main "Finsihed"
+      stage_blank_main ""
     fi
 
-    # 05-Filtering all HRS sequences by length, locus and sample coverage
+    # Step 3: Filtering all HRS sequences by length, locus and sample coverage
     #################===========================================================================
-    stage_info_main "Step 2: Filtering all HRS sequences by length, locus and sample coverage ..." 
-    mkdir -p "${output_dir}/03-Orthology_inference/HRS/03-Filtered_HRS_sequences/" "${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/"
+    stage_info_main "Step 3: Filtering all HRS sequences by length, locus and sample coverage ..." 
     #################===========================================================================
-
-    # 01-Filtering out paralogs with low length
-    stage_info_main "01-Filtering out paralogs with low length..."
-    stage_cmd "${log_mode}" "python ${script_dir}/filter_seqs_by_length.py -i ${output_dir}/03-Orthology_inference/HRS/01-Original_HRS_sequences/ -or ${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_HRS_seqs_with_low_length_info.tsv --output_dir ${output_dir}/03-Orthology_inference/HRS/03-Filtered_HRS_sequences/ --ref ${t} --min_length ${min_length} --mean_length_ratio ${mean_length_ratio} --max_length_ratio ${max_length_ratio} --threads ${nt}"
-    stage3_HRS_01="python ${script_dir}/filter_seqs_by_length.py \
-    -i ${output_dir}/03-Orthology_inference/HRS/01-Original_HRS_sequences/ \
-    -or ${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_HRS_seqs_with_low_length_info.tsv \
-    --output_dir ${output_dir}/03-Orthology_inference/HRS/03-Filtered_HRS_sequences/ \
-    --ref ${t} \
-    --min_length ${min_length} \
-    --mean_length_ratio ${mean_length_ratio} \
-    --max_length_ratio ${max_length_ratio} \
-    --threads ${nt}"
-    if [ "${log_mode}" = "full" ]; then
-      eval "${stage3_HRS_01}"
-    else
-      eval "${stage3_HRS_01} > /dev/null 2>&1"
-    fi
-
-    if [ -s "${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_HRS_seqs_with_low_length_info.tsv" ]; then
-      stage_info "${log_mode}" "The information of filtered out HRS sequences with low length has been written to:"
-      stage_info "${log_mode}" "${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_HRS_seqs_with_low_length_info.tsv"
-    else
-      stage_info "${log_mode}" "No HRS sequence with low length was filtered out."
-    fi
-
-    # 02-Filtering out taxa with low locus coverage and loci with low sample coverage
-    stage_info_main "02-Filtering out taxa with low locus coverage and loci with low sample coverage..."
-    stage_cmd "${log_mode}" "python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py -i ${output_dir}/03-Orthology_inference/HRS/03-Filtered_HRS_sequences/ --min_locus_coverage ${min_locus_coverage} --min_sample_coverage ${min_sample_coverage} --removed_samples_info ${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_samples_with_low_locus_coverage_info.tsv --removed_loci_info ${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_loci_with_low_sample_coverage_info.tsv --threads ${nt}"
-    stage3_HRS_02="python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py \
-    -i ${output_dir}/03-Orthology_inference/HRS/03-Filtered_HRS_sequences/ \
-    --min_locus_coverage ${min_locus_coverage} \
-    --min_sample_coverage ${min_sample_coverage} \
-    --removed_samples_info ${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_samples_with_low_locus_coverage_info.tsv \
-    --removed_loci_info ${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_loci_with_low_sample_coverage_info.tsv \
-    --threads ${nt}"
-    if [ "${log_mode}" = "full" ]; then
-      eval "${stage3_HRS_02}"
-    else
-      eval "${stage3_HRS_02} > /dev/null 2>&1"
-    fi
-
-    if [ -s "${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_samples_with_low_locus_coverage_info.tsv" ]; then
-      stage_info "${log_mode}" "The information of filtered out taxa with low locus coverage has been written to:"
-      stage_info "${log_mode}" "${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_samples_with_low_locus_coverage_info.tsv"
-    else
-      stage_info "No taxon was filtered out."
-    fi
-    if [ -s "${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_loci_with_low_sample_coverage_info.tsv" ]; then
-      stage_info "${log_mode}" "The information of filtered out loci with low sample coverage has been written to:"
-      stage_info "${log_mode}" "${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_out_loci_with_low_sample_coverage_info.tsv"
-    else
-      stage_info "No locus was filtered out."
-    fi
-    stage_info_main "Finish"
-    stage_blank "${log_mode}" ""
-
-    # 01-Retrieving sequences
-    #################===========================================================================
-    stage_info_main "Step 3: Getting the reports and heatmap ..."
-    mkdir -p "${output_dir}/03-Orthology_inference/HRS/02-Original_HRS_sequences_reports_and_heatmap/"
-    #################===========================================================================
-    # 01-Getting the reports and heatmap of the original HRS sequences
-    stage_info_main "01-Getting the reports and heatmap of the original HRS sequences..."
-    stage_cmd "${log_mode}" "python "${script_dir}/plot_recovery_heatmap.py" -i "${output_dir}/03-Orthology_inference/HRS/01-Original_HRS_sequences/" -r "${t}" -osl "${output_dir}/03-Orthology_inference/HRS/02-Original_HRS_sequences_reports_and_heatmap/Original_HRS_seq_lengths.tsv" -oh "${output_dir}/03-Orthology_inference/HRS/02-Original_HRS_sequences_reports_and_heatmap/Original_HRS_heatmap" --threads "${nt}" --color "${heatmap_color}""
-    stage3_HRS_03="python ${script_dir}/plot_recovery_heatmap.py \
-    -i ${output_dir}/03-Orthology_inference/HRS/01-Original_HRS_sequences/ \
-    -r ${t} \
-    -osl ${output_dir}/03-Orthology_inference/HRS/02-Original_HRS_sequences_reports_and_heatmap/Original_HRS_seq_lengths.tsv \
-    -oh ${output_dir}/03-Orthology_inference/HRS/02-Original_HRS_sequences_reports_and_heatmap/Original_HRS_heatmap \
-    --threads ${nt} \
-    --color ${heatmap_color}"
-    if [ "${log_mode}" = "full" ]; then
-      eval "${stage3_HRS_03}"
-    else
-      eval "${stage3_HRS_03} > /dev/null 2>&1"
-    fi
-
-    if [ -s "${output_dir}/03-Orthology_inference/HRS/02-Original_HRS_sequences_reports_and_heatmap/Original_HRS_heatmap.png" ]; then
-      stage_info "${log_mode}" "The reports and heatmap of the original HRS sequences have been written to:"
-      stage_info "${log_mode}" "${output_dir}/03-Orthology_inference/HRS/02-Original_HRS_sequences_reports_and_heatmap/"
-    else
-      stage_error "Fail to get the reports and heatmap of the original HRS sequences."
-    fi
-
-    # 02-Getting the reports and heatmap of the filtered HRS sequences
-    stage_info_main "02-Getting the reports and heatmap of the filtered HRS sequences..."
-    stage_cmd "${log_mode}" "python ${script_dir}/plot_recovery_heatmap.py -i ${output_dir}/03-Orthology_inference/HRS/03-Filtered_HRS_sequences/ -r ${t} -osl ${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_HRS_seq_lengths.tsv -oh ${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_HRS_heatmap --threads ${nt} --show_values --color ${heatmap_color}"
-    stage3_HRS_04="python ${script_dir}/plot_recovery_heatmap.py \
-    -i ${output_dir}/03-Orthology_inference/HRS/03-Filtered_HRS_sequences/ \
-    -r ${t} \
-    -osl ${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_HRS_seq_lengths.tsv \
-    -oh ${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_HRS_heatmap \
-    --threads ${nt} \
-    --color ${heatmap_color}"
-    if [ "${log_mode}" = "full" ]; then
-      eval "${stage3_HRS_04}"
-    else
-      eval "${stage3_HRS_04} > /dev/null 2>&1"
-    fi
+    filter_seqs_by_llsc "HRS"
     
-    if [ -s "${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/Filtered_HRS_heatmap.png" ]; then
-      stage_info "${log_mode}" "The reports and heatmap of the filtered HRS sequences have been written to:"
-      stage_info "${log_mode}" "${output_dir}/03-Orthology_inference/HRS/04-Filtered_HRS_sequences_reports_and_heatmap/"
-    else
-      stage_error "Fail to get the reports and heatmap of the filtered HRS sequences."
-    fi
+    # Step 4: Generating the reports and heatmap
+    #################===========================================================================
+    stage_info_main "Step 4: Generating the reports and heatmap ..."
+    #################===========================================================================
+    generate_reports_heatmap "HRS"
 
-    stage_info_main "Congratulations! Finish producing HRS sequences in ${output_dir}/03-Orthology_inference/HRS/03-Filtered_HRS_sequences/"
-    stage_blank_main ""
+    # Step 5: Multiple Sequence Alignment (MSA) and trimming
+    #################===========================================================================
+    stage_info_main "Step 5: Aligning, trimming, and filtering HRS sequences ..."
+    #################===========================================================================
+    MSA_and_trim "HRS" "${output_dir}/03-Paralogs_handling/HRS/03-Filtered_HRS_sequences" "FNA"
+
+    # Step 6: Summarizing statistics and filtering HRS alignments
+    #################===========================================================================
+    stage_info_main "Step 6: Summarizing statistics and filtering HRS alignments..."
+    #################===========================================================================
+    summarize_and_filter_alignments "HRS"
   fi
 
   ############################################################################################
@@ -2988,48 +3762,39 @@ else
   ############################################################################################
   if [ "${RLWP}" = "TRUE" ]; then
     #################===========================================================================
-    stage_info_main "Running optional method: RLWP ..."
-    if [ -d "${output_dir}/03-Orthology_inference/RLWP/" ]; then
-      rm -rf "${output_dir}/03-Orthology_inference/RLWP/"
+    stage_info_main "====>> Running optional method: RLWP <<===="
+    if [ -d "${output_dir}/03-Paralogs_handling/RLWP/" ]; then
+      rm -rf "${output_dir}/03-Paralogs_handling/RLWP/"
     fi
-    mkdir -p "${output_dir}/03-Orthology_inference/RLWP/"
+    mkdir -p "${output_dir}/03-Paralogs_handling/RLWP/"
     #################===========================================================================
 
-    # 01-Retrieving sequences
+    # Step 1: Retrieving sequences
     #################===========================================================================
     stage_info_main "Step 1: Retrieving sequences by running 'hybpiper retrieve_sequences' ..."
-    mkdir -p "${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/"
     #################===========================================================================
-    stage_cmd "${log_mode}" "hybpiper retrieve_sequences "-t_${hybpiper_tt}" ${t} dna --sample_names ${eas_dir}/Assembled_data_namelist.txt --fasta_dir ${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/"
-    hybpiper retrieve_sequences "-t_${hybpiper_tt}" ${t} dna \
-    --hybpiper_dir "${eas_dir}" \
-    --sample_names ${eas_dir}/Assembled_data_namelist.txt \
-    --fasta_dir ${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/ > /dev/null 2>&1
-    if find "${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/" -type f -name "*.FNA" -size +0c -quit 2>/dev/null; then
-      stage_info "${log_mode}" "Successfully retrieving sequences by running 'hybpiper retrieve_sequences'. "
-      stage_blank "${log_mode}" ""
-    else
-      stage_error "Fail to retrieve sequences by running 'hybpiper retrieve_sequences'."
-      stage_error "HybSuite exits."
-      stage_blank_main ""
-      exit 1
-    fi
+    retrieve_hybpiper_sequences "RLWP"
 
-    # Optional step-Adding other sequences
+    # Step 2: Integrating pre-assembled sequences
     #################===========================================================================
-    if [ "${found_pre}" = "1" ]; then
+    stage_info_main "Step 2: Integrating pre-assembled sequences ..."
+    #################===========================================================================
+    if [ "${found_pre}" != "1" ]; then
+      stage_info_main "No input pre-assembled sequences are detected."
+      stage_info_main "Skipped"
       stage_blank_main ""
-      stage_info_main "Optional step: Adding other sequences ..." 
-      stage_info_main "====>> Adding other sequences (RLWP) (${process} in parallel) ====>>"
-    #################=========================================================================== 
+    else 
+      process_integration="1"
+      stage_blank_main ""
+      stage_info_main "====>> Integrating pre-assembled sequences (RLWP) (${process_integration} in parallel) ====>>" 
       # 01-Initialize parallel environment
-      total_sps=$(grep -c '^' "${output_dir}/00-logs_and_checklists/checklists/Pre-assembled_Spname.txt")
-      init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/00-logs_and_checklists/checklists/Pre-assembled_Spname.txt" || exit 1
+      total_sps=$(grep -c '^' "${output_dir}/hybsuite_checklists/Pre-assembled_Spname.txt")
+      init_parallel_env "$work_dir" "$total_sps" "$process_integration" "${output_dir}/hybsuite_checklists/Pre-assembled_Spname.txt" || exit 1
       
       # 02-Run the main loop
       while IFS= read -r add_sp || [ -n "$add_sp" ]; do
-        total_genes=$(awk 'END {print NR}' "${output_dir}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt")
-        if [ "${process}" != "all" ]; then
+        total_genes=$(awk 'END {print NR}' "${output_dir}/hybsuite_checklists/Ref_gene_name_list.txt")
+        if [ "${process_integration}" != "all" ]; then
           read -u1000
         fi
         {
@@ -3039,52 +3804,58 @@ else
             if grep -qE ">$add_gene |\[gene=$add_gene\]" "${input_data}/${add_sp}.fasta"; then
               file="${input_data}/${add_sp}.fasta"
               if grep -q "\[gene=${add_gene}\]" "${file}"; then
-                sed -e "s|^.*[gene=${add_gene}].*$|>${add_gene} single_hit|g" "${file}" > "${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/${add_sp}_${add_gene}_single_hit.fa"
+                sed -e "s|^.*[gene=${add_gene}].*$|>${add_gene} single_hit|g" "${file}" > "${output_dir}/03-Paralogs_handling/RLWP/01-Original_RLWP_sequences/${add_sp}_${add_gene}_single_hit.fa"
               elif grep -q ">${add_gene}" "${file}"; then
-                sed -e "s|>${add_gene}.*$|>${add_gene} single_hit|g" "${file}" > "${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/${add_sp}_${add_gene}_single_hit.fa"
+                sed -e "s|>${add_gene}.*$|>${add_gene} single_hit|g" "${file}" > "${output_dir}/03-Paralogs_handling/RLWP/01-Original_RLWP_sequences/${add_sp}_${add_gene}_single_hit.fa"
               fi
               awk -v gene=">${add_gene} single_hit" '/^>/ {if (print_flag) print ""; print_flag=0} $0 ~ gene {print_flag=1} print_flag {print} END {if (print_flag) print ""}' \
-              "${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/${add_sp}_${add_gene}_single_hit.fa" >> "${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/${add_gene}.FNA"
-              sed -i "s|${add_gene} |${add_sp} |g;/^$/d" "${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/${add_gene}.FNA" > /dev/null 2>&1
+              "${output_dir}/03-Paralogs_handling/RLWP/01-Original_RLWP_sequences/${add_sp}_${add_gene}_single_hit.fa" >> "${output_dir}/03-Paralogs_handling/RLWP/01-Original_RLWP_sequences/${add_gene}.FNA"
+              sed -i "s|${add_gene} |${add_sp} |g;/^$/d" "${output_dir}/03-Paralogs_handling/RLWP/01-Original_RLWP_sequences/${add_gene}.FNA" > /dev/null 2>&1
             fi
-          done < "${output_dir}/00-logs_and_checklists/checklists/Ref_gene_name_list.txt"
+          done < "${output_dir}/hybsuite_checklists/Ref_gene_name_list.txt"
           find . -type f -name "*.fa" -exec rm -f {} +
           # Update failed sample list
-          if ! grep -q "${add_sp}" "${output_dir}"/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/*.FNA; then
+          if ! grep -q "${add_sp}" "${output_dir}"/03-Paralogs_handling/RLWP/01-Original_RLWP_sequences/*.FNA; then
             record_failed_sample "$add_sp"
           else
             # Update finish count
             update_finish_count "$add_sp" "$stage_logfile"
           fi
-          if [ "${process}" != "all" ]; then
+          if [ "${process_integration}" != "all" ]; then
             echo >&1000
           fi
         } &
-      done < "${output_dir}/00-logs_and_checklists/checklists/Pre-assembled_Spname.txt"
+        if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
+          display_only_failed_log "$stage_logfile" "Failed to integrate pre-assembled sequences into RLWP dataset:"
+        fi
+      done < "${output_dir}/hybsuite_checklists/Pre-assembled_Spname.txt"
       wait
       echo
       # Display processing log
       if [ "${log_mode}" = "full" ]; then
-        display_process_log "$stage_logfile" "Failed to add other sequences:"
+        display_process_log "$stage_logfile" "Failed to integrate pre-assembled sequences into RLWP dataset:"
       fi
-      stage_blank "${log_mode}" ""
+      stage_success "Finished."
+      stage_blank_main ""
 
-      # 05-Formatting the output sequences
-      cd "${output_dir}"/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/
+      # 03-Formatting the output sequences
+      cd "${output_dir}"/03-Paralogs_handling/RLWP/01-Original_RLWP_sequences/
       for file in *.FNA; do
         python "${script_dir}/Fasta_formatter.py" -i "${file}" -o "${file}" -nt "${nt}" --inter > /dev/null 2>&1
       done
     fi
 
-    # 02-Removing loci with paralogues (RLWP)
-    stage_info_main "Step 2: Removing loci with paralogues (RLWP) via RLWP.py ..."
-    mkdir -p "${output_dir}/03-Orthology_inference/RLWP/02-Original_RLWP_sequences_reports_and_heatmap/"
-    stage_cmd "${log_mode}" "python ${script_dir}/RLWP.py -i ${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/ -p ${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap/Original_paralog_report.tsv -s ${RLWP_samples_threshold} -or ${output_dir}/03-Orthology_inference/RLWP/02-Original_RLWP_sequences_reports_and_heatmap/RLWP_removed_loci_info.tsv --threads ${nt}"
+    # Step 3: Removing loci with paralogues (RLWP)
+    #################===========================================================================
+    stage_info_main "Step 3: Removing loci with paralogues (RLWP) via RLWP.py ..."
+    #################===========================================================================
+    mkdir -p "${output_dir}/03-Paralogs_handling/RLWP/02-Original_RLWP_sequences_reports_and_heatmap/"
+    stage_cmd "${log_mode}" "python ${script_dir}/RLWP.py -i ${output_dir}/03-Paralogs_handling/RLWP/01-Original_RLWP_sequences/ -p ${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap/Original_paralog_report.tsv -s ${rlwp} -or ${output_dir}/03-Paralogs_handling/RLWP/02-Original_RLWP_sequences_reports_and_heatmap/RLWP_removed_loci_info.tsv --threads ${nt}"
     stage3_RLWP_1="python ${script_dir}/RLWP.py \
-    -i ${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/ \
+    -i ${output_dir}/03-Paralogs_handling/RLWP/01-Original_RLWP_sequences/ \
     -p ${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap/Original_paralog_report.tsv \
-    -s ${RLWP_samples_threshold} \
-    -or ${output_dir}/03-Orthology_inference/RLWP/02-Original_RLWP_sequences_reports_and_heatmap/RLWP_removed_loci_info.tsv \
+    -s ${rlwp} \
+    -or ${output_dir}/03-Paralogs_handling/RLWP/02-Original_RLWP_sequences_reports_and_heatmap/RLWP_removed_loci_info.tsv \
     --threads ${nt}"
     if [ "${log_mode}" = "full" ]; then
       eval "${stage3_RLWP_1}"
@@ -3093,94 +3864,29 @@ else
     fi
     stage_blank "${log_mode}" ""
 
-    # 03-Filtering out RLWP sequences with low length, sample and locus coverage
-    stage_info_main "Step 3: Filtering out RLWP sequences with low length, sample and locus coverage..."
-    mkdir -p "${output_dir}/03-Orthology_inference/RLWP/03-Filtered_RLWP_sequences/" "${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/"
-
-    stage_info_main "01-Filtering out RLWP sequences with low length ..."
-    stage_cmd "${log_mode}" "python "${script_dir}/filter_seqs_by_length.py" -i "${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/" --output_report "${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/Filtered_out_RLWP_seqs_with_low_length_info.tsv" --output_dir "${output_dir}/03-Orthology_inference/RLWP/03-Filtered_RLWP_sequences/" --ref "${t}" --min_length "${min_length}" --mean_length_ratio "${mean_length_ratio}" --max_length_ratio "${max_length_ratio}" --threads "${nt}""
-    stage3_RLWP_2="python ${script_dir}/filter_seqs_by_length.py \
-    -i ${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/ \
-    --output_report ${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/Filtered_out_RLWP_seqs_with_low_length_info.tsv \
-    --output_dir ${output_dir}/03-Orthology_inference/RLWP/03-Filtered_RLWP_sequences/ \
-    --ref ${t} \
-    --min_length ${min_length} \
-    --mean_length_ratio ${mean_length_ratio} \
-    --max_length_ratio ${max_length_ratio} \
-    --threads ${nt}"
-    if [ "${log_mode}" = "full" ]; then
-      eval "${stage3_RLWP_2}"
-    else
-      eval "${stage3_RLWP_2} > /dev/null 2>&1"
-    fi
-    stage_blank "${log_mode}" ""
-    
-    # 04-Filtering out taxa with low locus coverage and loci with low sample coverage
-    stage_info_main "02-Filtering out taxa with low sample and loci with low sample coverage ..."
-    stage_cmd "${log_mode}" "python "${script_dir}/filter_seqs_by_sample_and_locus_coverage.py" -i "${output_dir}/03-Orthology_inference/RLWP/03-Filtered_RLWP_sequences/" --min_locus_coverage "${min_locus_coverage}" --min_sample_coverage "${min_sample_coverage}" --removed_samples_info "${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/Filtered_out_samples_with_low_locus_coverage_info.tsv" --removed_loci_info "${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/Filtered_out_loci_with_low_sample_coverage_info.tsv" --threads "${nt}""
-    stage3_RLWP_3="python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py \
-    -i ${output_dir}/03-Orthology_inference/RLWP/03-Filtered_RLWP_sequences/ \
-    --min_locus_coverage ${min_locus_coverage} \
-    --min_sample_coverage ${min_sample_coverage} \
-    --removed_samples_info ${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/Filtered_out_samples_with_low_locus_coverage_info.tsv \
-    --removed_loci_info ${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/Filtered_out_loci_with_low_sample_coverage_info.tsv \
-    --threads ${nt}"
-    if [ "${log_mode}" = "full" ]; then
-      eval "${stage3_RLWP_3}"
-    else
-      eval "${stage3_RLWP_3} > /dev/null 2>&1"
-    fi
-    stage_blank "${log_mode}" ""
-
-    # 05-Plotting the recovery heatmap
+    # Step 4: Filtering RLWP sequences by length, sample and locus coverage
     #################===========================================================================
-    stage_info_main "Step 4: Plotting the recovery heatmap ..."
+    stage_info_main "Step 4: Filtering RLWP sequences by length, sample and locus coverage..."
+    #################===========================================================================
+    filter_seqs_by_llsc "RLWP"
 
-    # plot the recovery heatmap for original RLWP sequences
-    stage_info_main "01-Plotting the recovery heatmap for original RLWP sequences ..."
-    stage_cmd "${log_mode}" "python ${script_dir}/plot_recovery_heatmap.py -i ${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/ -r ${t} --output_heatmap ${output_dir}/03-Orthology_inference/RLWP/02-Original_RLWP_sequences_reports_and_heatmap/Original_RLWP_seqs_recovery_heatmap --output_seq_lengths ${output_dir}/03-Orthology_inference/RLWP/02-Original_RLWP_sequences_reports_and_heatmap/Original_RLWP_seqs_lengths.tsv --threads ${nt} --color ${heatmap_color}"
-    stage3_RLWP_4="python ${script_dir}/plot_recovery_heatmap.py \
-    -i ${output_dir}/03-Orthology_inference/RLWP/01-Original_RLWP_sequences/ \
-    -r ${t} \
-    --output_heatmap ${output_dir}/03-Orthology_inference/RLWP/02-Original_RLWP_sequences_reports_and_heatmap/Original_RLWP_seqs_recovery_heatmap \
-    --output_seq_lengths ${output_dir}/03-Orthology_inference/RLWP/02-Original_RLWP_sequences_reports_and_heatmap/Original_RLWP_seqs_lengths.tsv \
-    --threads ${nt} \
-    --color ${heatmap_color}"
-    if [ "${log_mode}" = "full" ]; then
-      eval "${stage3_RLWP_4}"
-    else
-      eval "${stage3_RLWP_4} > /dev/null 2>&1"
-    fi
-    if [ -s "${output_dir}/03-Orthology_inference/RLWP/02-Original_RLWP_sequences_reports_and_heatmap/Original_RLWP_seqs_lengths.tsv" ] && [ -s "${output_dir}/03-Orthology_inference/RLWP/02-Original_RLWP_sequences_reports_and_heatmap/Original_RLWP_seqs_recovery_heatmap.png" ]; then
-      stage_info "${log_mode}" "The recovery heatmap of original RLWP sequences has been written to: ${output_dir}/03-Orthology_inference/RLWP/02-Original_RLWP_sequences_reports_and_heatmap/Original_RLWP_seqs_recovery_heatmap.png"
-    else
-      stage_error "Fail to plot the recovery heatmap of original RLWP sequences."
-    fi
+    # Step 5: Generating the reports and heatmap
+    #################===========================================================================
+    stage_info_main "Step 5: Generating the reports and heatmap ..."
+    #################===========================================================================
+    generate_reports_heatmap "RLWP"
 
-    # plot the recovery heatmap for filtered RLWP sequences
-    stage_info_main "02-Plotting the recovery heatmap for filtered RLWP sequences ..."
-    stage_cmd "${log_mode}" "python ${script_dir}/plot_recovery_heatmap.py -i ${output_dir}/03-Orthology_inference/RLWP/03-Filtered_RLWP_sequences/ -r ${t} --output_heatmap ${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/Filtered_RLWP_seqs_recovery_heatmap --output_seq_lengths ${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/Filtered_RLWP_seqs_lengths.tsv --threads ${nt} --color ${heatmap_color}"
-    
-    stage3_RLWP_5="python ${script_dir}/plot_recovery_heatmap.py \
-    -i ${output_dir}/03-Orthology_inference/RLWP/03-Filtered_RLWP_sequences/ \
-    -r ${t} \
-    --output_heatmap ${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/Filtered_RLWP_seqs_recovery_heatmap \
-    --output_seq_lengths ${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/Filtered_RLWP_seqs_lengths.tsv \
-    --threads ${nt} \
-    --color ${heatmap_color}"
-    if [ "${log_mode}" = "full" ]; then
-      eval "${stage3_RLWP_5}"
-    else
-      eval "${stage3_RLWP_5} > /dev/null 2>&1"
-    fi
-    if [ -s "${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/Filtered_RLWP_seqs_lengths.tsv" ] && [ -s "${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/Filtered_RLWP_seqs_recovery_heatmap.png" ]; then
-      stage_info "${log_mode}" "The recovery heatmap of filtered RLWP sequences has been written to: ${output_dir}/03-Orthology_inference/RLWP/04-Filtered_RLWP_sequences_reports_and_heatmap/Filtered_RLWP_seqs_recovery_heatmap.png"
-    else
-      stage_error "Fail to plot the recovery heatmap of filtered RLWP sequences."
-    fi
+    # Step 6: Multiple Sequence Alignment (MSA) and trimming
+    #################===========================================================================
+    stage_info_main "Step 6: Aligning, trimming, and filtering RLWP sequences ..."
+    #################===========================================================================
+    MSA_and_trim "RLWP" "${output_dir}/03-Paralogs_handling/RLWP/03-Filtered_RLWP_sequences" "FNA"
 
-    stage_info_main "Congratulations! Finish producing RLWP sequences in ${output_dir}/03-Orthology_inference/RLWP/03-Filtered_RLWP_sequences/"
-    stage_blank_main ""
+    # Step 7: Summarizing statistics and filtering RLWP alignments
+    #################===========================================================================
+    stage_info_main "Step 7: Summarizing statistics and filtering RLWP alignments..."
+    #################===========================================================================
+    summarize_and_filter_alignments "RLWP"
   fi
 
   ############################################################################################
@@ -3188,15 +3894,28 @@ else
   ############################################################################################
   #1. phylopypruner (optional)
   if [ "$LS" = "TRUE" ] || { ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ]) && [ "${run_phylopypruner}" = "TRUE" ] && [ "${run_paragone}" != "TRUE" ]; }; then
-    if [ -d "${output_dir}/03-Orthology_inference/PhyloPyPruner/" ]; then
-      rm -r "${output_dir}/03-Orthology_inference/PhyloPyPruner/"
+    #################===========================================================================
+    step_parts=""
+    [ "$LS" = "TRUE" ] && step_parts="${step_parts}LS/"
+    [ "$MO" = "TRUE" ] && step_parts="${step_parts}MO/"
+    [ "$MI" = "TRUE" ] && step_parts="${step_parts}MI/"
+    [ "$RT" = "TRUE" ] && step_parts="${step_parts}RT/"
+    [ "${one_to_one}" = "TRUE" ] && step_parts="${step_parts}1to1/"
+    step_parts=${step_parts%/}
+    stage_info_main "====>> Optional method: tree-based algorithm (${step_parts}) via PhyloPyPruner <<===="
+    #################===========================================================================
+    if [ -d "${output_dir}/03-Paralogs_handling/PhyloPyPruner/" ]; then
+      rm -r "${output_dir}/03-Paralogs_handling/PhyloPyPruner/"
     fi
-    mkdir -p "${output_dir}"/03-Orthology_inference/PhyloPyPruner/Input
-    cd ${output_dir}/03-Orthology_inference/PhyloPyPruner/Input
-    cp ${output_dir}/02-All_paralogs/03-Filtered_paralogs/*.fasta ${output_dir}/03-Orthology_inference/PhyloPyPruner/Input
-    stage_info_main "Optional step: LS/MI/MO/RT/1to1 for PhyloPyPruner"
-    stage_info_main "01-Preparing fasta files and single gene trees for PhyloPyPruner"
-    # 1.MAFFT and TrimAl
+    mkdir -p "${output_dir}"/03-Paralogs_handling/PhyloPyPruner/Input
+    cd ${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input
+    cp ${paralogs_dir}/*.fasta ${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input
+    
+    #################===========================================================================
+    # Step 1: Preparing fasta files and single gene trees for PhyloPyPruner
+    stage_info_main "Step 1: Preparing fasta files and single gene trees for PhyloPyPruner"
+    #################===========================================================================
+    # 01-MSA and trimming
     define_threads "mafft"
     define_threads "trimal"
     temp_file="fasta_file_list.txt"
@@ -3204,7 +3923,22 @@ else
     total_sps=$(find . -maxdepth 1 -type f -name "*.fasta" | wc -l)
     # Initialize parallel environment
     init_parallel_env "$work_dir" "$total_sps" "$process" "${temp_file}" || exit 1
-    stage_info_main "====>> Running MAFFT, TrimAl and FastTree for ${total_sps} paralog files (${process} in parallel) ====>>"
+    if [ "${gene_tree}" = "1" ]; then
+      gene_tree_tool="IQ-TREE"
+      define_threads "iqtree"
+    elif [ "${gene_tree}" = "2" ]; then
+      gene_tree_tool="FastTree"
+      define_threads "fasttree"
+      export OMP_NUM_THREADS=${nt_fasttree}
+    fi
+    if [ "${trim_tool}" = "1" ]; then
+      trim_tool_tool="trimAl"
+      define_threads "trimal"
+    elif [ "${trim_tool}" = "2" ]; then
+      trim_tool_tool="HMMCleaner"
+    fi
+    stage_info_main "====>> Running MAFFT, ${trim_tool_tool} and ${gene_tree_tool} for ${total_sps} putative paralog files (${process} in parallel) ====>>"
+    
     while IFS= read -r file || [ -n "$file" ]; do
       filename=${file%.fasta}
       genename=${file%_paralogs_all.fasta}
@@ -3214,12 +3948,26 @@ else
       {
         # Update start count
         update_start_count "$genename" "$stage_logfile"
-        sed -i "s/ single_hit/@single_hit/g;s/ multi/@multi/g;s/ NODE_/@NODE_/g;s/\.[0-9]\+@NODE_/@NODE_/g;s/\.main@NODE_/@NODE_/g" "${file}"
+        sed -i "s/ single_hit/|single_hit/g;s/ multi/|multi/g;s/ NODE_/|NODE_/g;s/\.[0-9]\+|NODE_/|NODE_/g;s/\.main|NODE_/|NODE_/g" "${file}"
         # Run MAFFT  
         run_mafft "${file}" "${filename}.aln.fasta" "${nt_mafft}"
-        run_trimal "./${filename}.aln.fasta" "./${filename}.trimmed.aln.fasta" "${trimal_mode}" \
-        "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
-        "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
+        remove_n "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.fasta"
+        if [ "${trim_tool}" = "1" ]; then
+          run_trimal "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.fasta" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta" "${trimal_mode}" \
+          "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
+          "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
+        fi
+        if [ "${trim_tool}" = "2" ]; then
+          run_hmmcleaner "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.fasta" "${hmmcleaner_cost}"
+          if [ -s "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln_hmm.fasta" ]; then
+            update_finish_count "$genename" "$stage_logfile"
+            mv "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln_hmm.fasta" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta"
+            rm -f "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln_hmm"*
+          else
+            record_failed_sample "$genename"
+          fi
+        fi
+        
         awk '
         BEGIN { OFS="\n" }
         /^>/ {
@@ -3232,46 +3980,65 @@ else
             }
             next
         }
-        { print $0 }' "./${filename}.trimmed.aln.fasta" > "./${filename}.trimmed.aln.temp" && \
-        mv "./${filename}.trimmed.aln.temp" "./${filename}.trimmed.aln.fasta"
-        remove_n "./${filename}.trimmed.aln.fasta"
-        FastTree -nt -gamma "./${filename}.trimmed.aln.fasta" > "./${filename}.trimmed.aln.fasta.tre" 2>/dev/null
-        rm "${file}" "${filename}.aln.fasta"
-        # Update failed count
-        if [ ! -s "./${filename}.trimmed.aln.fasta" ] || [ ! -s "./${filename}.trimmed.aln.fasta.tre" ]; then
+        { print $0 }' "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta" > "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.temp" && \
+        mv "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.temp" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta"
+        if [ ! -s "./${filename}.aln.trimmed.fasta" ]; then
           record_failed_sample "$genename"
-        else
-          # Update finish count
-          update_finish_count "$genename" "$stage_logfile"
         fi
+        if [ "${gene_tree}" = "1" ]; then
+          stage_cmd "${log_mode}" "iqtree -s ${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta -m MFP -nt ${nt_iqtree} -bb ${gene_tree_bb} -pre ${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta"
+          iqtree -s "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta" -m MFP -nt ${nt_iqtree} -bb "${gene_tree_bb}" -pre "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta" > /dev/null 2>&1
+          if [ -s "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta.treefile" ]; then
+            mv "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta.treefile" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta.tre"
+            find . -maxdepth 1 -name "${filename}.aln.trimmed.fasta*" ! -name "*.tre" ! -name "*.fasta" -delete
+          else
+            record_failed_sample "$genename"
+          fi
+        elif [ "${gene_tree}" = "2" ]; then
+          stage_cmd "${log_mode}" "FastTreeMP -nt -gtr -gamma -boot ${gene_tree_bb} ${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta > ./${filename}.aln.trimmed.fasta.tre"
+          FastTreeMP -nt -gtr -gamma -boot "${gene_tree_bb}" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta" > "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta.tre" 2>/dev/null
+          if [ ! -s "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln.trimmed.fasta.tre" ]; then
+            record_failed_sample "$genename"
+          fi
+        fi
+        rm "${file}" "${filename}.aln.fasta" 2>/dev/null
+        # Update failed count
+        update_finish_count "$genename" "$stage_logfile"
         if [ "${process}" != "all" ]; then
           echo >&1000
         fi
       } &
+      if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
+        display_only_failed_log "$stage_logfile" "Failed to prepare fasta files and single gene trees for PhyloPyPruner:"
+      fi
     done < "$temp_file"
     rm "$temp_file"
     wait
     echo
     # Display processing log
     if [ "${log_mode}" = "full" ]; then
-      display_process_log "$stage_logfile" "Failed to run MAFFT for paralog files:"
+      display_process_log "$stage_logfile" "Failed to prepare fasta files and single gene trees for PhyloPyPruner:"
     fi
-    stage_blank_main ""
-    if ! find ./ -type f -name '*trimmed.aln.fasta' -size +0c -quit 2>/dev/null; then
-      stage_error "Fail to run MAFFT and TrimAl."
+    if ! find ./ -type f -name '*.aln.trimmed.fasta' -size +0c -quit 2>/dev/null; then
+      stage_error "Fail to run MAFFT and trimAl/HMMCleaner."
       stage_error "HybSuite exits."
       stage_blank_main ""
       exit 1
     fi
-    if ! find ./ -type f -name '*trimmed.aln.fasta.tre' -size +0c -quit 2>/dev/null; then
+    if ! find ./ -type f -name '*.aln.trimmed.fasta.tre' -size +0c -quit 2>/dev/null; then
       stage_error "Fail to run FastTree."
       stage_error "HybSuite exits."
       stage_blank_main ""
       exit 1
     fi
+    stage_success "Finished."
+    stage_blank_main ""
 
+    # Step 2: Running PhyloPyPruner
+    #################===========================================================================
+    stage_info_main "Step 2: Running PhyloPyPruner for ${step_parts}..."
+    #################===========================================================================
     define_threads "phylopypruner"
-    
     # Define the function to run PhyloPyPruner
     run_phylopypruner() {
         local method=$1
@@ -3280,15 +4047,14 @@ else
         local input_dir=$4
         local trim_lb=$5
         local min_taxa=$6
-        local min_len=$7
         if [ "${method}" = "MO" ] || [ "${method}" = "RT" ]; then
-          local outgroup=$8
+          local outgroup=$7
         fi
 
-        stage_info_main "Running PhyloPyPruner via ${method} algorithum ..."
+        stage_info_main "Running ${method} algorithum via PhyloPyPruner ..."
         
         # Base command without outgroup
-        local base_cmd="phylopypruner --overwrite --no-supermatrix --threads \"${threads}\" --dir \"${input_dir}/PhyloPyPruner/Input\" --output \"${input_dir}/PhyloPyPruner/\" --prune \"${method}\" --trim-lb \"${trim_lb}\" --min-taxa \"${min_taxa}\" --min-len \"${min_len}\""
+        local base_cmd="phylopypruner --overwrite --no-supermatrix --threads \"${threads}\" --dir \"${input_dir}/PhyloPyPruner/Input\" --output \"${input_dir}/PhyloPyPruner/\" --prune \"${method}\" --trim-lb \"${trim_lb}\" --min-taxa \"${min_taxa}\""
 
         # If outgroup parameter is provided and not empty
         if [ -n "${outgroup}" ] && [ -f "${outgroup}" ]; then
@@ -3311,11 +4077,11 @@ else
 
         # Move the output files
         mv "${input_dir}/PhyloPyPruner/phylopypruner_output/" "${input_dir}/PhyloPyPruner/${output_phylopypruner_dir}/"
-        sed -i "s/@.*$//g" "${input_dir}/PhyloPyPruner/${output_phylopypruner_dir}/output_alignments/"*.fasta
+        sed -i "s/|.*$//" "${input_dir}/PhyloPyPruner/${output_phylopypruner_dir}/output_alignments/"*.fasta
 
         # Check the running result
         if [ "$(ls -A "${input_dir}/PhyloPyPruner/${output_phylopypruner_dir}/output_alignments")" ]; then
-            stage_info "${log_mode}" "Successfully finishing running PhyloPyPruner for ${method}."
+            stage_success "Finished."
             return 0
         else
             stage_error "Fail to run PhyloPyPruner for ${method}."
@@ -3327,28 +4093,80 @@ else
 
     # Run PhyloPyPruner for LS
     if [ "${LS}" = "TRUE" ]; then
-        run_phylopypruner "LS" "Output_LS" "${nt_phylopypruner}" "${output_dir}/03-Orthology_inference" "${pp_trim_lb}" "${pp_min_taxa}" "${min_length}" || exit 1
+        run_phylopypruner "LS" "Output_LS" "${nt_phylopypruner}" "${output_dir}/03-Paralogs_handling" "${pp_trim_lb}" "${pp_min_taxa}"
     fi
 
     # Run PhyloPyPruner for MI
     if [ "${MI}" = "TRUE" ] && [ "${run_paragone}" = "FALSE" ]; then
-        run_phylopypruner "MI" "Output_MI" "${nt_phylopypruner}" "${output_dir}/03-Orthology_inference" "${pp_trim_lb}" "${pp_min_taxa}" "${min_length}" || exit 1
+        run_phylopypruner "MI" "Output_MI" "${nt_phylopypruner}" "${output_dir}/03-Paralogs_handling" "${pp_trim_lb}" "${pp_min_taxa}"
     fi
 
     # Run PhyloPyPruner for MO
     if [ "${MO}" = "TRUE" ] && [ "${run_paragone}" = "FALSE" ]; then
-        run_phylopypruner "MO" "Output_MO" "${nt_phylopypruner}" "${output_dir}/03-Orthology_inference" "${pp_trim_lb}" "${pp_min_taxa}" "${min_length}" "${output_dir}/00-logs_and_checklists/checklists/Outgroup.txt" || exit 1
+        run_phylopypruner "MO" "Output_MO" "${nt_phylopypruner}" "${output_dir}/03-Paralogs_handling" "${pp_trim_lb}" "${pp_min_taxa}" "${output_dir}/hybsuite_checklists/Outgroup.txt"
     fi
 
     # Run PhyloPyPruner for RT
     if [ "${RT}" = "TRUE" ] && [ "${run_paragone}" = "FALSE" ]; then
-        run_phylopypruner "RT" "Output_RT" "${nt_phylopypruner}" "${output_dir}/03-Orthology_inference" "${pp_trim_lb}" "${pp_min_taxa}" "${min_length}" "${output_dir}/00-logs_and_checklists/checklists/Outgroup.txt" || exit 1
+        run_phylopypruner "RT" "Output_RT" "${nt_phylopypruner}" "${output_dir}/03-Paralogs_handling" "${pp_trim_lb}" "${pp_min_taxa}" "${output_dir}/hybsuite_checklists/Outgroup.txt"
     fi
     
     # Run PhyloPyPruner for 1to1
     if [ "${one_to_one}" = "TRUE" ] && [ "${run_paragone}" = "FALSE" ]; then
-        run_phylopypruner "1to1" "Output_1to1" "${nt_phylopypruner}" "${output_dir}/03-Orthology_inference" "${pp_trim_lb}" "${pp_min_taxa}" "${min_length}" || exit 1
+        run_phylopypruner "1to1" "Output_1to1" "${nt_phylopypruner}" "${output_dir}/03-Paralogs_handling" "${pp_trim_lb}" "${pp_min_taxa}"
     fi
+
+    # Step 3: Realigning and trimming orthogroup alignments generated via PhyloPyPruner
+    #################===========================================================================
+    stage_blank_main ""
+    stage_info_main "Step 3: Realigning and trimming ${step_parts} orthogroup alignments generated via PhyloPyPruner ..."
+    #################===========================================================================
+    if [ "${LS}" = "TRUE" ]; then
+      stage_info_main "====>> LS ====>>"
+      MSA_and_trim "LS" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Output_LS/output_alignments" "aln.trimmed_pruned"*".fasta"
+    fi
+    if [ "${MI}" = "TRUE" ]; then
+      stage_info_main "====>> MI ====>>"
+      MSA_and_trim "MI" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Output_MI/output_alignments" "aln.trimmed_pruned"*".fasta"
+    fi
+    if [ "${MO}" = "TRUE" ]; then
+      stage_info_main "====>> MO ====>>"
+      MSA_and_trim "MO" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Output_MO/output_alignments" "aln.trimmed_pruned"*".fasta"
+    fi
+    if [ "${RT}" = "TRUE" ]; then
+      stage_info_main "====>> RT ====>>"
+      MSA_and_trim "RT" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Output_RT/output_alignments" "aln.trimmed_pruned"*".fasta"
+    fi
+    if [ "${one_to_one}" = "TRUE" ]; then
+      stage_info_main "====>> 1to1 ====>>"
+      MSA_and_trim "1to1" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Output_1to1/output_alignments" "aln.trimmed_pruned"*".fasta"
+    fi
+
+    # Step 4: Summarizing and filtering ${step_parts} orthogroup alignments generated via PhyloPyPruner
+    #################===========================================================================
+    stage_info_main "Step 4: Summarizing and filtering ${step_parts} orthogroup alignments generated via PhyloPyPruner ..."
+    #################===========================================================================
+    if [ "${LS}" = "TRUE" ]; then
+      stage_info_main "====>> LS ====>>"
+      summarize_and_filter_alignments "LS"
+    fi
+    if [ "${MI}" = "TRUE" ]; then
+      stage_info_main "====>> MI ====>>"
+      summarize_and_filter_alignments "MI"
+    fi
+    if [ "${MO}" = "TRUE" ]; then
+      stage_info_main "====>> MO ====>>"
+      summarize_and_filter_alignments "MO"
+    fi
+    if [ "${RT}" = "TRUE" ]; then
+      stage_info_main "====>> RT ====>>"
+      summarize_and_filter_alignments "RT"
+    fi
+    if [ "${one_to_one}" = "TRUE" ]; then
+      stage_info_main "====>> 1to1 ====>>"
+      summarize_and_filter_alignments "1to1"
+    fi
+    stage_blank_main ""
   fi
 
   ############################################################################################
@@ -3356,34 +4174,43 @@ else
   ############################################################################################
   #ParaGone (optional)
   if ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ]) && [ "${run_paragone}" = "TRUE" ] && [ "${run_phylopypruner}" = "FALSE" ]; then
-    stage_blank "${log_mode}" ""
-    stage_info "${log_mode}" "Optional Part: Run ParaGone (MO/MI/RT/1to1) ... "
+    #################===========================================================================
+    step_parts=""
+    [ "$MO" = "TRUE" ] && step_parts="${step_parts}MO/"
+    [ "$MI" = "TRUE" ] && step_parts="${step_parts}MI/"
+    [ "$RT" = "TRUE" ] && step_parts="${step_parts}RT/"
+    [ "${one_to_one}" = "TRUE" ] && step_parts="${step_parts}1to1/"
+    step_parts=${step_parts%/}
+    stage_info_main "====>> Optional method: tree-based algorithm (${step_parts}) via ParaGone <<===="
+    #################===========================================================================
     
     # Preparation: remove existed files
-    if [ -d "${output_dir}/03-Orthology_inference/ParaGone" ]; then
-      rm -rf "${output_dir}/03-Orthology_inference/ParaGone"
+    if [ -d "${output_dir}/03-Paralogs_handling/ParaGone" ]; then
+      rm -rf "${output_dir}/03-Paralogs_handling/ParaGone"
     fi
     # Preparation: Directories and reminders
-    mkdir -p ${output_dir}/03-Orthology_inference/ParaGone
+    mkdir -p ${output_dir}/03-Paralogs_handling/ParaGone
     # Preparation: Outgroup processing
-    cd ${output_dir}/03-Orthology_inference/ParaGone
+    cd ${output_dir}/03-Paralogs_handling/ParaGone
     outgroup_args=""
     while IFS= read -r line || [ -n "$line" ]; do
       outgroup_args="$outgroup_args --internal_outgroup $line"
-    done < "${output_dir}/00-logs_and_checklists/checklists/Outgroup.txt"
+    done < "${output_dir}/hybsuite_checklists/Outgroup.txt"
     # Preparation: change species names to correct ones for running ParaGone 
-    for file in "${output_dir}/02-All_paralogs/03-Filtered_paralogs/"*; do
-      sed -i "s/_var\._/_var_/g"  "${file}"
-      sed -i "s/_subsp\._/_subsp_/g" "${file}"
-      sed -i "s/_f\._/_f_/g" "${file}"
-    done
+    sed -i "s/_var\._/_var_/g;s/_subsp\._/_subsp_/g;s/_f\._/_f_/g"  "${paralogs_dir}/"*
+    
+    #for file in "${paralogs_dir}/"*; do
+    #  sed -i "s/_var\._/_var_/g"  "${file}"
+    #  sed -i "s/_subsp\._/_subsp_/g" "${file}"
+    #  sed -i "s/_f\._/_f_/g" "${file}"
+    #done
 
     # Define threads
     define_threads "paragone"
 
     # ParaGone fullpipeline
     run_paragone() {
-      local input_dir="${output_dir}/02-All_paralogs/03-Filtered_paralogs"
+      local input_dir="${paralogs_dir}"
       
       stage_blank "${log_mode}" ""
       log_info="====>> Running ParaGone via "
@@ -3449,7 +4276,7 @@ else
         paragone_step6_cmd="${paragone_step6_cmd} --trimal_sw ${trimal_sw}"
       fi  
       
-      if [ "${paragone_tree}" = "fasttree" ]; then
+      if [ "${gene_tree}" = "2" ]; then
         paragone_step2_cmd="${paragone_step2_cmd} --use_fasttree"
         paragone_step4_cmd="${paragone_step4_cmd} --use_fasttree"
       fi
@@ -3471,7 +4298,9 @@ else
         paragone_step6_cmd="${paragone_step6_cmd} --rt"
       fi
 
+      #################===========================================================================
       stage_info_main "Running ParaGone step1 ... "
+      #################===========================================================================
       stage_cmd "${log_mode}" "${paragone_step1_cmd}"
       eval "${paragone_step1_cmd}" > /dev/null 2>&1
       if [ ! -n "$(find "./04_alignments_trimmed_cleaned" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
@@ -3480,9 +4309,13 @@ else
         stage_blank_main ""
         exit 1
       else
-        stage_info_main "Finish."
+        stage_success "Finished."
+        stage_blank_main ""
       fi
+
+      #################===========================================================================
       stage_info_main "Running ParaGone step2 ... "
+      #################===========================================================================
       stage_cmd "${log_mode}" "${paragone_step2_cmd}"
       eval "${paragone_step2_cmd}" > /dev/null 2>&1
       if [ ! -n "$(find "./05_trees_pre_quality_control" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
@@ -3491,9 +4324,13 @@ else
         stage_blank_main ""
         exit 1
       else
-        stage_info_main "Finish."
+        stage_success "Finished."
+        stage_blank_main ""
       fi
+
+      #################===========================================================================
       stage_info_main "Running ParaGone step3 ... "
+      #################===========================================================================
       stage_cmd "${log_mode}" "${paragone_step3_cmd}"
       eval "${paragone_step3_cmd}" > /dev/null 2>&1
       if [ ! -n "$(find "./09_sequences_from_qc_trees" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
@@ -3502,9 +4339,13 @@ else
         stage_blank_main ""
         exit 1
       else
-        stage_info_main "Finish."
+        stage_success "Finished."
+        stage_blank_main ""
       fi
+
+      #################===========================================================================
       stage_info_main "Running ParaGone step4 ... "
+      #################===========================================================================
       stage_cmd "${log_mode}" "${paragone_step4_cmd}"
       eval "${paragone_step4_cmd}" > /dev/null 2>&1
       if [ ! -n "$(find "./13_pre_paralog_resolution_trees" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
@@ -3513,9 +4354,12 @@ else
         stage_blank_main ""
         exit 1
       else
-        stage_info_main "Finish."
+        stage_success "Finished."
       fi
+
+      #################===========================================================================
       stage_info_main "Running ParaGone step5 ... "
+      #################===========================================================================
       stage_cmd "${log_mode}" "${paragone_step5_cmd}"
       eval "${paragone_step5_cmd}" > /dev/null 2>&1
       if [ ! -n "$(find "./14_pruned_MO" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ] \
@@ -3526,9 +4370,14 @@ else
         stage_blank_main ""
         exit 1
       else
-        stage_info_main "Finish."
+        stage_success "Finished."
+        stage_blank_main ""
       fi
+      
+      
+      #################===========================================================================
       stage_info_main "Running ParaGone step6 ... "
+      #################===========================================================================
       stage_cmd "${log_mode}" "${paragone_step6_cmd}"
       eval "${paragone_step6_cmd}" > /dev/null 2>&1
       if [ ! -n "$(find "./23_MO_final_alignments" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ] \
@@ -3542,1485 +4391,1104 @@ else
         stage_blank_main ""
         exit 1
       else
-        stage_info_main "Finish."
+        stage_success "Finished."
+        stage_blank_main ""
       fi
 
+      #################===========================================================================
+      stage_info_main "Extracting ${step_parts} orthogroup alignments and trimmed alignments ... "
+      #################===========================================================================
+      if [ "${MO}" = "TRUE" ]; then
+        stage_info_main "====>> MO ====>>"
+        rm -rf "${output_dir}/04-Alignments/MO/"
+        rm -rf "${output_dir}/05-Trimmed_alignments/MO/"
+        mkdir -p "${output_dir}/04-Alignments/MO/"
+        mkdir -p "${output_dir}/05-Trimmed_alignments/MO/"
+        sed -i "s/_var_/_var\._/g;s/_subsp_/_subsp\._/g;s/_f_/_f\._/g" "${output_dir}/03-Paralogs_handling/ParaGone/23_MO_final_alignments/"*
+        sed -i "s/_var_/_var\._/g;s/_subsp_/_subsp\._/g;s/_f_/_f\._/g" "${output_dir}/03-Paralogs_handling/ParaGone/26_MO_final_alignments_trimmed/"*
+        cp "${output_dir}/03-Paralogs_handling/ParaGone/23_MO_final_alignments"/*.fasta "${output_dir}/04-Alignments/MO/"
+        cp "${output_dir}/03-Paralogs_handling/ParaGone/26_MO_final_alignments_trimmed"/*.fasta "${output_dir}/05-Trimmed_alignments/MO/"
+      fi
+      if [ "${MI}" = "TRUE" ]; then
+        stage_info_main "====>> MI ====>>"
+        rm -rf "${output_dir}/04-Alignments/MI/"
+        rm -rf "${output_dir}/05-Trimmed_alignments/MI/"
+        mkdir -p "${output_dir}/04-Alignments/MI/"
+        mkdir -p "${output_dir}/05-Trimmed_alignments/MI/"
+        sed -i "s/_var_/_var\._/g;s/_subsp_/_subsp\._/g;s/_f_/_f\._/g" "${output_dir}/03-Paralogs_handling/ParaGone/24_MI_final_alignments/"*
+        sed -i "s/_var_/_var\._/g;s/_subsp_/_subsp\._/g;s/_f_/_f\._/g" "${output_dir}/03-Paralogs_handling/ParaGone/27_MI_final_alignments_trimmed/"*
+        cp "${output_dir}/03-Paralogs_handling/ParaGone/24_MI_final_alignments"/*.fasta "${output_dir}/04-Alignments/MI/"
+        cp "${output_dir}/03-Paralogs_handling/ParaGone/27_MI_final_alignments_trimmed"/*.fasta "${output_dir}/05-Trimmed_alignments/MI/"
+      fi
+      if [ "${RT}" = "TRUE" ]; then
+        stage_info_main "====>> RT ====>>"
+        rm -rf "${output_dir}/04-Alignments/RT/"
+        rm -rf "${output_dir}/05-Trimmed_alignments/RT/"
+        mkdir -p "${output_dir}/04-Alignments/RT/"
+        mkdir -p "${output_dir}/05-Trimmed_alignments/RT/"
+        sed -i "s/_var_/_var\._/g;s/_subsp_/_subsp\._/g;s/_f_/_f\._/g" "${output_dir}/03-Paralogs_handling/ParaGone/28_RT_final_alignments_trimmed/"*
+        cp "${output_dir}/03-Paralogs_handling/ParaGone/28_RT_final_alignments_trimmed"/*.fasta "${output_dir}/05-Trimmed_alignments/RT/"
+      fi
       if [ "${one_to_one}" = "TRUE" ]; then
-        cd ./26_MO_final_alignments_trimmed
-        mkdir -p ../HybSuite_1to1_final_alignments_trimmed
+        stage_info_main "====>> 1to1 ====>>"
+        # Orthogroup alignments
+        cd "${output_dir}/03-Paralogs_handling/ParaGone/23_MO_final_alignments"
+        rm -rf "${output_dir}/04-Alignments/1to1/"
+        mkdir -p "${output_dir}/04-Alignments/1to1/"
         files=$(find . -maxdepth 1 -type f -name "*1to1*")
         total_sps=$(find . -maxdepth 1 -type f -name "*1to1*" | wc -l)
         j=0
-        stage_info_main "====>> Extracting 1to1 alignments ====>>"
+        stage_info_main "Orthogroup alignments:"
         for file in $files; do
           j=$((j + 1 ))
-          cp "$file" "../HybSuite_1to1_final_alignments_trimmed"
+          cp "$file" "${output_dir}/04-Alignments/1to1/"
+          sed -i "s/_var_/_var\._/g;s/_subsp_/_subsp\._/g;s/_f_/_f\._/g"  "${output_dir}/04-Alignments/1to1/${file}"
           progress=$((j * 100 / total_sps))
           printf "\r[$(date +%Y-%m-%d\ %H:%M:%S)] [INFO] Extracting 1to1 alignments: ${j}/${total_sps} [%-50s] %d%%" "$(printf "#%.0s" $(seq 1 $((progress / 2))))" "$progress"
         done
         echo
-        for file in "${output_dir}/03-Orthology_inference/ParaGone/HybSuite_1to1_final_alignments_trimmed/"*; do
-          sed -i "s/_var_/_var\._/g"  "${file}"
-          sed -i "s/_subsp_/_subsp\._/g" "${file}"
-          sed -i "s/_f_/_f\._/g" "${file}"
+        
+        # Trimmed orthogroup alignments
+        cd "${output_dir}/03-Paralogs_handling/ParaGone/26_MO_final_alignments_trimmed"
+        rm -rf "${output_dir}/05-Trimmed_alignments/1to1/"
+        mkdir -p "${output_dir}/05-Trimmed_alignments/1to1/"
+        files=$(find . -maxdepth 1 -type f -name "*1to1*")
+        total_sps=$(find . -maxdepth 1 -type f -name "*1to1*" | wc -l)
+        j=0
+        stage_info_main "Trimmed orthogroup alignments:"
+        for file in $files; do
+          j=$((j + 1 ))
+          cp "$file" "${output_dir}/05-Trimmed_alignments/1to1/"
+          sed -i "s/_var_/_var\._/g;s/_subsp_/_subsp\._/g;s/_f_/_f\._/g"  "${output_dir}/05-Trimmed_alignments/1to1/${file}"
+          progress=$((j * 100 / total_sps))
+          printf "\r[$(date +%Y-%m-%d\ %H:%M:%S)] [INFO] Extracting 1to1 trimmed alignments: ${j}/${total_sps} [%-50s] %d%%" "$(printf "#%.0s" $(seq 1 $((progress / 2))))" "$progress"
         done
+        echo
+        stage_blank_main ""
       fi
+
+      #################===========================================================================
+      stage_info_main "Summarizing and filtering ${step_parts} alignments ... "
+      #################===========================================================================
       if [ "${MO}" = "TRUE" ]; then
-        for file in ${output_dir}/03-Orthology_inference/ParaGone/26_MO_final_alignments_trimmed/*; do
-          sed -i "s/_var_/_var\._/g"  "${file}"
-          sed -i "s/_subsp_/_subsp\._/g" "${file}"
-          sed -i "s/_f_/_f\._/g" "${file}"
-        done
+        stage_info_main "====>> MO ====>>"
+        summarize_and_filter_alignments "MO"
       fi
       if [ "${MI}" = "TRUE" ]; then
-        for file in ${output_dir}/03-Orthology_inference/ParaGone/27_MI_final_alignments_trimmed/*; do
-          sed -i "s/_var_/_var\._/g"  "${file}"
-          sed -i "s/_subsp_/_subsp\._/g" "${file}"
-          sed -i "s/_f_/_f\._/g" "${file}"
-        done
+        stage_info_main "====>> MI ====>>"
+        summarize_and_filter_alignments "MI"
       fi
       if [ "${RT}" = "TRUE" ]; then
-        for file in ${output_dir}/03-Orthology_inference/ParaGone/28_RT_final_alignments_trimmed/*; do
-          sed -i "s/_var_/_var\._/g"  "${file}"
-          sed -i "s/_subsp_/_subsp\._/g" "${file}"
-          sed -i "s/_f_/_f\._/g" "${file}"
-        done
+        stage_info_main "====>> RT ====>>"
+        summarize_and_filter_alignments "RT"
+      fi
+      if [ "${one_to_one}" = "TRUE" ]; then
+        stage_info_main "====>> 1to1 ====>>"
+        summarize_and_filter_alignments "1to1"
       fi
     }
-    cd "${output_dir}/03-Orthology_inference/ParaGone"
+    cd "${output_dir}/03-Paralogs_handling/ParaGone"
     stage_info_main "Running ParaGone full pipeline from step1 to step6 ... "
-    stage_info_main "See results in ${output_dir}/03-Orthology_inference/ParaGone."
-    stage_info_main "See ParaGone logs in ${output_dir}/03-Orthology_inference/ParaGone/00_logs_and_reports/logs/"
+    stage_info_main "See results in ${output_dir}/03-Paralogs_handling/ParaGone."
+    stage_info_main "See ParaGone logs in ${output_dir}/03-Paralogs_handling/ParaGone/00_logs_and_reports/logs/"
     run_paragone
   fi
 
   ############################################################################################
   # End of Stage 3
-  stage_blank_main ""
-  stage_info_main "Successfully finishing the stage3: 'Orthology inference'."
-  stage_info_main "The resulting files have been saved in ${output_dir}/03-Orthology_inference/"
-fi
-if [ "${run_to_stage3}" = "true" ]; then
+  stage_success "Successfully finished Stage3: 'Paralogs handling'."
+  stage_info_main_success "The resulting files have been saved in:"
+  stage_info_main_success "(1) ${output_dir}/03-Paralogs_handling/"
+  stage_info_main_success "(2) ${output_dir}/04-Alignments/"
+  stage_info_main_success "(3) ${output_dir}/05-Trimmed_alignments/"
+  stage_info_main_success "(4) ${output_dir}/06-Final_alignments/"
+  stage_info_main_success "Reports have been saved in:"
+  stage_info_main_success "${output_dir}/hybsuite_reports/"
+  stage_info_main_success "The logfile has been saved in:"
+  stage_info_main_success "${output_dir}/hybsuite_logs/hybsuite_${current_time}.log"
+  if [ "${full_pipeline}" = "FALSE" ]; then
   # Clean up environment
-  cleanup_parallel_env "$work_dir"
-  stage_info_main "You set subcommand 'run_to_stage3' to specify HybSuite to run only stage 3."
-  stage_info_main "Consequently, HybSuite will stop and exit right now."
-  stage_info_main "Thank you for using HybSuite! Enjoy your research!"
-  stage_blank_main ""
-  exit 1
-else
-  stage_info_main "Moving on to the next stage..."
-  stage_blank_main ""
-fi
-############################################################################################
-
-
-############################################################################################
-# Stage 4: Sequence Alignment, Trimming, and Supermatrix Construction ######################
-############################################################################################
-if [ "${skip_stage1234}" = "TRUE" ]; then
-  stage_info_main "Stage 4 Sequence Alignment, Trimming, and Supermatrix Construction is skipped."
-else
-  #################===========================================================================
-  # 0.Preparation
-  stage_info_main "<<<======= Stage 4 Sequence Alignment, Trimming, and Supermatrix Construction =======>>>"
-  #################===========================================================================
-
-  ##############################################################################################
-  #Stage4-Optional step: Running MAFFT and Trimal, constructing supermatrix for HRS sequences ##
-  ##############################################################################################
-  if [ "${HRS}" = "TRUE" ]; then
-    stage_info_main "Optional step: Running MAFFT and Trimal, constructing supermatrix for HRS sequences ..."
-    #01-Running MAFFT and Trimal for HRS sequences
-    stage_info_main "01-Running MAFFT and Trimal for HRS sequences ..."
-    cd ${output_dir}/03-Orthology_inference/HRS/03-Filtered_HRS_sequences
-    if [ -d "${output_dir}/04-Alignments/HRS" ]; then
-      rm -rf "${output_dir}/04-Alignments/HRS"
-    fi
-    mkdir -p "${output_dir}/04-Alignments/HRS"
-    temp_file="fna_file_list.txt"
-    find . -maxdepth 1 -type f -name "*.FNA" -exec basename {} \; > "$temp_file"
-    total_sps=$(wc -l < "$temp_file")
-    init_parallel_env "$work_dir" "$total_sps" "$process" "$temp_file" || exit 1
-    while IFS= read -r file || [ -n "$file" ]; do
-      if [ "${process}" != "all" ]; then
-        read -u1000
-      fi
-      {
-      file_name=$(basename "${file}" .FNA)
-      # Update start count
-      update_start_count "$file_name" "$stage_logfile"
-      sed -e 's/ single_hit//g;s/ multi_hit_stitched_contig_comprising_.*_hits//g' "${file}" > "${output_dir}/04-Alignments/HRS/${file_name}.fasta"
-      run_mafft "${output_dir}/04-Alignments/HRS/${file_name}.fasta" "${output_dir}/04-Alignments/HRS/${file_name}.aln.fasta" "${nt_mafft}"
-      run_trimal "${output_dir}/04-Alignments/HRS/${file_name}.aln.fasta" "${output_dir}/04-Alignments/HRS/${file_name}.trimmed.aln.fasta" "${trimal_mode}" \
-      "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
-      "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
-      rm "${output_dir}/04-Alignments/HRS/${file_name}.aln.fasta" "${output_dir}/04-Alignments/HRS/${file_name}.fasta"
-      remove_n "${output_dir}/04-Alignments/HRS/${file_name}.trimmed.aln.fasta"
-      # Update failed count
-      if [ ! -s "${output_dir}/04-Alignments/HRS/${file_name}.trimmed.aln.fasta" ]; then
-        record_failed_sample "$file_name"
-      else
-        # Update finish count
-        update_finish_count "$file_name" "$stage_logfile"
-      fi
-      if [ "${process}" != "all" ]; then
-        echo >&1000
-      fi
-      } &
-    done < "$temp_file"
-    wait
-    echo
-    # Display processing log
-    if [ "${log_mode}" = "full" ]; then
-      display_process_log "$stage_logfile" "Failed to run MAFFT and Trimal for HRS sequences:"
-    fi
-    stage_blank "${log_mode}" ""
-    rm -r "$temp_file"
-
-    #02-Run AMAS.py to check every alignment
-    mkdir -p "${output_dir}/05-Supermatrix/HRS"
-    stage_info_main "02-Running AMAS.py to check every alignment ..."
-    cd "${output_dir}/04-Alignments/HRS/"
-    stage_cmd "${log_mode}" "AMAS.py summary -f fasta -d dna -i ${output_dir}/04-Alignments/HRS/*.trimmed.aln.fasta -o ${output_dir}/05-Supermatrix/HRS/AMAS_reports_HRS_raw.tsv"
-    AMAS.py \
-    summary -f fasta -d dna -i "${output_dir}"/04-Alignments/HRS/*.trimmed.aln.fasta \
-    -o "${output_dir}"/05-Supermatrix/HRS/AMAS_reports_HRS_raw.tsv > /dev/null 2>&1
-    if [ -s "${output_dir}/05-Supermatrix/HRS/AMAS_reports_HRS_raw.tsv" ]; then
-      stage_info_main "Successfully running AMAS.py to check every HRS alignment."
-      stage_info_main "The AMAS summaries have been written to ${output_dir}/05-Supermatrix/HRS/AMAS_reports_HRS_raw.tsv"
-    else
-      stage_error "Fail to run AMAS.py to check every HRS alignment."
-    fi
-
-    #03-Remove alignments with no parsimony informative sites
-    stage_blank "${log_mode}" ""
-    stage_info_main "03-Removing alignments with no parsimony informative sites ..."
-    awk '$9==0 {print $1}' "${output_dir}/05-Supermatrix/HRS/AMAS_reports_HRS_raw.tsv" > "${output_dir}"/05-Supermatrix/HRS/Removed_alignments_for_concatenation_list.txt
-    sed -i '1d' "${output_dir}"/05-Supermatrix/HRS/Removed_alignments_for_concatenation_list.txt
-    awk '$9!=0 {print $1}' "${output_dir}/05-Supermatrix/HRS/AMAS_reports_HRS_raw.tsv" > "${output_dir}"/05-Supermatrix/HRS/Final_alignments_for_concatenation_list.txt
-    sed -i '1d' "${output_dir}"/05-Supermatrix/HRS/Final_alignments_for_concatenation_list.txt
-    awk '$9!=0 {print $0}' "${output_dir}/05-Supermatrix/HRS/AMAS_reports_HRS_raw.tsv" > "${output_dir}"/05-Supermatrix/HRS/AMAS_reports_HRS_final.tsv
-    while IFS= read -r line || [ -n "$line" ]; do
-      rm "${output_dir}"/04-Alignments/HRS/"${line}"
-      stage_info "${log_mode}" "Remove alignment ${line}."
-    done < "${output_dir}"/05-Supermatrix/HRS/Removed_alignments_for_concatenation_list.txt
-    awk '{print $0 "\tno_parsimony_informative_sites"}' "${output_dir}/05-Supermatrix/HRS/Removed_alignments_for_concatenation_list.txt" > "${output_dir}/05-Supermatrix/HRS/Removed_alignments_for_concatenation_list.txt"
-    num_filtered_aln=$(wc -l < "${output_dir}"/05-Supermatrix/HRS/Removed_alignments_for_concatenation_list.txt)
-    stage_info_main "Successfully removing ${num_filtered_aln} HRS alignments with no parsimony informative sites."
-
-    #04-Concatenate trimmed alignments
-    stage_blank "${log_mode}" ""
-    stage_info_main "04-Concatenating HRS alignments into the supermatrix ... "
-    define_threads "amas"
-    stage_cmd "${log_mode}" "AMAS.py concat -f fasta -d dna -i ${output_dir}/04-Alignments/HRS/*.trimmed.aln.fasta -p ${output_dir}/05-Supermatrix/HRS/partition.txt -t ${output_dir}/05-Supermatrix/HRS/${prefix}_HRS2.fasta -y raxml -c ${nt_amas}"
-    AMAS.py concat \
-    -f fasta \
-    -d dna \
-    -i ${output_dir}/04-Alignments/HRS/*.trimmed.aln.fasta \
-    -p ${output_dir}/05-Supermatrix/HRS/partition.txt \
-    -t ${output_dir}/05-Supermatrix/HRS/${prefix}_HRS2.fasta \
-    -y raxml \
-    -c ${nt_amas} > /dev/null 2>&1
-    stage_cmd "${log_mode}" "awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' ${output_dir}/05-Supermatrix/HRS/${prefix}_HRS2.fasta > ${output_dir}/05-Supermatrix/HRS/${prefix}_HRS.fasta"
-    awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' ${output_dir}/05-Supermatrix/HRS/${prefix}_HRS2.fasta > ${output_dir}/05-Supermatrix/HRS/${prefix}_HRS.fasta
-    rm ${output_dir}/05-Supermatrix/HRS/${prefix}_HRS2.fasta
-    if [ -s "${output_dir}/05-Supermatrix/HRS/${prefix}_HRS.fasta" ]; then
-      stage_info_main "Successfully concatenating HRS alignments into the supermatrix."
-    else
-      stage_error "Fail to concatenate HRS alignments into the supermatrix."
-    fi
-
-    #05-Run AMAS.py to check the HRS supermatrix
-    stage_blank "${log_mode}" ""
-    stage_info_main "05-Running AMAS.py to check the HRS supermatrix ... "
-    stage_cmd "${log_mode}" "AMAS.py summary -f fasta -d dna -i ${output_dir}/05-Supermatrix/HRS/${prefix}_HRS.fasta -o ${output_dir}/05-Supermatrix/HRS/AMAS_reports_HRS_supermatrix.tsv"
-    AMAS.py \
-    summary -f fasta -d dna -i ${output_dir}/05-Supermatrix/HRS/${prefix}_HRS.fasta \
-    -o "${output_dir}"/05-Supermatrix/HRS/AMAS_reports_HRS_supermatrix.tsv > /dev/null 2>&1
-    awk 'NR==2' "${output_dir}"/05-Supermatrix/HRS/AMAS_reports_HRS_supermatrix.tsv >> "${output_dir}"/05-Supermatrix/HRS/AMAS_reports_HRS_raw.tsv
-    awk 'NR==2' "${output_dir}"/05-Supermatrix/HRS/AMAS_reports_HRS_supermatrix.tsv >> "${output_dir}"/05-Supermatrix/HRS/AMAS_reports_HRS_final.tsv
-    if [ -s "${output_dir}/05-Supermatrix/HRS/AMAS_reports_HRS_supermatrix.tsv" ]; then
-      stage_info_main "Successfully running AMAS.py to check the HRS supermatrix."
-      stage_info_main "The AMAS summary of the HRS supermatrix has been written to the last row of ${output_dir}/05-Supermatrix/HRS/AMAS_reports_HRS_final.tsv"
-    else
-      stage_error "Fail to run AMAS.py to check HRS supermatrix."
-    fi
-    rm "${output_dir}"/05-Supermatrix/HRS/AMAS_reports_HRS_supermatrix.tsv
+    cleanup_parallel_env "$work_dir"
+    stage_success "HybSuite execution completed successfully, please reference our publication in your work."
+    stage_blank_main ""
+    exit 0
+  else
+    stage_info_main "Moving on to the next stage..."
     stage_blank_main ""
   fi
-
-  ##############################################################################################
-  #Stage4-Optional step: Running MAFFT and Trimal, constructing supermatrix for RLWP sequences #
-  ##############################################################################################
-  if [ "${RLWP}" = "TRUE" ]; then
-    stage_info_main "Optional step: Running MAFFT and Trimal, constructing supermatrix for RLWP sequences ..."
-    #01-Running MAFFT and Trimal for RLWP sequences
-    stage_info_main "01-Running MAFFT and Trimal for RLWP sequences ..."
-    cd ${output_dir}/03-Orthology_inference/RLWP/03-Filtered_RLWP_sequences
-    if [ -d "${output_dir}/04-Alignments/RLWP" ]; then
-      rm -rf "${output_dir}/04-Alignments/RLWP"
-    fi
-    mkdir -p "${output_dir}/04-Alignments/RLWP"
-    temp_file="fna_file_list.txt"
-    find . -maxdepth 1 -type f -name "*.FNA" -exec basename {} \; > "$temp_file"
-    total_sps=$(wc -l < "$temp_file")
-    init_parallel_env "$work_dir" "$total_sps" "$process" "$temp_file" || exit 1
-    while IFS= read -r file || [ -n "$file" ]; do
-      if [ "${process}" != "all" ]; then
-        read -u1000
-      fi
-      {
-      file_name=$(basename "${file}" .FNA)
-      # Update start count
-      update_start_count "$file_name" "$stage_logfile"
-      sed -e 's/ single_hit//g;s/ multi_hit_stitched_contig_comprising_.*_hits//g' "${file}" > "${output_dir}/04-Alignments/RLWP/${file_name}.fasta"
-      run_mafft "${output_dir}/04-Alignments/RLWP/${file_name}.fasta" "${output_dir}/04-Alignments/RLWP/${file_name}.aln.fasta" "${nt_mafft}"
-      run_trimal "${output_dir}/04-Alignments/RLWP/${file_name}.aln.fasta" "${output_dir}/04-Alignments/RLWP/${file_name}.trimmed.aln.fasta" "${trimal_mode}" \
-      "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
-      "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
-      rm "${output_dir}/04-Alignments/RLWP/${file_name}.aln.fasta" "${output_dir}/04-Alignments/RLWP/${file_name}.fasta"
-      remove_n "${output_dir}/04-Alignments/RLWP/${file_name}.trimmed.aln.fasta"
-      # Update failed count
-      if [ ! -s "${output_dir}/04-Alignments/RLWP/${file_name}.trimmed.aln.fasta" ]; then
-        record_failed_sample "$file_name"
-      else
-        # Update finish count
-        update_finish_count "$file_name" "$stage_logfile"
-      fi
-      if [ "${process}" != "all" ]; then
-        echo >&1000
-      fi
-      } &
-    done < "$temp_file"
-    wait
-    echo
-    # Display processing log
-    if [ "${log_mode}" = "full" ]; then
-      display_process_log "$stage_logfile" "Failed to run MAFFT and Trimal for RLWP sequences:"
-    fi
-    stage_blank "${log_mode}" ""
-    rm -r "$temp_file"
-
-    #02-Run AMAS.py to check every alignment
-    mkdir -p "${output_dir}/05-Supermatrix/RLWP"
-    stage_info_main "02-Running AMAS.py to check every alignment ..."
-    cd "${output_dir}/04-Alignments/RLWP/"
-    stage_cmd "${log_mode}" "AMAS.py summary -f fasta -d dna -i ${output_dir}/04-Alignments/RLWP/*.trimmed.aln.fasta -o ${output_dir}/05-Supermatrix/RLWP/AMAS_reports_RLWP_raw.tsv"
-    AMAS.py \
-    summary -f fasta -d dna -i "${output_dir}"/04-Alignments/RLWP/*.trimmed.aln.fasta \
-    -o "${output_dir}"/05-Supermatrix/RLWP/AMAS_reports_RLWP_raw.tsv > /dev/null 2>&1
-    if [ -s "${output_dir}/05-Supermatrix/RLWP/AMAS_reports_RLWP_raw.tsv" ]; then
-      stage_info_main "Successfully running AMAS.py to check every RLWP alignment."
-      stage_info_main "The AMAS summaries have been written to ${output_dir}/05-Supermatrix/RLWP/AMAS_reports_RLWP_raw.tsv"
-    else
-      stage_error "Fail to run AMAS.py to check every RLWP alignment."
-    fi
-
-    #03-Remove alignments with no parsimony informative sites
-    stage_blank "${log_mode}" ""
-    stage_info_main "03-Removing alignments with no parsimony informative sites ..."
-    awk '$9==0 {print $1}' "${output_dir}/05-Supermatrix/RLWP/AMAS_reports_RLWP_raw.tsv" > "${output_dir}"/05-Supermatrix/RLWP/Removed_alignments_for_concatenation_list.txt
-    sed -i '1d' "${output_dir}"/05-Supermatrix/RLWP/Removed_alignments_for_concatenation_list.txt
-    awk '$9!=0 {print $1}' "${output_dir}/05-Supermatrix/RLWP/AMAS_reports_RLWP_raw.tsv" > "${output_dir}"/05-Supermatrix/RLWP/Final_alignments_for_concatenation_list.txt
-    sed -i '1d' "${output_dir}"/05-Supermatrix/RLWP/Final_alignments_for_concatenation_list.txt
-    awk '$9!=0 {print $0}' "${output_dir}/05-Supermatrix/RLWP/AMAS_reports_RLWP_raw.tsv" > "${output_dir}"/05-Supermatrix/RLWP/AMAS_reports_RLWP_final.tsv
-    
-    while IFS= read -r line || [ -n "$line" ]; do
-      rm "${output_dir}"/04-Alignments/RLWP/"${line}"
-      stage_info "${log_mode}" "Remove alignment ${line}."
-    done < "${output_dir}"/05-Supermatrix/RLWP/Removed_alignments_for_concatenation_list.txt
-    awk '{print $0 "\tno_parsimony_informative_sites"}' "${output_dir}/05-Supermatrix/RLWP/Removed_alignments_for_concatenation_list.txt" > "${output_dir}/05-Supermatrix/RLWP/Removed_alignments_for_concatenation_list.txt"
-    num_filtered_aln=$(wc -l < "${output_dir}"/05-Supermatrix/RLWP/Removed_alignments_for_concatenation_list.txt)
-    stage_info_main "Successfully removing ${num_filtered_aln} RLWP alignments with no parsimony informative sites."
-
-    #04-Concatenate trimmed alignments
-    stage_blank "${log_mode}" ""
-    stage_info_main "04-Concatenating RLWP alignments into the supermatrix ... "
-    define_threads "amas"
-    stage_cmd "${log_mode}" "AMAS.py concat -f fasta -d dna -i ${output_dir}/04-Alignments/RLWP/*.trimmed.aln.fasta -p ${output_dir}/05-Supermatrix/RLWP/partition.txt -t ${output_dir}/05-Supermatrix/RLWP/${prefix}_RLWP2.fasta -y raxml -c ${nt_amas}"
-    AMAS.py concat \
-    -f fasta \
-    -d dna \
-    -i ${output_dir}/04-Alignments/RLWP/*.trimmed.aln.fasta \
-    -p ${output_dir}/05-Supermatrix/RLWP/partition.txt \
-    -t ${output_dir}/05-Supermatrix/RLWP/${prefix}_RLWP2.fasta \
-    -y raxml \
-    -c ${nt_amas} > /dev/null 2>&1
-    stage_cmd "${log_mode}" "awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' ${output_dir}/05-Supermatrix/RLWP/${prefix}_RLWP2.fasta > ${output_dir}/05-Supermatrix/RLWP/${prefix}_RLWP.fasta"
-    awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' ${output_dir}/05-Supermatrix/RLWP/${prefix}_RLWP2.fasta > ${output_dir}/05-Supermatrix/RLWP/${prefix}_RLWP.fasta
-    rm ${output_dir}/05-Supermatrix/RLWP/${prefix}_RLWP2.fasta
-    if [ -s "${output_dir}/05-Supermatrix/RLWP/${prefix}_RLWP.fasta" ]; then
-      stage_info_main "Successfully concatenating RLWP alignments into the supermatrix."
-    else
-      stage_error "Fail to concatenate RLWP alignments into the supermatrix."
-    fi
-
-    #05-Run AMAS.py to check the RLWP supermatrix
-    stage_blank "${log_mode}" ""
-    stage_info_main "05-Running AMAS.py to check the RLWP supermatrix ... "
-    stage_cmd "${log_mode}" "AMAS.py summary -f fasta -d dna -i ${output_dir}/05-Supermatrix/RLWP/${prefix}_RLWP.fasta -o ${output_dir}/05-Supermatrix/RLWP/AMAS_reports_RLWP_supermatrix.tsv"
-    AMAS.py \
-    summary -f fasta -d dna -i ${output_dir}/05-Supermatrix/RLWP/${prefix}_RLWP.fasta \
-    -o "${output_dir}"/05-Supermatrix/RLWP/AMAS_reports_RLWP_supermatrix.tsv > /dev/null 2>&1
-    awk 'NR==2' "${output_dir}"/05-Supermatrix/RLWP/AMAS_reports_RLWP_supermatrix.tsv >> "${output_dir}"/05-Supermatrix/RLWP/AMAS_reports_RLWP_raw.tsv
-    awk 'NR==2' "${output_dir}"/05-Supermatrix/RLWP/AMAS_reports_RLWP_supermatrix.tsv >> "${output_dir}"/05-Supermatrix/RLWP/AMAS_reports_RLWP_final.tsv
-    if [ -s "${output_dir}/05-Supermatrix/RLWP/AMAS_reports_RLWP_supermatrix.tsv" ]; then
-      stage_info_main "Successfully running AMAS.py to check the RLWP supermatrix."
-      stage_info_main "The AMAS summary of the RLWP supermatrix has been written to the last row of ${output_dir}/05-Supermatrix/RLWP/AMAS_reports_RLWP_final.tsv"
-    else
-      stage_error "Fail to run AMAS.py to check RLWP supermatrix."
-    fi
-    rm "${output_dir}"/05-Supermatrix/RLWP/AMAS_reports_RLWP_supermatrix.tsv
-    stage_blank_main ""
-  fi
-  
-
-  ###################################################################################################
-  #Stage4-Optional step: Extracting PhyloPyPruner output, constructing supermatrix for orthogroups ##
-  ###################################################################################################
-  if [ "$LS" = "TRUE" ] || { ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "$one_to_one" = "TRUE" ]) && [ "${run_phylopypruner}" = "TRUE" ] && [ "${run_paragone}" != "TRUE" ]; }; then
-    stage_info_main "Optional step: Extracting PhyloPyPruner output, constructing supermatrix for orthogroups ..."
-
-    stage4_ortho_phylopypruner () {
-      local ortho_method=$1
-      local output_ortho_phylopypruner_dir=$2
-
-      stage_info_main "====>> ${ortho_method} ====>>"
-      stage_info_main "01-Extracting PhyloPyPruner ${ortho_method} output sequences ..."
-      if [ -d "${output_dir}/04-Alignments/${ortho_method}" ]; then
-        rm -rf "${output_dir}/04-Alignments/${ortho_method}"
-      fi
-      if [ -d "${output_dir}/05-Supermatrix/${ortho_method}" ]; then
-        rm -rf "${output_dir}/05-Supermatrix/${ortho_method}"
-      fi
-      mkdir -p "${output_dir}/04-Alignments/${ortho_method}" "${output_dir}/05-Supermatrix/${ortho_method}"
-      cp "${output_dir}/03-Orthology_inference/PhyloPyPruner/Output_${ortho_method}/output_alignments/"*.fasta "${output_dir}/04-Alignments/${ortho_method}/"
-      cd "${output_dir}/04-Alignments/${ortho_method}/"
-      for fasta_file in "${output_dir}/04-Alignments/${ortho_method}/"*.fasta; do
-          new_name=$(echo "$fasta_file" | sed 's/_paralogs_all\.trimmed\.aln//')
-          new_name=$(echo "$new_name" | sed 's/\.fasta$//')
-          new_name=$(echo "$new_name" | sed 's/_pruned//')
-          new_name=$(echo "$new_name" | sed 's/_paralogs_all//')
-          new_name="${new_name}.trimmed.aln.fasta"
-          mv "$fasta_file" "$new_name"
-      done
-
-      stage_info_main "02-Removing ${ortho_method} orthogroups with <${min_sample_coverage} sample coverage ..."
-      stage_cmd "${log_mode}" "python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py -i ${output_dir}/04-Alignments/${ortho_method}/ --min_sample_coverage ${min_sample_coverage} --removed_samples_info ${output_dir}/04-Alignments/${ortho_method}/Removed_alignments_with_low_sample_coverage.txt -t ${nt}"
-      stage4_02="python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py -i ${output_dir}/04-Alignments/${ortho_method}/ --min_sample_coverage ${min_sample_coverage} --removed_samples_info ${output_dir}/04-Alignments/${ortho_method}/Removed_alignments_with_low_sample_coverage.txt -t ${nt}"
-      if [ "${log_mode}" = "full" ]; then
-        eval "${stage4_02}"
-      else
-        eval "${stage4_02} > /dev/null 2>&1"
-      fi
-
-      stage_info_main "03-Removing ${ortho_method} orthogroups with no parsimony informative sites ..."
-      stage_cmd "${log_mode}" "AMAS.py summary -f fasta -d dna -i ${output_dir}/04-Alignments/${ortho_method}/*.trimmed.aln.fasta -o ${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv"
-      AMAS.py \
-      summary -f fasta -d dna -i "${output_dir}/04-Alignments/${ortho_method}/"*.trimmed.aln.fasta -o "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > /dev/null 2>&1
-      awk '$9==0 {print $1}' "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > "${output_dir}/05-Supermatrix/${ortho_method}/Removed_alignments_for_concatenation_list.txt"
-      sed -i '1d' "${output_dir}/05-Supermatrix/${ortho_method}/Removed_alignments_for_concatenation_list.txt"
-      awk '$9!=0 {print $1}' "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > "${output_dir}/05-Supermatrix/${ortho_method}/Final_alignments_for_concatenation_list.txt"
-      sed -i '1d' "${output_dir}/05-Supermatrix/${ortho_method}/Final_alignments_for_concatenation_list.txt"
-      awk '$9!=0 {print $0}' "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_final.tsv"
-      while IFS= read -r line || [ -n "$line" ]; do
-        rm "${output_dir}"/04-Alignments/${ortho_method}/"${line}"
-      done < "${output_dir}"/05-Supermatrix/${ortho_method}/Removed_alignments_for_concatenation_list.txt
-
-      stage_info_main "04-Concatenating ${ortho_method} orthogroups into the supermatrix ..."
-      define_threads "amas"
-      stage_cmd "${log_mode}" "AMAS.py concat -f fasta -d dna -i ${output_dir}/04-Alignments/${ortho_method}/*.trimmed.aln.fasta -p ${output_dir}/05-Supermatrix/${ortho_method}/partition.txt -t ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}2.fasta -y raxml -c ${nt_amas}"
-      AMAS.py concat \
-      -f fasta \
-      -d dna \
-      -i ${output_dir}/04-Alignments/${ortho_method}/*.trimmed.aln.fasta \
-      -p ${output_dir}/05-Supermatrix/${ortho_method}/partition.txt \
-      -t ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}2.fasta \
-      -y raxml \
-      -c ${nt_amas} > /dev/null 2>&1
-      stage_cmd "${log_mode}" "awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}2.fasta > ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta"
-      awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}2.fasta > ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta
-      rm ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}2.fasta
-
-      stage_info_main "05-Running AMAS.py to check the ${ortho_method} supermatrix ..."
-      stage_cmd "${log_mode}" "AMAS.py summary -f fasta -d dna -i ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta -o ${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv"
-      AMAS.py \
-      summary -f fasta -d dna -i "${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta" -o "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > /dev/null 2>&1
-      awk 'NR==2' "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" >> "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_final.tsv"
-      rm "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv"
-      sed -i 's/AA, /DNA, /g' "${output_dir}/05-Supermatrix/${ortho_method}/partition.txt"
-    }
-
-    if [ "${LS}" = "TRUE" ]; then
-      stage4_ortho_phylopypruner "LS" "Output_LS"
-    fi
-    if [ "${MI}" = "TRUE" ] && [ "${run_paragone}" = "FALSE" ]; then
-      stage4_ortho_phylopypruner "MI" "Output_MI"
-    fi
-    if [ "${MO}" = "TRUE" ] && [ "${run_paragone}" = "FALSE" ]; then
-      stage4_ortho_phylopypruner "MO" "Output_MO"
-    fi
-    if [ "${RT}" = "TRUE" ] && [ "${run_paragone}" = "FALSE" ]; then
-      stage4_ortho_phylopypruner "RT" "Output_RT"
-    fi
-    if [ "${one_to_one}" = "TRUE" ] && [ "${run_paragone}" = "FALSE" ]; then
-      stage4_ortho_phylopypruner "1to1" "Output_1to1"
-    fi
-  fi
-  stage_blank_main ""
-  
-  ###################################################################################################
-  #Stage4-Optional step: Extracting ParaGone output, constructing supermatrix for orthogroups #######
-  ###################################################################################################
-  if [ "${MO}" = "TRUE" ] || [ "${MI}" = "TRUE" ] || [ "${RT}" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ] && [ "${run_paragone}" = "TRUE" ] && [ "${run_phylopypruner}" != "TRUE" ]; then
-    stage_info_main "Optional step: Extracting ParaGone output, constructing supermatrix for orthogroups ..."
-    stage4_ortho_paragone () {
-      local ortho_method=$1
-      local output_paragone_dir=$2
-      
-      stage_info_main "01-Extracting ParaGone ${ortho_method} output sequences ..."
-      if [ -d "${output_dir}/04-Alignments/${ortho_method}" ]; then
-        rm -rf "${output_dir}/04-Alignments/${ortho_method}"
-      fi
-      mkdir -p "${output_dir}/04-Alignments/${ortho_method}" "${output_dir}/05-Supermatrix/${ortho_method}"
-      cp "${output_dir}/03-Orthology_inference/ParaGone/${output_paragone_dir}/"*.fasta "${output_dir}/04-Alignments/${ortho_method}/"
-      cd "${output_dir}/04-Alignments/${ortho_method}/"
-      for file in "${output_dir}/04-Alignments/${ortho_method}/"*; do
-      # Use sed to replace the second occurrence of "ortho." or "ortho<number>." with "aln.trimmed.fasta"
-        new_filename=$(echo "${file}" | sed -E 's/selected_stripped.aln.trimmed.fasta/trimmed.aln.fasta/')
-        mv "${file}" "${new_filename}"
-      done
-      
-      stage_info_main "02-Removing ${ortho_method} orthogroups with <${min_sample_coverage} sample coverage ..."
-      stage_cmd "${log_mode}" "python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py -i ${output_dir}/04-Alignments/${ortho_method}/ --min_sample_coverage ${min_sample_coverage} --removed_samples_info ${output_dir}/04-Alignments/${ortho_method}/Removed_alignments_with_low_sample_coverage.txt -t ${nt}"
-      stage4_02="python ${script_dir}/filter_seqs_by_sample_and_locus_coverage.py -i ${output_dir}/04-Alignments/${ortho_method}/ --min_sample_coverage ${min_sample_coverage} --removed_samples_info ${output_dir}/04-Alignments/${ortho_method}/Removed_alignments_with_low_sample_coverage.txt -t ${nt}"
-      if [ "${log_mode}" = "full" ]; then
-        eval "${stage4_02}"
-      else
-        eval "${stage4_02} > /dev/null 2>&1"
-      fi
-
-      stage_info_main "03-Removing ${ortho_method} orthogroups with no parsimony informative sites ..."
-      stage_cmd "${log_mode}" "AMAS.py summary -f fasta -d dna -i ${output_dir}/04-Alignments/${ortho_method}/*.trimmed.aln.fasta -o ${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv"
-      AMAS.py \
-      summary -f fasta -d dna -i "${output_dir}/04-Alignments/${ortho_method}/"*.trimmed.aln.fasta -o "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > /dev/null 2>&1
-      awk '$9==0 {print $1}' "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > "${output_dir}/05-Supermatrix/${ortho_method}/Removed_alignments_for_concatenation_list.txt"
-      sed -i '1d' "${output_dir}/05-Supermatrix/${ortho_method}/Removed_alignments_for_concatenation_list.txt"
-      awk '$9!=0 {print $1}' "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > "${output_dir}/05-Supermatrix/${ortho_method}/Final_alignments_for_concatenation_list.txt"
-      sed -i '1d' "${output_dir}/05-Supermatrix/${ortho_method}/Final_alignments_for_concatenation_list.txt"
-      awk '$9!=0 {print $0}' "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_final.tsv"
-      while IFS= read -r line || [ -n "$line" ]; do
-        rm "${output_dir}"/04-Alignments/${ortho_method}/"${line}"
-      done < "${output_dir}"/05-Supermatrix/${ortho_method}/Removed_alignments_for_concatenation_list.txt
-
-      stage_info_main "04-Concatenating ${ortho_method} orthogroups into the supermatrix ..."
-      define_threads "amas"
-      stage_cmd "${log_mode}" "AMAS.py concat -f fasta -d dna -i ${output_dir}/04-Alignments/${ortho_method}/*.trimmed.aln.fasta -p ${output_dir}/05-Supermatrix/${ortho_method}/partition.txt -t ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}2.fasta -y raxml"
-      AMAS.py concat \
-      -f fasta \
-      -d dna \
-      -i ${output_dir}/04-Alignments/${ortho_method}/*.trimmed.aln.fasta \
-      -p ${output_dir}/05-Supermatrix/${ortho_method}/partition.txt \
-      -t ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}2.fasta \
-      -y raxml \
-      -c ${nt_amas} > /dev/null 2>&1
-      stage_cmd "${log_mode}" "awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}2.fasta > ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta"
-      awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}2.fasta > ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta
-      rm ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}2.fasta
-
-      stage_info_main "05-Running AMAS.py to check the ${ortho_method} supermatrix ..."
-      stage_cmd "${log_mode}" "AMAS.py summary -f fasta -d dna -i ${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta -o ${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv"
-      AMAS.py \
-      summary -f fasta -d dna -i "${output_dir}/05-Supermatrix/${ortho_method}/${prefix}_${ortho_method}.fasta" -o "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" > /dev/null 2>&1
-      awk 'NR==2' "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv" >> "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_final.tsv"
-      rm "${output_dir}/05-Supermatrix/${ortho_method}/AMAS_reports_${ortho_method}_supermatrix.tsv"
-    }
-
-    if [ "${MO}" = "TRUE" ] && [ "${run_phylopypruner}" = "FALSE" ]; then
-      stage4_ortho_paragone "MO" "26_MO_final_alignments_trimmed"
-    fi
-    if [ "${MI}" = "TRUE" ] && [ "${run_phylopypruner}" = "FALSE" ]; then
-      stage4_ortho_paragone "MI" "27_MI_final_alignments_trimmed"
-    fi
-    if [ "${RT}" = "TRUE" ] && [ "${run_phylopypruner}" = "FALSE" ]; then
-      stage4_ortho_paragone "RT" "28_RT_final_alignments_trimmed"
-    fi
-    if [ "${one_to_one}" = "TRUE" ] && [ "${run_phylopypruner}" = "FALSE" ]; then
-      stage4_ortho_paragone "1to1" "HybSuite_1to1_final_alignments_trimmed"
-    fi
-  fi
-  stage_blank "${log_mode}" ""
-  ############################################################################################
-  # End of Stage 4
-  stage_info_main "Successfully finishing the stage 4: Sequence alignment, trimming and supermatrix construction."
-  stage_info "${log_mode}" "The resulting files have been saved in ${output_dir}/04-Alignments/ and ${output_dir}/05-Supermatrix"
-fi
-if [ "${run_to_stage4}" = "true" ]; then
-  # Clean up environment
-  cleanup_parallel_env "$work_dir"
-  stage_info_main "You set subcommand 'run_to_stage4' to specify HybSuite to run to the stage 4."
-  stage_info_main "Consequently, HybSuite will stop and exit right now."
-  stage_info_main "Thank you for using HybSuite! Enjoy your research!"
-  stage_blank_main ""
-  exit 1
-else
-  stage_info_main "Moving on to the next stage..."
-  stage_blank_main ""
 fi
 ############################################################################################
 
-
-
-
-############################################################################################
-# Stage 5: Phylogenetic trees inference ####################################################
-############################################################################################
-if [ -d "${output_dir}/06-ModelTest-NG" ]; then
-    rm -rf "${output_dir}/06-ModelTest-NG"
-fi
-mkdir -p "${output_dir}/06-ModelTest-NG"
-################===========================================================================
+######################################################################################
+# Stage 4: Species tree inference ####################################################
+######################################################################################
+if [ "${run_stage4}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
 # 0.Preparation
-stage_info_main "<<<======= Stage 5 Phylogenetic trees inference =======>>>"
+stage_info_main "<<<======= Stage 4 Species tree inference =======>>>"
+
+################===========================================================================
+# Function concatenation()
+################===========================================================================
+concatenation() {
+  local ortho_method="$1"
+  local input="$2"
+
+  rm -rf "${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix"
+  mkdir -p "${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix"
+
+  #01-Concatenate final alignments
+    stage_info_main "01-Concatenating ${ortho_method} final alignments into the supermatrix ... "
+    define_threads "amas"
+    stage_cmd "${log_mode}" "AMAS.py concat -f fasta -d dna -i ${input}/*.aln.trimmed.fasta -p ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/partition.txt -t ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}2.fasta -y raxml -c ${nt_amas}"
+    AMAS.py concat \
+    -f fasta \
+    -d dna \
+    -i ${input}/*.aln.trimmed.fasta \
+    -p ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/partition.txt \
+    -t ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}2.fasta \
+    -y raxml \
+    -c ${nt_amas} > /dev/null 2>&1
+    stage_cmd "${log_mode}" "awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}2.fasta > ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta"
+    awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}2.fasta > ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta
+    rm -f ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}2.fasta
+    if [ -s "${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta" ]; then
+      stage_info_main "Succeed -> ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta"
+    else
+      stage_error "Fail to concatenate ${ortho_method} alignments into the supermatrix."
+    fi
+
+    #02-Run AMAS.py to check the ${ortho_method} supermatrix
+    rm -f "${output_dir}/hybsuite_reports/Supermatrix_stats/${ortho_method}-Supermatrix_stats_AMAS.tsv"
+    mkdir -p "${output_dir}/hybsuite_reports/Supermatrix_stats/"
+    stage_info_main "02-Running AMAS.py to check the ${ortho_method} supermatrix ... "
+    stage_cmd "${log_mode}" "AMAS.py summary -f fasta -d dna -i ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta -o ${output_dir}/hybsuite_reports/Supermatrix_stats/${ortho_method}-Supermatrix_stats_AMAS.tsv"
+    AMAS.py summary -f fasta -d dna -i ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta \
+    -o "${output_dir}/hybsuite_reports/Supermatrix_stats/${ortho_method}-Supermatrix_stats_AMAS.tsv" > /dev/null 2>&1
+    if [ -s "${output_dir}/hybsuite_reports/Supermatrix_stats/${ortho_method}-Supermatrix_stats_AMAS.tsv" ]; then
+      stage_info_main "Succeed -> ${output_dir}/hybsuite_reports/Supermatrix_stats/${ortho_method}-Supermatrix_stats_AMAS.tsv"
+      stage_success "Finished."
+    else
+      stage_error "Fail to run AMAS.py to check ${ortho_method} supermatrix."
+    fi
+    stage_blank_main ""
+}
 ################===========================================================================
 
-###################################################################################################
-#Stage5-Optional step: Model Test #################################################################
-###################################################################################################
-#1. ModelTest-NG (Optional)
-#Preparation
-if [ "${run_modeltest_ng}" = "TRUE" ] && ([ "${run_iqtree}" = "TRUE" ] || [ "${run_raxml}" = "TRUE" ] || [ "${run_raxml_ng}" = "TRUE" ]); then
-  stage_info_main "Optional step: Model Test"
-  define_threads "modeltest_ng"
+################===========================================================================
+# Function run_modeltest_ng()
+################===========================================================================
+run_modeltest_ng() {
+  local ortho_method="$1"
+  # input:{output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta
+  local input="$2"
+  # output:{output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/${prefix}_${ortho_method}_ModelTest_NG.txt
+  local output="$3"
 
-  run_modeltest_ng() {
-    local ortho_method="$1"
-  
-    if [ "${ortho_method}" = "1to1" ]; then
-      ortho_method="one_to_one"
-      ortho_method_dir="1to1"
-    else
-      ortho_method_dir="${ortho_method}"
-    fi
-    stage_info_main "Running ModelTest-NG for the ${ortho_method_dir} supermatrix ... "
-    mkdir -p "${output_dir}/06-ModelTest-NG/${ortho_method_dir}"
-    stage_cmd "${log_mode}" "modeltest-ng -d nt --force -p ${nt_modeltest_ng} -i ${output_dir}/05-Supermatrix/${ortho_method_dir}/${prefix}_${ortho_method_dir}.fasta -o ${output_dir}/06-ModelTest-NG/${ortho_method_dir}/${prefix}_modeltest.txt -T raxml"
+  if [ "${run_modeltest_ng}" = "TRUE" ] && ([ "${run_iqtree}" = "TRUE" ] || [ "${run_raxml}" = "TRUE" ] || [ "${run_raxml_ng}" = "TRUE" ]); then
+    define_threads "modeltest_ng"
+    stage_info_main "Optional step: getting the best model via ModelTest-NG ..."
+    stage_info_main "Running ModelTest-NG to get the best model for the ${ortho_method} supermatrix ... "
+    mkdir -p "${output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree"
+    stage_cmd "${log_mode}" "modeltest-ng -d nt --force -p ${nt_modeltest_ng} -i ${input} -o ${output} -T raxml"
     modeltest-ng -d nt \
     --force \
     -p ${nt_modeltest_ng} \
-    -i "${output_dir}/05-Supermatrix/${ortho_method_dir}/${prefix}_${ortho_method_dir}.fasta" \
-    -o "${output_dir}/06-ModelTest-NG/${ortho_method_dir}/${prefix}_modeltest.txt" \
+    -i "${input}" \
+    -o "${output}" \
     -T raxml > /dev/null 2>&1
-    stage_blank "${log_mode}" ""
-    ###02-According to the result, assign different variables to the suggested commands for each tree building software
-    eval "${ortho_method}_iqtree=\$(grep -n 'iqtree' ${output_dir}/06-ModelTest-NG/${ortho_method_dir}/${prefix}_modeltest.txt.log | head -n 3 | tail -n 1 | sed -e 's/^.*iqtree/iqtree/g')"
-    eval "${ortho_method}_raxml_ng_mtest=\$(grep -n 'raxml-ng' ${output_dir}/06-ModelTest-NG/${ortho_method_dir}/${prefix}_modeltest.txt.log | head -n 3 | tail -n 1 | sed -e 's/^.*raxml-ng/raxml-ng/g')"
-    eval "${ortho_method}_raxmlHPC_mtest=\$(grep -n 'raxmlHPC' ${output_dir}/06-ModelTest-NG/${ortho_method_dir}/${prefix}_modeltest.txt.log | head -n 3 | tail -n 1 | sed -e 's/^.*raxmlHPC/raxmlHPC-PTHREADS/g; s/ -n .*$//')"
-  }
-
-  if [ "${HRS}" = "TRUE" ]; then
-    run_modeltest_ng "HRS"
-  fi
-  if [ "${RLWP}" = "TRUE" ]; then
-    run_modeltest_ng "RLWP"
-  fi
-  if [ "${LS}" = "TRUE" ]; then
-    run_modeltest_ng "LS"
-  fi
-  if [ "${MI}" = "TRUE" ]; then
-    run_modeltest_ng "MI"
-  fi
-  if [ "${MO}" = "TRUE" ]; then
-    run_modeltest_ng "MO"
-  fi
-  if [ "${RT}" = "TRUE" ]; then
-    run_modeltest_ng "RT"
-  fi
-  if [ "${one_to_one}" = "TRUE" ]; then
-    run_modeltest_ng "1to1"
-  fi
-fi
-stage_blank_main ""
-
-###################################################################################################
-#Stage5-Optional step: Constructing concatenation-based trees #####################################
-###################################################################################################
-#Preparation
-if [ "${run_iqtree}" = "TRUE" ] || [ "${run_raxml}" = "TRUE" ] || [ "${run_raxml_ng}" = "TRUE" ]; then
-  
-  run_iqtree() {
-    local ortho_method="$1"
-
-    if [ -d "${output_dir}/07-Concatenation-based_trees/${ortho_method}/IQ-TREE" ]; then
-      rm -rf "${output_dir}/07-Concatenation-based_trees/${ortho_method}/IQ-TREE"
-    fi
-    stage_info_main "Optional step: Constructing concatenation-based trees for "${ortho_method}" supermatrix via IQ-TREE"
-    define_threads "iqtree"
-    mkdir -p "${output_dir}/07-Concatenation-based_trees/${ortho_method}/IQ-TREE"
-    cd "${output_dir}/05-Supermatrix/${ortho_method}"
-    if [ "${ortho_method}" = "1to1" ]; then
-        ortho_method="one_to_one"
-        ortho_method_dir="1to1"
+    if [ -s "${output}.log" ]; then
+      ###02-According to the result, assign different variables to the suggested commands for each tree building software
+      eval "iqtree_cmd=\$(grep -n 'iqtree' ${output}.log | head -n 3 | tail -n 1 | sed -e 's/^.*iqtree/iqtree/g')"
+      stage_info_main "The best model for IQ-TREE is: ${iqtree_cmd}"
+      eval "raxml_ng_cmd=\$(grep -n 'raxml-ng' ${output}.log | head -n 3 | tail -n 1 | sed -e 's/^.*raxml-ng/raxml-ng/g')"
+      stage_info_main "The best model for RAxML-NG is: ${raxml_ng_cmd}"
+      eval "raxmlHPC_cmd=\$(grep -n 'raxmlHPC' ${output}.log | head -n 3 | tail -n 1 | sed -e 's/^.*raxmlHPC/raxmlHPC-PTHREADS/g; s/ -n .*$//')"
+      stage_info_main "The best model for RAxML-NG is: ${raxmlHPC_cmd}"
+      stage_info_main_success "Successfully running ModelTest-NG, the result has been written to:"
+      stage_info_main_success "${output}.log"
+      stage_success "Finished."
+      stage_blank_main ""
     else
-        ortho_method_dir="${ortho_method}"
-    fi
-    if [ "${run_modeltest_ng}" = "TRUE" ]; then
-      var_name="${ortho_method}_iqtree"
-      eval "iqtree_cmd=\$$var_name"
-      run_iqtree_cmd="${iqtree_cmd} -B ${iqtree_bb} --undo \
-      --seed 12345 -T ${nt_iqtree} -pre ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/IQ-TREE/IQ-TREE_${prefix}_${ortho_method_dir}"
-      if [ "${iqtree_partition}" = "TRUE" ]; then
-        run_iqtree_cmd="${run_iqtree_cmd} -p ${output_dir}/05-Supermatrix/${ortho_method_dir}/partition.txt"
-      fi
-      if [ "${iqtree_constraint_tree}" != "_____" ]; then
-        run_iqtree_cmd="${run_iqtree_cmd} -g ${iqtree_constraint_tree}"
-      fi
-      if [ "${iqtree_alrt}" != "FALSE" ]; then
-        run_iqtree_cmd="${run_iqtree_cmd} -alrt ${iqtree_alrt}"
-      fi
-      stage_cmd "${log_mode}" "${run_iqtree_cmd}"
-      eval "${run_iqtree_cmd} > /dev/null 2>&1"
-    else
-      run_iqtree_cmd="iqtree -s ${output_dir}/05-Supermatrix/${ortho_method_dir}/${prefix}_${ortho_method_dir}.fasta --undo \
-          --seed 12345 -B ${iqtree_bb} --bnni -T ${nt_iqtree} -m MFP \
-          -pre ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/IQ-TREE/IQ-TREE_${prefix}_${ortho_method_dir}"
-      if [ "${iqtree_partition}" = "TRUE" ]; then
-        run_iqtree_cmd="${run_iqtree_cmd} -p ${output_dir}/05-Supermatrix/${ortho_method_dir}/partition.txt"
-      fi
-      if [ "${iqtree_constraint_tree}" != "_____" ]; then
-        run_iqtree_cmd="${run_iqtree_cmd} -g ${iqtree_constraint_tree}"
-      fi
-      if [ "${iqtree_alrt}" != "FALSE" ]; then
-        run_iqtree_cmd="${run_iqtree_cmd} -alrt ${iqtree_alrt}"
-      fi
-      stage_cmd "${log_mode}" "${run_iqtree_cmd}"
-      eval "${run_iqtree_cmd} > /dev/null 2>&1" 
-    fi
-    if [ ! -s "${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/IQ-TREE/IQ-TREE_${prefix}_${ortho_method_dir}.treefile" ]; then
-      stage_error "Fail to run IQ-TREE." 
-      stage_error "HybSuite exits." 
+      stage_error "Fail to run ModelTest-NG to get the best model for the ${ortho_method} supermatrix."
+      stage_error "HybSuite exits."
       stage_blank_main ""
       exit 1
-    else 
-      stage_info_main "Successfully constructing the ${ortho_mode_dir} concatenation-based tree (IQ-TREE)."
-    fi
-    cd "${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/IQ-TREE/"
-    ##01-4 reroot the tree via Newick Utilities
-    if [ "${found_outgroup}" = "1" ]; then
-      stage_info "${log_mode}" "Use Newick Utilities to reroot the tree (IQTREE)..." 
-      outgroup_name=$(cat "${output_dir}"/00-logs_and_checklists/checklists/Outgroup.txt|fmt)
-      stage_cmd "${log_mode}" "nw_reroot ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/IQ-TREE/IQ-TREE_${prefix}_${ortho_method_dir}.treefile ${outgroup_name} > ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/IQ-TREE/IQ-TREE_rr_${prefix}_${ortho_method_dir}.tre"
-      nw_reroot "${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/IQ-TREE/IQ-TREE_${prefix}_${ortho_method_dir}.treefile" ${outgroup_name} > "${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/IQ-TREE/IQ-TREE_rr_${prefix}_${ortho_method_dir}.tre"
-      
-      if [ ! -s "${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/IQ-TREE/IQ-TREE_rr_${prefix}_${ortho_method_dir}.tre" ]; then
-        stage_error "Fail to reroot the tree: ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/IQ-TREE/IQ-TREE_${prefix}_${ortho_method_dir}.treefile." 
-        stage_error "Please check your alignments and trees produced by IQ-TREE." 
-        stage_blank_main ""
-      else
-        stage_info "${log_mode}" "Successfully rerooting the ${ortho_mode_dir} concatenation-based tree (IQ-TREE)."  
-        stage_info_main "Now moving on to the next step..." 
-        stage_blank_main "" 
-      fi
-    else
-      stage_info_main "No outgroup name is provided. The tree will not be rerooted."
-    fi
-  }
+    fi   
+  fi
+}
+################===========================================================================
 
-  run_raxml() {
-    local ortho_method="$1"
+################===========================================================================
+# Function run_sp_tree_iqtree()
+################===========================================================================
+run_sp_tree_iqtree() {
+  local ortho_method="$1"
+  # input:{output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta
+  local input="$2"
+  # output_prefix:{output_dir}/07-Concatenated_analysis/${ortho_method}/IQ-TREE/IQ-TREE_${prefix}_${ortho_method}
+  local output_prefix="$3"
+
+  stage_info_main "Optional step: Constructing ${ortho_method} concatenation-based species tree via IQ-TREE"
+  rm -rf "${output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/IQ-TREE"
+  mkdir -p "${output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/IQ-TREE"
+  cd "${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix"
     
-    if [ -d "${output_dir}/07-Concatenation-based_trees/${ortho_method}/RAxML" ]; then
-      rm -rf "${output_dir}/07-Concatenation-based_trees/${ortho_method}/RAxML"
+  # 01-Running IQ-TREE
+  stage_info_main "01-Running IQ-TREE ..."
+  define_threads "iqtree"
+  if [ "${run_modeltest_ng}" = "TRUE" ]; then
+    run_iqtree_cmd="${iqtree_cmd} -B ${iqtree_bb} --undo --seed 12345 -T ${nt_iqtree} -pre ${output_prefix}"
+    if [ "${iqtree_partition}" = "TRUE" ]; then
+      run_iqtree_cmd="${run_iqtree_cmd} -p ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/partition.txt"
     fi
-    stage_info_main "Optional step: Constructing concatenation-based trees for "${ortho_method}" supermatrix via RAxML"
-    mkdir -p "${output_dir}/07-Concatenation-based_trees/${ortho_method}/RAxML"
-    cd "${output_dir}/05-Supermatrix/${ortho_method}"
+    if [ "${iqtree_constraint_tree}" != "_____" ]; then
+      run_iqtree_cmd="${run_iqtree_cmd} -g ${iqtree_constraint_tree}"
+    fi
+    if [ "${iqtree_alrt}" != "FALSE" ]; then
+      run_iqtree_cmd="${run_iqtree_cmd} -alrt ${iqtree_alrt}"
+    fi
+    stage_cmd_main "${run_iqtree_cmd}"
+    eval "${run_iqtree_cmd} > /dev/null 2>&1"
+  else
+    run_iqtree_cmd="iqtree -s ${input} --undo --seed 12345 -B ${iqtree_bb} --bnni -T ${nt_iqtree} -m MFP -pre ${output_prefix}"
+    if [ "${iqtree_partition}" = "TRUE" ]; then
+      run_iqtree_cmd="${run_iqtree_cmd} -p ${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/partition.txt"
+    fi
+    if [ "${iqtree_constraint_tree}" != "_____" ]; then
+      run_iqtree_cmd="${run_iqtree_cmd} -g ${iqtree_constraint_tree}"
+    fi
+    if [ "${iqtree_alrt}" != "FALSE" ]; then
+      run_iqtree_cmd="${run_iqtree_cmd} -alrt ${iqtree_alrt}"
+    fi
+    stage_cmd_main "${run_iqtree_cmd}"
+    eval "${run_iqtree_cmd} > /dev/null 2>&1" 
+  fi
+  if [ ! -s "${output_prefix}.treefile" ]; then
+    stage_error "Fail to run IQ-TREE, check the log file:"
+    stage_error "${output_prefix}.log" 
+    stage_error "HybSuite exits." 
+    stage_blank_main ""
+    exit 1
+  else 
+    stage_info_main_success "Successfully constructing the ${ortho_method} concatenation-based species tree (IQ-TREE) in:"
+    stage_info_main_success "${output_prefix}.treefile"
+    stage_success "Finished."
+    stage_blank_main ""
+  fi
+  cd "${output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/IQ-TREE/"
+    
+  # 02-Rerooting the tree via Newick Utilities
+  if [ "${found_outgroup}" = "1" ]; then
+    stage_info_main "02-Using Newick Utilities to reroot the tree (IQ-TREE)..." 
+    outgroup_name=$(cat "${output_dir}"/hybsuite_checklists/Outgroup.txt|fmt)
+    stage_cmd_main "nw_reroot ${output_prefix}.treefile ${outgroup_name} > ${output_prefix}.rr.tre"
+    nw_reroot "${output_prefix}.treefile" ${outgroup_name} > "${output_prefix}.rr.tre"
+      
+    if [ ! -s "${output_prefix}.rr.tre" ]; then
+      stage_error "Fail to reroot the tree: ${output_prefix}.treefile." 
+      stage_error "Please check your alignments and trees produced by IQ-TREE." 
+      stage_blank_main ""
+    else
+      stage_info_main_success "Successfully rerooting the ${ortho_method} concatenation-based tree (IQ-TREE) to:"
+      stage_info_main_success "${output_prefix}.rr.tre"
+      stage_success "Finished."
+      stage_blank_main "" 
+    fi
+  else
+    stage_info_main "No outgroup name is provided. The tree will not be rerooted."
+    cp ${output_prefix}.treefile ${output_prefix}.no_rr.tre
+    stage_info_main_success "The final unrooted ${ortho_method} concatenation-based tree (IQ-TREE) has been written to:"
+    stage_info_main_success "${output_prefix}.no_rr.tre"
+    stage_success "Finished."
+    stage_blank_main ""
+  fi
+}
+################===========================================================================
+
+################===========================================================================
+# Function run_sp_tree_raxml()
+################===========================================================================
+run_sp_tree_raxml() {
+    local ortho_method="$1"
+    # input:{output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta
+    local input="$2"
+    # output:{output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/RAxML
+    local output="$3"
+
+    if [ -d "${output}" ]; then
+      rm -rf "${output}"
+    fi
+    stage_info_main "Optional step: Constructing ${ortho_method} concatenation-based species tree via RAxML"
+    stage_info_main "Running RAxML to construct the ${ortho_method} concatenation-based species tree ... "
+    mkdir -p "${output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/RAxML"
+    cd "${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix"
+
+    # 01-Running RAxML
+    stage_info_main "01-Running RAxML ..."
     define_threads "raxml"
     if [ "${run_modeltest_ng}" = "TRUE" ]; then
-      if [ "${ortho_method}" = "1to1" ]; then
-        ortho_method="one_to_one"
-        ortho_method_dir="1to1"
-      else
-        ortho_method_dir="${ortho_method}"
-      fi
-      var_name="${ortho_method}_raxmlHPC_mtest"
-      eval "raxmlHPC_cmd=\$$var_name"
-      run_raxmlHPC_cmd="${raxmlHPC_cmd} -f a -T ${nt_raxml} -p 12345 -x 67890 -# ${raxml_bb} -n ${prefix}_${ortho_method_dir}.tre -w ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML"
+      run_raxmlHPC_cmd="${raxmlHPC_cmd} -f a -T ${nt_raxml} -p 12345 -x 67890 -# ${raxml_bb} -n ${prefix}_${ortho_method}.tre -w ${output}"
       if [ "${raxml_constraint_tree}" != "_____" ]; then
         run_raxmlHPC_cmd="${run_raxmlHPC_cmd} -g ${raxml_constraint_tree}"
       fi
-      stage_cmd "${log_mode}" "${run_raxmlHPC_cmd}"
+      stage_cmd_main "${run_raxmlHPC_cmd}"
       eval "${run_raxmlHPC_cmd} > /dev/null 2>&1"
     else
-      run_raxmlHPC_cmd="raxmlHPC-PTHREADS -s ${output_dir}/05-Supermatrix/${ortho_method_dir}/${prefix}_${ortho_method_dir}.fasta -m ${raxml_m} -f a -T ${nt_raxml} -p 12345 -x 67890 -# ${raxml_bb} -n ${prefix}_${ortho_method_dir}.tre -w ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML"
+      run_raxmlHPC_cmd="raxmlHPC-PTHREADS -s ${input} -m ${raxml_m} -f a -T ${nt_raxml} -p 12345 -x 67890 -# ${raxml_bb} -n ${prefix}_${ortho_method}.tre -w ${output}"
       if [ "${raxml_constraint_tree}" != "_____" ]; then
         run_raxmlHPC_cmd="${run_raxmlHPC_cmd} -g ${raxml_constraint_tree}"
       fi
-      stage_cmd "${log_mode}" "${run_raxmlHPC_cmd}"
+      stage_cmd_main "${run_raxmlHPC_cmd}"
       eval "${run_raxmlHPC_cmd} > /dev/null 2>&1"
     fi
-    if [ ! -s "${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML/RAxML_bestTree.${prefix}_${ortho_method_dir}.tre" ]; then
-      stage_info_main "Fail to run RAxML." 
+    if [ ! -s "${output}/RAxML_bestTree.${prefix}_${ortho_method}.tre" ]; then
+      stage_info_main "Failed to run RAxML." 
       stage_info_main "HybSuite exits." 
       stage_blank_main "" 
       exit 1
     else 
-      stage_info_main "Successfully constructing the ${ortho_mode_dir} concatenation-based tree (RAxML)."
+      stage_info_main "Successfully constructed the ${ortho_method} concatenation-based tree (RAxML)."
+      stage_info_main "The ${ortho_method} concatenation-based tree (RAxML) has been written to:"
+      stage_info_main_success "${output}/"
+      stage_success "Finished."
+      stage_blank_main ""
     fi
     ##02-3 reroot the tree via Newick Utilities
     if [ "${found_outgroup}" = "1" ]; then
-      cd "${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML/"
+      cd "${output}"
       # Run Newick Utilities to reroot the tree
-      stage_info "${log_mode}" "Use Newick Utilities to reroot the tree (RAxML)..." 
-      outgroup_name=$(cat "${output_dir}"/00-logs_and_checklists/checklists/Outgroup.txt|fmt)
-      stage_cmd "${log_mode}" "nw_reroot ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML/RAxML_bipartitions.${prefix}_${ortho_method_dir}.tre ${outgroup_name} > ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML/RAxML_rr_${prefix}_${ortho_method_dir}.tre"
-      nw_reroot ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML/RAxML_bipartitions.${prefix}_${ortho_method_dir}.tre ${outgroup_name} > ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML/RAxML_rr_${prefix}_${ortho_method_dir}.tre
+      stage_info_main "02-Using Newick Utilities to reroot the tree (RAxML)..." 
+      outgroup_name=$(cat "${output_dir}"/hybsuite_checklists/Outgroup.txt|fmt)
+      stage_cmd_main "nw_reroot ${output}/RAxML_bipartitions.${prefix}_${ortho_method}.tre ${outgroup_name} -l > ${output}/RAxML_rr_${prefix}_${ortho_method}.tre"
+      nw_reroot ${output}/RAxML_bipartitions.${prefix}_${ortho_method}.tre ${outgroup_name} -l > ${output}/RAxML_rr_${prefix}_${ortho_method}.tre
       
       # Check if the user ran Newick Utilities successfully
-      if [ ! -s "${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML/RAxML_rr_${prefix}_${ortho_method_dir}.tre" ]; then
-        stage_error "${log_mode}" "Fail to reroot the tree: ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML/RAxML_bipartitions.${prefix}_${ortho_method_dir}.tre." 
-        stage_error "${log_mode}" "Please check your alignments and trees produced by RAxML." 
-        stage_blank "${log_mode}" ""
+      if [ ! -s "${output}/RAxML_rr_${prefix}_${ortho_method}.tre" ]; then
+        stage_error "Failed to reroot the tree: ${output}/RAxML_bipartitions.${prefix}_${ortho_method}.tre." 
+        stage_error "Please check your alignments and trees produced by RAxML." 
+        stage_blank_main ""
       else
-        stage_info "${log_mode}" "Successfully rerooting the ${ortho_mode} concatenation-based tree (RAxML)." 
-        stage_info_main "Successfully finishing running RAxML for ${ortho_method_dir} supermatrix..." 
-        stage_info_main "Now moving on to the next step..."
+        stage_info_main "Successfully rerooted the ${ortho_method} concatenation-based tree (RAxML)." 
+        stage_info_main "The final rooted ${ortho_method} concatenation-based tree (RAxML) has been written to:"
+        stage_info_main "${output}/RAxML_rr_${prefix}_${ortho_method}.tre"
+        stage_success "Finished."
         stage_blank_main ""
       fi
     else
       stage_info_main "No outgroup name is provided. The tree will not be rerooted."
+      cp ${output}/RAxML_bipartitions.${prefix}_${ortho_method}.tre ${output}/RAxML_no_rr_${prefix}_${ortho_method}.tre
+      stage_info_main "The final unrooted ${ortho_method} concatenation-based tree (RAxML) has been written to:"
+      stage_info_main "${output}/RAxML_no_rr_${prefix}_${ortho_method}.tre"
+      stage_success "Finished."
+      stage_blank_main ""
     fi
-  }
+}
+################===========================================================================
 
-  run_raxml_ng() {
+################===========================================================================
+# Function run_sp_tree_raxml_ng()
+################===========================================================================
+run_sp_tree_raxml_ng() {
     local ortho_method="$1"
+    local input="$2"
+    # output:{output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/RAxML-NG
+    local output="$3"
     
-    if [ -d "${output_dir}/07-Concatenation-based_trees/${ortho_method}/RAxML-NG" ]; then
-      rm -rf "${output_dir}/07-Concatenation-based_trees/${ortho_method}/RAxML-NG"
+    if [ -d "${output}" ]; then
+      rm -rf "${output}"
     fi
-    stage_info_main "Optional step: Constructing concatenation-based trees for "${ortho_method}" supermatrix via RAxMl-NG"
+    stage_info_main "Optional step: Constructing ${ortho_method} concatenation-based species tree via RAxML-NG"
     ##01 Set the directory
-    mkdir -p "${output_dir}/07-Concatenation-based_trees/${ortho_method}/RAxML-NG"
-    cd "${output_dir}/05-Supermatrix/${ortho_method}"
+    mkdir -p "${output}"
+    cd "${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix"
     ##02 Run RAxML-NG
-    stage_info_main "Running RAxML-NG for ${ortho_method} alignments..." 
+    stage_info_main "01-Running RAxML-NG ..." 
     define_threads "raxml_ng"
     ##02.1 If the user sets the rng_force parameter to TRUE, the Ignore Thread warning feature is enabled (add the --force perf_threads parameter)
     if [ "${run_modeltest_ng}" = "TRUE" ]; then
-      if [ "${ortho_method}" = "1to1" ]; then
-        ortho_method="one_to_one"
-        ortho_method_dir="1to1"
-      else
-        ortho_method_dir="${ortho_method}"
-      fi
-      var_name="${ortho_method}_raxml_ng_mtest"
-      eval "raxml_ng_cmd=\$$var_name"
-      raxml_ng_cmd="${raxml_ng_cmd} --all --threads ${nt_raxml_ng} --prefix ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML-NG/RAxML-NG_${prefix}_${ortho_method_dir} --bs-trees ${rng_bs_trees}"
+      raxml_ng_cmd="${raxml_ng_cmd} --all --threads ${nt_raxml_ng} --prefix ${output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/RAxML-NG/RAxML-NG_${prefix}_${ortho_method} --bs-trees ${rng_bs_trees}"
       if [ "${rng_force}" = "TRUE" ]; then
         raxml_ng_cmd="${raxml_ng_cmd} --force perf_threads"
       fi
       if [ -s "${rng_constraint_tree}" ]; then
         raxml_ng_cmd="${raxml_ng_cmd} --tree-constraint ${rng_constraint_tree}"
       fi
-      stage_cmd "${log_mode}" "${raxml_ng_cmd}"
+      stage_cmd_main "${raxml_ng_cmd}"
       eval "${raxml_ng_cmd} > /dev/null 2>&1"
     else
-      raxml-ng --parse --msa ${output_dir}/05-Supermatrix/${ortho_method_dir}/HybSuite_${ortho_method_dir}.fasta \
+      raxml-ng --parse --msa ${output_dir}/05-Supermatrix/${ortho_method}/HybSuite_${ortho_method}.fasta \
         --model GTR+G \
-        --prefix ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML-NG/raxml_ng_test --threads "${nt_raxml}"
-      Model=$(grep "Model:" ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML-NG/raxml_ng_test.raxml.log|cut -f2 -d' ')
-      raxml_ng_cmd="raxml-ng --all --msa ${output_dir}/05-Supermatrix/${ortho_method_dir}/${prefix}_${ortho_method_dir}.fasta --model ${Model} --threads ${nt_raxml_ng} --prefix ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML-NG/RAxML-NG_${prefix}_${ortho_method_dir} --bs-trees ${rng_bs_trees}"
+        --prefix ${output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/RAxML-NG/raxml_ng_test --threads "${nt_raxml}"  > /dev/null 2>&1
+      Model=$(grep "Model:" ${output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/RAxML-NG/raxml_ng_test.raxml.log|cut -f2 -d' ')
+      raxml_ng_cmd="raxml-ng --all --msa ${input} --model ${Model} --threads ${nt_raxml_ng} --prefix ${output}/RAxML-NG_${prefix}_${ortho_method} --bs-trees ${rng_bs_trees}"
       if [ "${rng_force}" = "TRUE" ]; then
         raxml_ng_cmd="${raxml_ng_cmd} --force perf_threads"
       fi
       if [ -s "${rng_constraint_tree}" ]; then
         raxml_ng_cmd="${raxml_ng_cmd} --tree-constraint ${rng_constraint_tree}"
       fi
-      stage_cmd "${log_mode}" "${raxml_ng_cmd}"
+      stage_cmd_main "${raxml_ng_cmd}"
       eval "${raxml_ng_cmd} > /dev/null 2>&1"
     fi
 
     ##02.2 Check if the user ran RAxML-NG successfully
-    if [ ! -s "${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML-NG/RAxML-NG_${prefix}_${ortho_method_dir}.raxml.support" ]; then
-      stage_error "Fail to run RAxML-NG."
+    if [ ! -s "${output}/RAxML-NG_${prefix}_${ortho_method}.raxml.support" ]; then
+      stage_error "Failed to run RAxML-NG."
       stage_error "HybSuite exits."
       stage_blank_main "" 
       exit 1
     else 
-      stage_info_main "Successfully constructing the ${ortho_mode_dir} concatenation-based tree (RAxML-NG)." 
+      stage_info_main "Successfully constructed the ${ortho_method} concatenation-based tree (RAxML-NG)." 
+      stage_info_main "The ${ortho_method} concatenation-based tree (RAxML-NG) has been written to:"
+      stage_info_main_success "${output}/RAxML-NG_${prefix}_${ortho_method}.raxml.support"
+      stage_success "Finished."
+      stage_blank_main ""
     fi
     ##03 reroot the tree via Newick Utilities
     if [ "${found_outgroup}" = "1" ]; then
-      cd "${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML-NG/"
-      stage_info "${log_mode}" "Use Newick Utilities to reroot the tree (RAxML-NG)..."
-      outgroup_name=$(cat "${output_dir}"/00-logs_and_checklists/checklists/Outgroup.txt|fmt)
-      stage_cmd "${log_mode}" "nw_reroot ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML-NG/RAxML-NG_${prefix}_${ortho_method_dir}.raxml.support ${outgroup_name} > ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML-NG/RAxML-NG_rr_${prefix}_${ortho_method_dir}.tre"
-      nw_reroot "${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML-NG/RAxML-NG_${prefix}_${ortho_method_dir}.raxml.support" "${outgroup_name}" > "${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML-NG/RAxML-NG_rr_${prefix}_${ortho_method_dir}.tre"
+      cd "${output}"
+      stage_info_main "02-Using Newick Utilities to reroot the tree (RAxML-NG)..."
+      outgroup_name=$(cat "${output_dir}"/hybsuite_checklists/Outgroup.txt|fmt)
+      stage_cmd_main "nw_reroot ${output}/RAxML-NG_${prefix}_${ortho_method}.raxml.support ${outgroup_name} -l > ${output}/RAxML-NG_${prefix}_${ortho_method}.rr.tre"
+      nw_reroot "${output}/RAxML-NG_${prefix}_${ortho_method}.raxml.support" "${outgroup_name}" -l > "${output}/RAxML-NG_${prefix}_${ortho_method}.rr.tre"
     
-      if [ ! -s "${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML-NG/RAxML-NG_rr_${prefix}_${ortho_method_dir}.tre" ]; then
-        stage_error "Fail to reroot the tree: ${output_dir}/07-Concatenation-based_trees/${ortho_method_dir}/RAxML-NG/RAxML-NG_${prefix}_${ortho_method_dir}.tre." 
+      if [ ! -s "${output}/RAxML-NG_${prefix}_${ortho_method}.rr.tre" ]; then
+        stage_error "Failed to reroot the tree: ${output}/RAxML-NG_${prefix}_${ortho_method}.tre." 
         stage_error "Please check your alignments and trees produced by RAxML-NG." 
         stage_blank_main ""
       else
-          stage_info_main "Successfully rerooting the ${ortho_mode_dir} concatenation-based tree (RAxML-NG)."
-          stage_info_main "Now moving on to the next step..."
-          stage_blank_main "" 
+          stage_info_main_success "Successfully rerooting the ${ortho_method} concatenation-based tree (RAxML-NG)."
+          stage_info_main_success "The final rooted ${ortho_method} concatenation-based tree (RAxML-NG) has been written to:"
+          stage_info_main_success "${output}/RAxML-NG_${prefix}_${ortho_method}.rr.tre"
+          stage_success "Finished."
+          stage_blank_main ""
       fi
     else
       stage_info_main "No outgroup name is provided. The tree will not be rerooted."
+      cp ${output}/RAxML-NG_${prefix}_${ortho_method}.raxml.support ${output}/RAxML-NG_${prefix}_${ortho_method}.no_rr.tre
+      stage_info_main "The final unrooted ${ortho_method} concatenation-based tree (RAxML-NG) has been written to:"
+      stage_info_main "${output}/RAxML-NG_${prefix}_${ortho_method}.no_rr.tre"
+      stage_success "Finished."
+      stage_blank_main ""
     fi
-  }
+}
+################===========================================================================
 
-  if [ "${HRS}" = "TRUE" ]; then
-    if [ "${run_iqtree}" = "TRUE" ]; then
-      run_iqtree "HRS"
-    fi
-    if [ "${run_raxml}" = "TRUE" ]; then
-      run_raxml "HRS"
-    fi
-    if [ "${run_raxml_ng}" = "TRUE" ]; then
-      run_raxml_ng "HRS"
-    fi
-  fi
-  if [ "${RLWP}" = "TRUE" ]; then
-    if [ "${run_iqtree}" = "TRUE" ]; then
-      run_iqtree "RLWP"
-    fi
-    if [ "${run_raxml}" = "TRUE" ]; then
-      run_raxml "RLWP"
-    fi
-    if [ "${run_raxml_ng}" = "TRUE" ]; then
-      run_raxml_ng "RLWP"
-    fi
-  fi
-  if [ "${LS}" = "TRUE" ]; then
-    if [ "${run_iqtree}" = "TRUE" ]; then
-      run_iqtree "LS"
-    fi
-    if [ "${run_raxml}" = "TRUE" ]; then
-      run_raxml "LS"
-    fi
-    if [ "${run_raxml_ng}" = "TRUE" ]; then
-      run_raxml_ng "LS"
-    fi
-  fi
-  if [ "${MI}" = "TRUE" ]; then
-    if [ "${run_iqtree}" = "TRUE" ]; then
-      run_iqtree "MI"
-    fi
-    if [ "${run_raxml}" = "TRUE" ]; then
-      run_raxml "MI"
-    fi
-    if [ "${run_raxml_ng}" = "TRUE" ]; then
-      run_raxml_ng "MI"
-    fi
-  fi
-  if [ "${MO}" = "TRUE" ]; then
-    if [ "${run_iqtree}" = "TRUE" ]; then
-      run_iqtree "MO"
-    fi
-    if [ "${run_raxml}" = "TRUE" ]; then
-      run_raxml "MO"
-    fi
-    if [ "${run_raxml_ng}" = "TRUE" ]; then
-      run_raxml_ng "MO"
-    fi
-  fi
-  if [ "${RT}" = "TRUE" ]; then
-    if [ "${run_iqtree}" = "TRUE" ]; then
-      run_iqtree "RT"
-    fi
-    if [ "${run_raxml}" = "TRUE" ]; then
-      run_raxml "RT"
-    fi
-    if [ "${run_raxml_ng}" = "TRUE" ]; then
-      run_raxml_ng "RT"
-    fi
-  fi
-  if [ "${one_to_one}" = "TRUE" ]; then
-    if [ "${run_iqtree}" = "TRUE" ]; then
-      run_iqtree "1to1"
-    fi
-    if [ "${run_raxml}" = "TRUE" ]; then
-      run_raxml "1to1"
-    fi
-    if [ "${run_raxml_ng}" = "TRUE" ]; then
-      run_raxml_ng "1to1"
-    fi
-  fi
-fi
-
-###################################################################################################
-#Stage5-Optional step: Constructing coalescent-based trees #####################################
-###################################################################################################
-#Preparation
-if [ "${run_astral}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
-  stage_info_main "Optional step: Constructing coalescent-based trees using ASTRAL/wASTRAL."
-  
-  sort_tree() {
-    local input_tree="$1"
-    local output_tree="$2"
-
-    stage_info_main "Sorting the tree..."
-    stage_cmd "${log_mode}" "nw_order -c d ${input_tree} > ${output_tree}"
-    nw_order -c d ${input_tree} > ${output_tree}
-  }
-  
-  run_raxml_sg() {
+################===========================================================================
+# Function gene_tree_iqtree_fasttree()
+################===========================================================================
+gene_tree_iqtree_fasttree() {
     local ortho_method="$1"
-    local Genename="$2"
-
-    define_threads "raxml"
-    mkdir -p ${output_dir}/08-Coalescent-based_trees/${ortho_method}/01-Gene_trees/${Genename}
-    stage_cmd "${log_mode}" "raxmlHPC-PTHREADS -f a -T ${nt_raxml} -s ${Genename}.trimmed.aln.fasta -k -x $RANDOM -m GTRGAMMA -p $RANDOM -n ${Genename}.tre -w ${output_dir}/08-Coalescent-based_trees/${ortho_method}/01-Gene_trees/${Genename} -N 100"
-
-    raxmlHPC-PTHREADS -T "${nt_raxml}" -f a \
-    	-s ${Genename}.trimmed.aln.fasta \
-    	-k -x "$RANDOM" \
-    	-m GTRGAMMA \
-    	-p "$RANDOM" \
-    	-n "${Genename}.tre" \
-    	-w "${output_dir}/08-Coalescent-based_trees/${ortho_method}/01-Gene_trees/${Genename}/" \
-    	-N 100 > /dev/null 2>&1
-  }
-
-  run_astral() {
-    local input_combined_tree="$1"
-    local output_astral_prefix="$2"
-
-    stage_info_main "Running ASTRAL-Ⅲ ..."
-    stage_cmd "${log_mode}" "java -jar ${dependencies_dir}/ASTRAL-master/Astral/astral.5.7.8.jar -i ${input_combined_tree} -o ${output_astral_prefix}.tre 2> ${output_dir}/00-logs_and_checklists/logs/${prefix}_${ortho_method}_ASTRAL.log"
-    java -jar ${dependencies_dir}/ASTRAL-master/Astral/astral.5.7.8.jar \
-    -i "${input_combined_tree}" \
-    -o "${output_astral_prefix}.tre" 2> ${output_dir}/00-logs_and_checklists/logs/ASTRAL_${prefix}_${ortho_method}.log
-    if [ -s "${output_astral_prefix}.tre" ]; then
-      stage_info_main "Succeed to run ASTRAL-Ⅲ."
-    else
-      stage_error "Fail to run ASTRAL-Ⅲ."
-      stage_blank_main ""
-    fi
-    # reroot and sort the ASTRAL tree
-    sort_tree "${output_astral_prefix}.tre" "${output_astral_prefix}_sorted_rr.tre"
-  }
-
-
-
-  run_wastral() {
-    local input_combined_tree="$1"
-    local output_wastral_prefix="$2"
-    local gene_list="$3"
-
-    mkdir -p ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree
-    cd ${wastral_dir}
-    define_threads "wastral"
-    # if the number of species is less than 2000, run wastral
-    if [ $(wc -l < "${gene_list}") -lt 2000 ]; then
-      # 01-run wastral
-      stage_cmd "${log_mode}" "bin/wastral --mode ${wastral_mode} -t ${nt_wastral} -r ${wastral_R} -s ${wastral_S} -o ${output_wastral_prefix}.tre ${input_combined_tree} 2> ${output_dir}/00-logs_and_checklists/logs/wASTRAL_${prefix}_${ortho_method}.log"
-      bin/wastral --mode "${wastral_mode}" -t "${nt_wastral}" \
-      -r "${wastral_R}" -s "${wastral_S}" \
-      -o "${output_wastral_prefix}.tre" \
-      "${input_combined_tree}" 2> "${output_dir}/00-logs_and_checklists/logs/wASTRAL_${prefix}_${ortho_method}.log"
-      # 02-Add bootstrap value by wastral
-      stage_cmd "${log_mode}" "bin/wastral -S ${output_wastral_prefix}.tre > ${output_wastral_prefix}_bootstrap.tre"
-      bin/wastral -S "${output_wastral_prefix}.tre" > "${output_wastral_prefix}_bootstrap.tre"
-    # if the number of species is more than 2000, run wastral
-    else
-      # 01-run wastral
-      stage_cmd "${log_mode}" "bin/wastral_precise --mode ${wastral_mode} -t ${nt_wastral} -r ${wastral_R} -s ${wastral_S} -o ${output_wastral_prefix}.tre ${input_combined_tree} 2> ${output_dir}/00-logs_and_checklists/logs/wASTRAL_${prefix}_${ortho_method}.log"
-      bin/wastral_precise --mode ${wastral_mode} -t ${nt_wastral} \
-      -r ${wastral_R} -s ${wastral_S} \
-      -o "${output_wastral_prefix}.tre" \
-      "${input_combined_tree}" 2> ${output_dir}/00-logs_and_checklists/logs/wASTRAL_${prefix}_${ortho_method}.log
-      # 02-Add bootstrap value by wastral
-      stage_cmd "${log_mode}" "bin/wastral_precise -S ${output_wastral_prefix}.tre > ${output_wastral_prefix}_bootstrap.tre"
-      bin/wastral_precise -S "${output_wastral_prefix}.tre" > "${output_wastral_prefix}_bootstrap.tre"
-    fi
-      
-    if [ -s "${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/wASTRAL_bootstrap_${prefix}_${ortho_method}.tre" ]; then
-      stage_info_main "Succeed to run wASTRAL"
-    else
-      stage_error "Fail to run wASTRAL."
-      stage_blank_main ""
-    fi
-    # reroot and sort the wASTRAL tree
-    sort_tree "${output_wastral_prefix}_bootstrap.tre" "${output_wastral_prefix}_bootstrap_sorted_rr.tre"
-  }
-
-  calculate_branch_length() {
-    local supermatrix_name="$1"
-    local bp_output_dir="$2"
-    local bp_output_dir2="$3"
-    local alignments_list="$4"
-    local suffix="$5"
+    # input:{output_dir}/06-Final_alignments/${ortho_method}
+    local input="$2"
+    # output: {output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees
+    local output="$3"
     
-    mkdir -p "${bp_output_dir}" "${bp_output_dir2}"
-    # Construct the supermatrix for recalculating branch length
-    while IFS= read -r line || [ -n "${line}" ]; do
-      cp "${output_dir}/04-Alignments/${ortho_method}/${line}" "${bp_output_dir}"
-    done < "${alignments_list}"
-    define_threads "amas"
-    stage_cmd "${log_mode}" "AMAS.py concat -f fasta -d dna -i "${bp_output_dir}"/*.trimmed.aln.fasta -p "${bp_output_dir2}/partition_recalculating_bl.txt" -t "${bp_output_dir2}/2_${supermatrix_name}" -y raxml -c ${nt_amas}"
-    AMAS.py concat \
-    -f fasta \
-    -d dna \
-    -i "${bp_output_dir}"/*.trimmed.aln.fasta \
-    -p "${bp_output_dir2}/partition_recalculating_bl.txt" \
-    -t "${bp_output_dir2}/2_${supermatrix_name}" \
-    -y raxml \
-    -c "${nt_amas}" > /dev/null 2>&1
-    stage_cmd "${log_mode}" "awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' ${bp_output_dir2}/2_${supermatrix_name} > ${bp_output_dir2}/${supermatrix_name}"
-    awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' "${bp_output_dir2}/2_${supermatrix_name}" > "${bp_output_dir2}/${supermatrix_name}"
-    rm "${bp_output_dir2}/2_${supermatrix_name}"
-    rm "${bp_output_dir}"/*.trimmed.aln.fasta
-
-    # run RAxML
-    stage_cmd "${log_mode}" "raxmlHPC -f e -t ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/${suffix}_${prefix}_${ortho_method}.tre -m GTRGAMMA -s ${bp_output_dir2}/${supermatrix_name} -n ${suffix}_${prefix}_${ortho_method}_bl.tre -w ${bp_output_dir2} -N 100"
-    raxmlHPC -f e -t ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/${suffix}_${prefix}_${ortho_method}.tre -m GTRGAMMA \
-    -s "${bp_output_dir2}/${supermatrix_name}" \
-    -n "${suffix}_${prefix}_${ortho_method}_bl.tre" \
-    -w "${bp_output_dir2}" \
-    -N 100 > /dev/null 2>&1
-    cd "${bp_output_dir2}"
-    # sort the recalculated bl ASTRAL tree
-    sort_tree "${bp_output_dir2}/RAxML_result.${suffix}_${prefix}_${ortho_method}_bl.tre" "${bp_output_dir2}/${suffix}_${prefix}_${ortho_method}_sorted_bl_rr.tre"
-    if [ -s "${bp_output_dir2}/RAxML_result.${suffix}_${prefix}_${ortho_method}_bl.tre" ]; then
-      stage_info_main "Finish"
-    else
-      stage_error "Fail to calculate the branch length for ASTRAL tree via RAxML."
-      stage_blank_main ""
-    fi
-  }
-
-  calculate_branch_length_sortadate() {
-    local supermatrix_name="$1"
-    local bp_output_dir="$2"
-    local alignments_list="$3"
-    local suffix="$4"
-    
-    # Construct the supermatrix for recalculating branch length
-    while IFS= read -r line || [ -n "${line}" ]; do
-      cp "${output_dir}/04-Alignments/${ortho_method}/${line}" "${bp_output_dir}"
-    done < "${alignments_list}"
-    stage_cmd "${log_mode}" "AMAS.py concat -f fasta -d dna -i ${bp_output_dir}/*.trimmed.aln.fasta -p ${bp_output_dir}/partition_recalculating_bl.txt -t ${bp_output_dir}/2${supermatrix_name} -y raxml"
-    AMAS.py concat \
-    -f fasta \
-    -d dna \
-    -i "${bp_output_dir}"/*.trimmed.aln.fasta \
-    -p "${bp_output_dir}/partition_recalculating_bl.txt" \
-    -t "${bp_output_dir}/2_${supermatrix_name}" \
-    -y raxml > /dev/null 2>&1
-    stage_cmd "${log_mode}" "awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' ${bp_output_dir}/2_${supermatrix_name} > ${bp_output_dir}/${supermatrix_name}"
-    awk '/^>/ {print $0; next} {gsub(/\?/, "-"); print}' "${bp_output_dir}/2_${supermatrix_name}" > "${bp_output_dir}/${supermatrix_name}"
-    rm "${bp_output_dir}/2_${supermatrix_name}"
-    rm "${bp_output_dir}"/*.trimmed.aln.fasta
-
-    # run RAxML
-    stage_cmd "${log_mode}" "raxmlHPC -f e -t ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/${suffix}_${prefix}_${ortho_method}.tre -m GTRGAMMA -s ${bp_output_dir}/${supermatrix_name} -n ${suffix}_sortadate_${prefix}_${ortho_method}_bl.tre -w ${bp_output_dir} -N 100"
-    raxmlHPC -f e -t ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/${suffix}_${prefix}_${ortho_method}.tre -m GTRGAMMA \
-    -s "${bp_output_dir}/${supermatrix_name}" \
-    -n "${suffix}_sortadate_${prefix}_${ortho_method}_bl.tre" \
-    -w "${bp_output_dir}" \
-    -N 100 > /dev/null 2>&1
-    cd "${bp_output_dir}"
-    # sort the recalculated bl ASTRAL tree
-    sort_tree "${bp_output_dir}/RAxML_result.${suffix}_sortadate_${prefix}_${ortho_method}_bl.tre" "${bp_output_dir}/${suffix}_sortadate_${prefix}_${ortho_method}_sorted_bl_rr.tre"
-    if [ -s "${bp_output_dir}/RAxML_result.${suffix}_sortadate_${prefix}_${ortho_method}_bl.tre" ]; then
-      stage_info_main "Succeed to run SortaDate for ASTRAL results and recalculate the branch length."
-      stage_blank_main ""
-    else
-      stage_error "Fail to run SortaDate for wASTRAL results and recalculate the branch length."
-      stage_blank_main ""
-    fi
-  }
-
-
-  run_phyparts_piecharts() {
-    local ortho_method="$1"
-    
-    if [ -d "${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts" ]; then
-      rm -rf "${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts"
-    fi
-    mkdir -p "${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts"
-    cd "${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts"
-    # ASTRAL ############
-    if [ "${run_astral}" = "TRUE" ]; then
-      stage_info_main "Running PhyPartsPieCharts for ${ortho_method} coalescent-based tree (ASTRAL) ..."
-      stage_cmd "${log_mode}" "java -jar ${dependencies_dir}/phypartspiecharts/target/phyparts-0.0.1-SNAPSHOT-jar-with-dependencies.jar -a 1 -v -d ${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees -m ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/ASTRAL_${prefix}_${ortho_method}_sorted_rr.tre -o ${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_PhyParts"
-      java -jar ${dependencies_dir}/phypartspiecharts/target/phyparts-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
-      -a 1 -v -d ${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees \
-      -m ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/ASTRAL_${prefix}_${ortho_method}_sorted_rr.tre \
-      -o ${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_PhyParts > /dev/null 2>&1
-            
-      phyparts_number=$(find ${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees -type f -name "*_rr.tre" | wc -l)
-      python3 ${script_dir}/modified_phypartspiecharts.py \
-      ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/ASTRAL_${prefix}_${ortho_method}_sorted_rr.tre \
-      ASTRAL_PhyParts "${phyparts_number}" \
-      --output "${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg" \
-      --to_csv \
-      --tree_type "${phypartspiecharts_tree_type}" \
-      --show_num_mode "${phypartspiecharts_num_mode}" \
-      --stat "${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.tsv" \
-      --threads "${nt}" > /dev/null 2>&1
-    
-      stage_cmd "${log_mode}" "python3 ${script_dir}/modified_phypartspiecharts.py ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/ASTRAL_${prefix}_${ortho_method}_sorted_rr.tre ASTRAL_PhyParts ${phyparts_number} --output ${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg --to_csv --tree_type ${phypartspiecharts_tree_type} --show_num_mode ${phypartspiecharts_num_mode} --stat ${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.tsv --threads ${nt}"
-      if [ -s "${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/ASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg" ]; then
-        stage_info_main "Finish"
-      else
-        stage_error "Fail to run modified_phypartspiecharts.py."
-        stage_blank_main ""
-      fi
-    fi
-    # wASTRAL #################
-    if [ "${run_wastral}" = "TRUE" ]; then
-      stage_info_main "Running PhyPartsPieCharts for ${ortho_method} coalescent-based tree (wASTRAL) ..."
-      stage_cmd "${log_mode}" "java -jar ${dependencies_dir}/phypartspiecharts/target/phyparts-0.0.1-SNAPSHOT-jar-with-dependencies.jar -a 1 -v -d ${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees -m ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/wASTRAL_${prefix}_${ortho_method}_sorted_rr.tre -o ${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_PhyParts"
-      java -jar ${dependencies_dir}/phypartspiecharts/target/phyparts-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
-      -a 1 -v -d ${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees \
-      -m ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/wASTRAL_${prefix}_${ortho_method}_sorted_rr.tre \
-      -o ${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_PhyParts &> /dev/null
-            
-      phyparts_number=$(find ${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees -type f -name "*_rr.tre" | wc -l)
-      python3 ${script_dir}/modified_phypartspiecharts.py \
-      ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/wASTRAL_${prefix}_${ortho_method}_sorted_rr.tre \
-      wASTRAL_PhyParts ${phyparts_number} \
-      --output "${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg" \
-      --to_csv \
-      --tree_type "${phypartspiecharts_tree_type}" \
-      --show_num_mode "${phypartspiecharts_num_mode}" \
-      --stat "${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.tsv" \
-      --threads "${nt}" > /dev/null 2>&1
-  
-      stage_cmd "${log_mode}" "python3 ${script_dir}/modified_phypartspiecharts.py ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/wASTRAL_${prefix}_${ortho_method}_sorted_rr.tre wASTRAL_PhyParts ${phyparts_number} --output ${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg --to_csv --tree_type ${phypartspiecharts_tree_type} --show_num_mode ${phypartspiecharts_num_mode} --stat ${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.tsv --threads ${nt}"
-      if [ -s "${output_dir}/08-Coalescent-based_trees/${ortho_method}/06-PhyParts_PieCharts/wASTRAL_phypartspiecharts_${prefix}_${ortho_method}.svg" ]; then
-        stage_info_main "Finish"
-      else
-        stage_error "Fail to run modified_phypartspiecharts.py."
-        stage_blank_main ""
-      fi
-    fi
-  }
-
-  run_sortadate(){
-    local final_ASTRAL_rr_tree="${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/ASTRAL_${prefix}_${ortho_method}_sorted_rr.tre"
-    local final_wASTRAL_rr_tree="${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/wASTRAL_${prefix}_${ortho_method}_bootstrap_sorted_rr.tre"
-    local input_gene_rr_trees="${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees/"
-    local sortadate_results_dir_astral="${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/SortaDate_ASTRAL_results"
-    local sortadate_results_dir_wastral="${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/SortaDate_wASTRAL_results"
-
-    stage_info_main "Optional step: Running SortaDate to select clock-like genes to recalculate the branch length of ASTRAL and wASTRAL trees"
-
-    if [ -d "${sortadate_results_dir_astral}" ]; then
-      rm -rf "${sortadate_results_dir_astral}"
-      mkdir -p "${sortadate_results_dir_astral}"
-    fi
-    if [ -d "${sortadate_results_dir_wastral}" ]; then
-      rm -rf "${sortadate_results_dir_wastral}"
-      mkdir -p "${sortadate_results_dir_wastral}"
-    fi
-
-    og_params=$(cat "${output_dir}"/00-logs_and_checklists/checklists/Outgroup.txt|fmt|tr '\n' ','|sed 's/ /,/g;s/,$//g')
-    if [ "${run_astral}" = "TRUE" ]; then
-      mkdir -p "${sortadate_results_dir_astral}"
-      # sortadate step 01
-      stage_cmd "${log_mode}" "python ${dependencies_dir}/Sortadate/get_var_length.py ${input_gene_rr_trees} --flend _rr.tre --outf ${sortadate_results_dir_astral}/step1_result.txt --outg ${og_params}"
-      python "${dependencies_dir}/Sortadate/get_var_length.py" "${input_gene_rr_trees}" \
-      --flend ".tre" \
-      --outf "${sortadate_results_dir_astral}/step1_result.txt" \
-      --outg "${og_params}" > /dev/null 2>&1
-      
-      # sortadate step 02
-      stage_cmd "${log_mode}" "python ${dependencies_dir}/Sortadate/get_bp_genetrees.py ${input_gene_rr_trees} ${final_ASTRAL_rr_tree} --flend _rr.tre --outf ${sortadate_results_dir_astral}/step2_result.txt"
-      python "${dependencies_dir}/Sortadate/get_bp_genetrees.py" "${input_gene_rr_trees}" "${final_ASTRAL_rr_tree}" \
-      --flend ".tre" \
-      --outf "${sortadate_results_dir_astral}/step2_result.txt" > /dev/null 2>&1
-
-      # sortadate step 03
-      stage_cmd "${log_mode}" "python ${dependencies_dir}/Sortadate/combine_results.py ${sortadate_results_dir_astral}/step1_result.txt ${sortadate_results_dir_astral}/step2_result.txt --outf ${sortadate_results_dir_astral}/step3_result.txt"
-      python "${dependencies_dir}/Sortadate/combine_results.py" "${sortadate_results_dir_astral}/step1_result.txt" "${sortadate_results_dir_astral}/step2_result.txt" \
-      --outf "${sortadate_results_dir_astral}/step3_result.txt" > /dev/null 2>&1
-
-      # sortadate step 04
-      stage_cmd "${log_mode}" "python ${dependencies_dir}/Sortadate/get_good_genes.py ${sortadate_results_dir_astral}/step3_result.txt --max ${sortadate_genes_num} --outf ${sortadate_results_dir_astral}/Selected_sortadate_alignments_for_dating_info.txt"
-      python "${dependencies_dir}/Sortadate/get_good_genes.py" "${sortadate_results_dir_astral}/step3_result.txt" \
-      --max "${sortadate_genes_num}" \
-      --outf "${sortadate_results_dir_astral}/Selected_sortadate_alignments_for_dating_info.txt" > /dev/null 2>&1
-      rm "${sortadate_results_dir_astral}"/step*
-      sed '1d' "${sortadate_results_dir_astral}/Selected_sortadate_alignments_for_dating_info.txt" | cut -f1 -d' ' | sed 's/_rr\.tre$/.trimmed.aln.fasta/g' > "${sortadate_results_dir_astral}/Selected_sortadate_alignments_for_dating_list.txt"
-    fi
-    if [ "${run_wastral}" = "TRUE" ]; then
-      mkdir -p "${sortadate_results_dir_wastral}"
-      # sortadate step 01
-      stage_cmd "${log_mode}" "python ${dependencies_dir}/Sortadate/get_var_length.py ${input_gene_rr_trees} --flend .tre --outf ${sortadate_results_dir_wastral}/step1_result.txt --outg ${og_params}"
-      python "${dependencies_dir}/Sortadate/get_var_length.py" "${input_gene_rr_trees}" \
-      --flend ".tre" \
-      --outf "${sortadate_results_dir_wastral}/step1_result.txt" \
-      --outg "${og_params}" > /dev/null 2>&1
-
-      # sortadate step 02
-      stage_cmd "${log_mode}" "python ${dependencies_dir}/Sortadate/get_bp_genetrees.py ${input_gene_rr_trees} ${final_wASTRAL_rr_tree} --flend .tre --outf ${sortadate_results_dir_wastral}/step1_result.txt"
-      python "${dependencies_dir}/Sortadate/get_bp_genetrees.py" "${input_gene_rr_trees}" "${final_wASTRAL_rr_tree}" \
-      --flend ".tre" \
-      --outf "${sortadate_results_dir_wastral}/step2_result.txt" > /dev/null 2>&1
-
-      # sortadate step 03
-      stage_cmd "${log_mode}" "python ${dependencies_dir}/Sortadate/combine_results.py ${sortadate_results_dir_wastral}/step1_result.txt ${sortadate_results_dir_wastral}/step2_result.txt --outf ${sortadate_results_dir_wastral}/step3_result.txt"
-      python "${dependencies_dir}/Sortadate/combine_results.py" "${sortadate_results_dir_wastral}/step1_result.txt" "${sortadate_results_dir_wastral}/step2_result.txt" \
-      --outf "${sortadate_results_dir_wastral}/step3_result.txt" > /dev/null 2>&1
-
-      # sortadate step 04
-      stage_cmd "${log_mode}" "python ${dependencies_dir}/Sortadate/get_good_genes.py ${sortadate_results_dir_wastral}/step3_result.txt --max ${sortadate_genes_num} --outf ${sortadate_results_dir_wastral}/Selected_wASTRAL_alignments_for_dating_info.txt"
-      python "${dependencies_dir}/Sortadate/get_good_genes.py" "${sortadate_results_dir_wastral}/step3_result.txt" \
-      --max "${sortadate_genes_num}" \
-      --outf "${sortadate_results_dir_wastral}/Selected_wASTRAL_alignments_for_dating_info.txt" > /dev/null 2>&1
-      rm "${sortadate_results_dir_wastral}"/step*
-      sed '1d' "${sortadate_results_dir_wastral}/Selected_wASTRAL_alignments_for_dating_info.txt" | cut -f1 -d' ' | sed 's/_rr\.tre$/.trimmed.aln.fasta/g' > "${sortadate_results_dir_wastral}/Selected_sortadate_alignments_for_dating_list.txt"
-    fi
-
-  }
-
-  run_coalescent_trees() {
-    local ortho_method="$1"
-    
-    stage_info_main "Infering ${ortho_method} coalescent-based tree ..."
-    #############################################
-    #01：Constructing single gene trees
-    #############################################
-    if [ "${skip_genetree_for_coalescent}" != "TRUE" ]; then
-      if [ -d "${output_dir}/08-Coalescent-based_trees/${ortho_method}" ]; then
-        rm -rf "${output_dir}/08-Coalescent-based_trees/${ortho_method}"
-      fi
-      mkdir -p ${output_dir}/08-Coalescent-based_trees/${ortho_method}/01-Gene_trees
-      > "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Removed_alignments_with_less_than_5_seqs_list.txt"
-      > "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Final_alignments_for_coalscent_list.txt"
-      cd ${output_dir}/04-Alignments/${ortho_method}/
-      define_threads "astral"
-      for Gene in *.trimmed.aln.fasta; do
-        if [ $(grep -c '^>' "${Gene}") -lt 5 ]; then
-          echo "$Gene" >> "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Removed_alignments_with_less_than_5_seqs_list.txt"
-        else
-          echo "$Gene" >> "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Final_alignments_for_coalscent_list.txt"
-        fi
-      done
-      
-      total_sps=$(awk 'NF' "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Final_alignments_for_coalscent_list.txt" | wc -l)
-      init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Final_alignments_for_coalscent_list.txt" || exit 1
-      stage_info_main "Step1: Constructing single gene trees for ${ortho_method} alignments"
-      stage_info_main "====>> Constructing single gene trees for ${ortho_method} alignments (${process} in parallel) ====>>"
-      
-      while IFS= read -r line || [ -n "$line" ]; do
-        Genename=$(basename "$line" .trimmed.aln.fasta)
-        if [ "${process}" != "all" ]; then
-          read -u1000
-        fi
-        {
-          update_start_count "$line" "$stage_logfile"
-          remove_n "${line}"
-          run_raxml_sg "${ortho_method}" "${Genename}"
-          if [ ! -s "${output_dir}/08-Coalescent-based_trees/${ortho_method}/01-Gene_trees/${Genename}/RAxML_bestTree.${Genename}.tre" ]; then
-            record_failed_sample "$line"
-          else
-            update_finish_count "$Genename" "$stage_logfile"
-          fi
-          if [ "${process}" != "all" ]; then
-              echo >&1000
-          fi
-        } &
-      done < "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Final_alignments_for_coalscent_list.txt"
-      wait
-      echo
-      if [ "${log_mode}" = "full" ]; then
-        display_process_log "$stage_logfile" "Failed to construct single gene trees for ${ortho_method} alignments:"
-      fi
-      stage_blank "${log_mode}" ""
-    fi
-
-    #####################################################
-    #02：Reroot the gene trees via mad(R) or newick_utils
-    #####################################################
-    stage_info_main "Step2: Rerooting single-gene trees via mad(R) and newick_utilis"
-    mkdir -p "${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees"
-    total_sps=$(awk 'NF' "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Final_alignments_for_coalscent_list.txt" | wc -l)
+    rm -rf "${output}"
+    mkdir -p "${output}"
+    cd "${input}"
+    temp_file="fasta_file_list.txt"
+    find . -maxdepth 1 -type f -name "*.aln.trimmed.fasta" -exec basename {} \; > "$temp_file"
+    total_sps=$(find . -maxdepth 1 -type f -name "*.aln.trimmed.fasta" | wc -l)
     # Initialize parallel environment
-    init_parallel_env "$work_dir" "$total_sps" "$process" "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Final_alignments_for_coalscent_list.txt" || exit 1
-    stage_info_main "====>> Rerooting single-gene trees via mad(R) and newick_utilis (${process} in parallel) ====>>"
-    if [ "${found_outgroup}" = "1" ]; then
-      outgroup_name=$(cat "${output_dir}"/00-logs_and_checklists/checklists/Outgroup.txt|fmt)
-      outgroup_name2="\"$outgroup_name\""
-      while IFS= read -r line || [ -n "$line" ]; do
-        if [ "${process}" != "all" ]; then
-          read -u1000
+    init_parallel_env "$work_dir" "$total_sps" "$process" "${temp_file}" || exit 1
+    if [ "${gene_tree}" = "1" ]; then
+      gene_tree_tool="IQ-TREE"
+      define_threads "iqtree"
+    elif [ "${gene_tree}" = "2" ]; then
+      gene_tree_tool="FastTree"
+      define_threads "fasttree"
+      export OMP_NUM_THREADS=${nt_fasttree}
+    fi
+    stage_info_main "====>> Running ${gene_tree_tool} to construct single gene trees (${process} in parallel) ====>>"
+    while IFS= read -r file || [ -n "$file" ]; do
+      filename=${file%.aln.trimmed.fasta}
+      if [ "${process}" != "all" ]; then
+        read -u1000
+      fi
+      {
+        # Update start count
+        update_start_count "$filename" "$stage_logfile"
+        if [ "${gene_tree}" = "1" ]; then
+          stage_cmd "${log_mode}" "iqtree -s ${input}/${filename}.aln.trimmed.fasta -m MFP -nt ${nt_iqtree} -bb ${gene_tree_bb} -pre ${output_dir}/06-Final_alignments/${ortho_method}/${filename}.aln.trimmed.fasta"
+          iqtree -s "${input}/${filename}.aln.trimmed.fasta" -m MFP -nt ${nt_iqtree} -bb "${gene_tree_bb}" -pre "${output}/${filename}.iqtree" > /dev/null 2>&1
+          if [ -s "${output}/${filename}.iqtree.treefile" ]; then
+            mv "${output}/${filename}.iqtree.treefile" "${output}/${filename}.iqtree.tre"
+            find "${output}" -maxdepth 1 -name "${filename}.iqtree*" ! -name "*.tre" ! -delete
+          else
+            record_failed_sample "$filename"
+          fi
+        elif [ "${gene_tree}" = "2" ]; then
+          stage_cmd "${log_mode}" "FastTreeMP -nt -gtr -gamma -boot ${gene_tree_bb} ${input}/${filename}.aln.trimmed.fasta > ${output}/${filename}.fasttree.tre"
+          FastTreeMP -nt -gtr -gamma -boot "${gene_tree_bb}" "${input}/${filename}.aln.trimmed.fasta" > "${output}/${filename}.fasttree.tre" 2>/dev/null
+          if [ ! -s "${output}/${filename}.fasttree.tre" ]; then
+            record_failed_sample "$filename"
+          fi
         fi
-        {
-        Genename=$(basename "$line" .trimmed.aln.fasta)
-        update_start_count "$Genename" "$stage_logfile"
-        # Dynamically build the parameters of the nw reroot command
-        cmd="Rscript ${script_dir}/Reroot_genetree.R ${Genename} ${output_dir}/08-Coalescent-based_trees/${ortho_method}/01-Gene_trees ${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees ${outgroup_name2}"
-        stage_cmd "${log_mode}" "${cmd}"
-        eval "${cmd}" > /dev/null 2>&1
-        if [ ! -s "${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees/${Genename}_rr.tre" ]; then
-          record_failed_sample "$Genename"
-        else
-          update_finish_count "$Genename" "$stage_logfile"
-          echo ${Genename} >> "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Final_genes_for_coalscent_list.txt"
-        fi
+        # Update failed count
+        update_finish_count "$filename" "$stage_logfile"
         if [ "${process}" != "all" ]; then
-            echo >&1000
+          echo >&1000
         fi
       } &
-      done < "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Final_alignments_for_coalscent_list.txt"
-      wait
-      echo
-      if [ "${log_mode}" = "full" ]; then
-        display_process_log "$stage_logfile" "Failed to reroot single-gene trees for ${ortho_method} alignments:"
+      if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
+        if [ "${gene_tree}" = "1" ]; then
+          display_only_failed_log "$stage_logfile" "Failed to construct single gene trees via IQ-Tree:"
+        elif [ "${gene_tree}" = "2" ]; then
+          display_only_failed_log "$stage_logfile" "Failed to construct single gene trees via FastTree:"
+        fi
       fi
-      stage_blank "${log_mode}" ""
-    else
-      stage_info_main "No outgroup found, skipping rerooting step"
+    done < "$temp_file"
+    rm "$temp_file"
+    wait
+    echo
+    # Display processing log
+    if [ "${log_mode}" = "full" ]; then
+      if [ "${gene_tree}" = "1" ]; then
+        display_process_log "$stage_logfile" "Failed to construct single gene trees via IQ-Tree:"
+      elif [ "${gene_tree}" = "2" ]; then
+        display_process_log "$stage_logfile" "Failed to construct single gene trees via FastTree:"
+      fi
     fi
-
-    #############################################
-    #03：Merge all tree files ###################
-    #############################################
-    stage_info_main "Step3: Merge all tree files"
-    mkdir -p ${output_dir}/08-Coalescent-based_trees/${ortho_method}/03-Combined_gene_trees
-    > ${output_dir}/08-Coalescent-based_trees/${ortho_method}/03-Combined_gene_trees/${prefix}_${ortho_method}_combined.tre
-    if [ "${found_outgroup}" = "1" ]; then
-      awk '1' ${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees/*_rr.tre >> ${output_dir}/08-Coalescent-based_trees/${ortho_method}/03-Combined_gene_trees/${prefix}_${ortho_method}_combined.tre
-    else
-      awk '1' ${output_dir}/08-Coalescent-based_trees/${ortho_method}/01-Gene_trees/*.tre >> ${output_dir}/08-Coalescent-based_trees/${ortho_method}/03-Combined_gene_trees/${prefix}_${ortho_method}_combined.tre
-    fi
-    cd "${output_dir}/08-Coalescent-based_trees/${ortho_method}/03-Combined_gene_trees"
-
-    #############################################
-    #04：Run ASTRAL or wASTRAL ##################
-    #############################################
-    # 01-Infer the ASTRAL coalescent-based tree 
-    stage_info_main "Step4: Run ASTRAL or wASTRAL"
-    mkdir -p ${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree
-    if [ "${run_astral}" = "TRUE" ]; then
-      run_astral "${output_dir}/08-Coalescent-based_trees/${ortho_method}/03-Combined_gene_trees/${prefix}_${ortho_method}_combined.tre" "${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/ASTRAL_${prefix}_${ortho_method}"
-    fi
-    if [ "${run_wastral}" = "TRUE" ]; then
-      run_wastral "${output_dir}/08-Coalescent-based_trees/${ortho_method}/03-Combined_gene_trees/${prefix}_${ortho_method}_combined.tre" "${output_dir}/08-Coalescent-based_trees/${ortho_method}/04-Species_tree/wASTRAL_${prefix}_${ortho_method}.tre" "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Final_genes_for_coalscent_list.txt"
-    fi
-
-    ############################################################
-    #05: Run PhyParts_PieCharts
-    ############################################################
-    if [ "${run_phyparts}" = "TRUE" ]; then
-      stage_blank "${log_mode}" ""
-      stage_info_main "Step5: Run PhyParts and modified_phypartspiecharts.py"
-      run_phyparts_piecharts "${ortho_method}"
-      stage_blank_main ""
-    else
-      stage_blank_main ""
-    fi
-
-    ############################################################
-    #06：Caculate the branch length for ASTRAL results via RAxMl
-    ############################################################
-    stage_blank "${log_mode}" ""
-    stage_info_main "Step6: Recaculate the branch length via RAxMl"
-    if ! command -v pxlstr >/dev/null 2>&1 || ! command -v pxbp >/dev/null 2>&1; then
-      stage_error "To continue using SortaDate to filter suitable alignments for branch length estimation, please install the local version (non-conda) of Phyx, or the two subprograms pxlstr and pxbp from Phyx."
-      stage_error "For details, please refer to https://github.com/FePhyFoFum/SortaDate#installing-pxlstr-and-pxbp"
+    if ! find "${output}" -type f -name '*.iqtree.tre' -size +0c -quit 2>/dev/null; then
+      stage_error "Failed to construct single gene trees via IQ-Tree."
       stage_error "HybSuite exits."
       stage_blank_main ""
       exit 1
     fi
-    if [ -d "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/" ]; then  
-      rm -rf "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/"
+    if ! find "${output}" -type f -name '*.fasttree.tre' -size +0c -quit 2>/dev/null; then
+      stage_error "Failed to construct single gene trees via FastTree."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
     fi
-    mkdir -p "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/"
-    ### Default: Run SortaDate to sort clock-like genes and recalculate the branch length
-    if [ "${recalculate_length}" = "sortadate" ] && [ "${found_outgroup}" = "1" ]; then
-      run_sortadate "${output_dir}/08-Coalescent-based_trees/${ortho_method}/02-Rerooted_gene_trees/"
-      if [ "${run_astral}" = "TRUE" ]; then
-        calculate_branch_length_sortadate "Sortadate_supermatrix_for_recalculating_bl.fasta" \
-        "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/SortaDate_ASTRAL_results" \
-        "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/SortaDate_ASTRAL_results/Selected_sortadate_alignments_for_dating_list.txt" \
-        "ASTRAL"
+    if ! find "${output}" -type f -name '*.fasttree.tre' -size +0c -quit 2>/dev/null; then
+      stage_error "Failed to construct single gene trees via FastTreeMP."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    stage_success "Finished."
+    stage_blank_main ""
+}
 
-        if [ -s "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/SortaDate_ASTRAL_results/ASTRAL_sortadate_${prefix}_${ortho_method}_sorted_bl_rr.tre" ]; then
-          mv ${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/SortaDate_ASTRAL_results/ASTRAL_sortadate_${prefix}_${ortho_method}_sorted_bl_rr.tre "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/"
-          mv "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/SortaDate_ASTRAL_results/"RAxML* "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/"
-          stage_info "${log_mode}" "The sorted, rerooted, and recalculated branch length tree has been written to ${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/ASTRAL_sortadate_${prefix}_${ortho_method}_sorted_bl_rr.tre"
-        else
-          stage_error "Fail"
-        fi
-      fi
-      if [ "${run_wastral}" = "TRUE" ]; then
-        calculate_branch_length_sortadate "Sortadate_supermatrix_for_recalculating_bl.fasta" \
-        "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/SortaDate_wASTRAL_results" \
-        "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/SortaDate_wASTRAL_results/Selected_sortadate_alignments_for_dating_list.txt" \
-        "wASTRAL"
-        if [ -s "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/SortaDate_wASTRAL_results/wASTRAL_sortadate_${prefix}_${ortho_method}_sorted_bl_rr.tre" ]; then
-          mv ${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/SortaDate_wASTRAL_results/wASTRAL_sortadate_${prefix}_${ortho_method}_sorted_bl_rr.tre "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/"
-          mv "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/SortaDate_wASTRAL_results/"RAxML* "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/"
-          stage_info "${log_mode}" "The sorted, rerooted, and recalculated branch length tree has been written to ${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/SortaDate_ASTRAL_results/wASTRAL_sortadate_${prefix}_${ortho_method}_sorted_bl_rr.tre"
-        else
-          stage_error "Fail to run SortaDate for wASTRAL results and recalculate the branch length."
-        fi
+################===========================================================================
+# Function combine_gene_trees()
+################===========================================================================
+combine_gene_trees() {
+    local ortho_method="$1"
+    # input: {output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees
+    local input="$2"
+    # output: {output_dir}/08-Coalescent_analysis/${ortho_method}/02-Combined_gene_trees
+    local output="$3"
+    
+    rm -rf "${output}"
+    mkdir -p "${output}"
+    awk '1' ${input}/*.tre > ${output}/Combined_gene_trees.tre
+    
+    if [ -s "${output}/Combined_gene_trees.tre" ]; then
+      stage_info_main "Successfully combining single gene trees into a combined gene tree."
+      stage_info_main "The combined gene tree has been written to:"
+      stage_info_main "${output}/Combined_gene_trees.tre"
+      stage_success "Finished."
+      stage_blank_main ""
+    else
+      stage_error "Failed to combine single gene trees into a combined gene tree."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    stage_blank_main ""
+}
+
+################===========================================================================
+# Function run_astral4()
+################===========================================================================
+run_astral4() {
+    local ortho_method="$1"
+    # input: {output_dir}/08-Coalescent_analysis/${ortho_method}/02-Combined_gene_trees/Combined_gene_trees.tre
+    local input_combined_tree="$2"
+    # output: {output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV
+    local output="$3"
+
+    define_threads "astral4"
+    rm -rf "${output}"
+    mkdir -p "${output}"
+    stage_info_main "01-Running ASTRAL-Ⅳ for ${ortho_method} orthogroups..."
+    stage_cmd "${log_mode}" "astral4 -t ${nt_astral4} -r ${astral4_r} -s ${astral4_s} -i ${input_combined_tree} -o ${output}/ASTRAL4_${prefix}_${ortho_method}.tre 2> ${output}/${prefix}_${ortho_method}_ASTRAL4.log"
+    astral4 \
+    -t "${nt_astral4}" \
+    -r "${astral4_r}" \
+    -s "${astral4_s}" \
+    -i "${input_combined_tree}" \
+    -o "${output}/ASTRAL4_${prefix}_${ortho_method}.tre" > "${output}/${prefix}_${ortho_method}_ASTRAL4.log" 2>&1
+    if [ -s "${output}/ASTRAL4_${prefix}_${ortho_method}.tre" ]; then
+      stage_info_main "Succeed to run ASTRAL-Ⅳ for ${ortho_method} orthogroups."
+      stage_info_main "The ASTRAL-Ⅳ tree for ${ortho_method} orthogroups has been written to:"
+      stage_info_main "${output}/ASTRAL4_${prefix}_${ortho_method}.tre"
+      stage_success "Finished."
+      stage_blank_main ""
+    else
+      stage_error "Fail to run ASTRAL-Ⅳ for ${ortho_method} orthogroups."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+
+    stage_info_main "02-Bootstrapping the ASTRAL-Ⅳ tree ..."
+    java -jar ${dependencies_dir}/ASTRAL-master/Astral/astral.5.7.8.jar \
+    -i "${input_combined_tree}" \
+    -o "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre" \
+    -q "${output}/ASTRAL4_${prefix}_${ortho_method}.tre" >> ${output}/ASTRAL4_${prefix}_${ortho_method}.log 2>&1
+
+    if [ -s "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre" ]; then
+      stage_info_main "Succeed to bootstrap the ASTRAL-Ⅳ tree."
+      stage_info_main "The ASTRAL-Ⅳ tree with bootstrap values has been written to:"
+      stage_info_main "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre"
+      stage_success "Finished."
+      stage_blank_main ""
+    else
+      stage_error "Failed to bootstrap the ASTRAL-Ⅳ tree."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    # Reroot the ASTRAL-IV tree
+    if [ "${found_outgroup}" = "1" ]; then
+      cd "${output}"
+      stage_info_main "03-Using Newick Utilities to reroot the tree (ASTRAL-IV)..."
+      outgroup_name=$(cat "${output_dir}"/hybsuite_checklists/Outgroup.txt|fmt)
+      stage_cmd_main "nw_reroot ${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre ${outgroup_name} -l > ${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre"
+      nw_reroot "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre" "${outgroup_name}" -l > "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre"
+    
+      if [ ! -s "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre" ]; then
+        stage_error "Failed to reroot the tree: ${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre." 
+        stage_error "Please check your alignments and trees produced by ASTRAL-IV." 
+        stage_blank_main ""
+      else
+          stage_info_main "Succeed to reroot the ASTRAL-IV tree."
+          stage_info_main "The final rooted ASTRAL-IV tree with bootstrap values has been written to:"
+          stage_info_main "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre"
+          stage_success "Finished."
+          stage_blank_main ""
       fi
     else
-      stage_error "No outgroup name is provided in ${input_list}."
-      stage_error "Outgroup must be specified to reroot gene trees and run SortaDate."
-      stage_error "HybSuite stops running SortaDate to recalculate the branch length of coalesecent-based trees."
+      stage_info_main "No outgroup name is provided. The tree will not be rerooted."
+      cp ${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre ${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.no_rr.tre
+      stage_info_main "The final unrooted ${ortho_method} concatenation-based tree (ASTRAL-IV) has been written to:"
+      stage_info_main "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.no_rr.tre"
+      stage_success "Finished."
       stage_blank_main ""
     fi
-
-    if [ "${recalculate_length}" = "all_aln" ]; then
-      if [ "${run_astral}" = "TRUE" ]; then
-        calculate_branch_length "Supermatrix_for_recalculating_bl.fasta" \
-        "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/alignments" \
-        "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree" \
-        "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Final_alignments_for_coalscent_list.txt" \
-        "ASTRAL"
-      fi
-      if [ "${run_wastral}" = "TRUE" ]; then
-        calculate_branch_length "Supermatrix_for_recalculating_bl.fasta" \
-        "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/alignments" \
-        "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree" \
-        "${output_dir}/08-Coalescent-based_trees/${ortho_method}/Final_alignments_for_coalscent_list.txt" \
-        "wASTRAL"
-      fi
-      if [ -d "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/alignments" ]; then
-        rm -rf "${output_dir}/08-Coalescent-based_trees/${ortho_method}/05-Recalculated_bl_species_tree/alignments"
-      fi
-    fi
   }
+################===========================================================================
+
+################===========================================================================
+# Function count_species()
+################===========================================================================
+count_species() {
+  local fasta_dir="$1"
+
+  temp_file="${fasta_dir}/species_list.txt"
+  for fasta_file in "$fasta_dir"/*.fasta; do
+    if [ -f "$fasta_file" ]; then
+        grep "^>" "$fasta_file" | sort | uniq >> "$temp_file"
+    fi
+  done
+  total_sps_num=$(sort "$temp_file" | uniq | wc -l)
+  rm "$temp_file"
+}
+
+
+
+################===========================================================================
+# Function run_wastral()
+################===========================================================================
+run_wastral() {
+  local ortho_method="$1"
+  # input: {output_dir}/08-Coalescent_analysis/${ortho_method}/02-Combined_gene_trees/Combined_gene_trees.tre
+  local input_combined_tree="$2"
+  # output: {output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/wASTRAL
+  local output="$3"
+  # alignment_dir: {output_dir}/06-Final_alignments/${ortho_method}/
+  local alignment_dir="$4"
+
+  rm -rf ${output}
+  mkdir -p ${output}
+  define_threads "wastral"
+  count_species "${alignment_dir}"
+  stage_info_main "01-Running wASTRAL for ${ortho_method} orthogroups..."
+  # if the number of species is less than 2000, run wastral
+  if [ ${total_sps_num} -lt 2000 ]; then
+    # 01-run wastral
+    stage_cmd_main "wastral --mode ${wastral_mode} -t ${nt_wastral} -r ${wastral_r} -s ${wastral_s} -o ${output}/wASTRAL_${prefix}_${ortho_method}.tre ${input_combined_tree} 2> ${output}/wASTRAL_${prefix}_${ortho_method}.log"
+    wastral --mode "${wastral_mode}" -t "${nt_wastral}" \
+    -r "${wastral_r}" -s "${wastral_s}" \
+    -o "${output}/wASTRAL_${prefix}_${ortho_method}.tre" \
+    "${input_combined_tree}" 2> "${output}/wASTRAL_${prefix}_${ortho_method}.log"
+  # if the number of species is more than 2000, run wastral_precise
+  else
+    # 01-run wastral
+    stage_cmd_main "wastral_precise --mode ${wastral_mode} -t ${nt_wastral} -r ${wastral_r} -s ${wastral_s} -o ${output}/wASTRAL_${prefix}_${ortho_method}.tre ${input_combined_tree} 2> ${output}/wASTRAL_${prefix}_${ortho_method}.log"
+    wastral_precise --mode ${wastral_mode} -t ${nt_wastral} \
+    -r ${wastral_r} -s ${wastral_s} \
+    -o "${output}/wASTRAL_${prefix}_${ortho_method}.tre" \
+    "${input_combined_tree}" 2> ${output}/wASTRAL_${prefix}_${ortho_method}.log 2>&1
+  fi
+      
+  if [ -s "${output}/wASTRAL_${prefix}_${ortho_method}.tre" ]; then
+    stage_info_main "Succeed to run wASTRAL"
+    stage_info_main "The wASTRAL tree has been written to:"
+    stage_info_main "${output}/wASTRAL_${prefix}_${ortho_method}.tre"
+    stage_success "Finished."
+    stage_blank_main ""
+  else
+    stage_error "Fail to run wASTRAL."
+    stage_blank_main ""
+  fi
+  # 03-Rerooting the wASTRAL tree
+  if [ "${found_outgroup}" = "1" ]; then
+    cd "${output}"
+    stage_info_main "02-Using Newick Utilities to reroot the tree (wASTRAL)..."
+    outgroup_name=$(cat "${output_dir}"/hybsuite_checklists/Outgroup.txt|fmt)
+    stage_cmd_main "nw_reroot ${output}/wASTRAL_${prefix}_${ortho_method}.tre ${outgroup_name} -l > ${output}/wASTRAL_${prefix}_${ortho_method}.rr.tre"
+    nw_reroot "${output}/wASTRAL_${prefix}_${ortho_method}.tre" "${outgroup_name}" -l > "${output}/wASTRAL_${prefix}_${ortho_method}.rr.tre"
+    
+    if [ ! -s "${output}/wASTRAL_${prefix}_${ortho_method}.rr.tre" ]; then
+      stage_error "Failed to reroot the tree: ${output}/wASTRAL_${prefix}_${ortho_method}.rr.tre." 
+      stage_error "Please check your alignments and trees produced by wASTRAL." 
+      stage_blank_main ""
+    else
+      stage_info_main "Succeed to reroot the wASTRAL tree."
+      stage_info_main "The final rooted wASTRAL tree has been written to:"
+      stage_info_main "${output}/wASTRAL_${prefix}_${ortho_method}.rr.tre"
+      stage_success "Finished."
+      stage_blank_main ""
+    fi
+  else
+    stage_info_main "No outgroup name is provided. The tree will not be rerooted."
+    cp ${output}/wASTRAL_${prefix}_${ortho_method}.tre ${output}/wASTRAL_${prefix}_${ortho_method}.no_rr.tre
+    stage_info_main "The final unrooted ${ortho_method} concatenation-based tree (wASTRAL) has been written to:"
+    stage_info_main "${output}/wASTRAL_${prefix}_${ortho_method}.no_rr.tre"
+    stage_success "Finished."
+    stage_blank_main ""
+  fi
+}
+################===========================================================================
+
+################===========================================================================
+# Function run_phypartspiecharts()
+################===========================================================================
+run_phyparts_piecharts() {
+  local ortho_method="$1"
+  local sp_tree_method="$2"
+  local input_gene_trees="$3"
+  local input_sp_tree="$4"
+  # output: {output_dir}/08-Coalescent_analysis/${ortho_method}/04-PhyParts_PieCharts
+  local output="$5"
+    
+  if [ -d "${output}" ]; then
+    rm -rf "${output}"
+  fi
+  mkdir -p "${output}"
+  stage_info_main "Running PhyPartsPieCharts for ${ortho_method} coalescent-based tree (${sp_tree_method}) ..."
+  stage_cmd "${log_mode}" "java -jar ${dependencies_dir}/phypartspiecharts/target/phyparts-0.0.1-SNAPSHOT-jar-with-dependencies.jar -a 1 -v -d ${input_gene_trees} -m ${input_sp_tree} -o ${output}/ASTRAL_PhyParts"
+  java -jar ${dependencies_dir}/phypartspiecharts/target/phyparts-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
+  -a 1 -v -d ${input_gene_trees} \
+  -m ${input_sp_tree} \
+  -o ${output}/${sp_tree_method}_PhyParts > /dev/null 2>&1
+            
+  phyparts_number=$(find ${input_gene_trees} -type f -name "*.tre" | wc -l)
+  python3 ${script_dir}/modified_phypartspiecharts.py \
+  ${input_sp_tree} \
+  ${sp_tree_method}_PhyParts "${phyparts_number}" \
+  --output "${output}/${sp_tree_method}_phypartspiecharts_${prefix}_${ortho_method}.svg" \
+  --to_csv \
+  --tree_type "${phypartspiecharts_tree_type}" \
+  --show_num_mode "${phypartspiecharts_num_mode}" \
+  --stat "${output}/${sp_tree_method}_phypartspiecharts_${prefix}_${ortho_method}.tsv" \
+  --threads "${nt}" > /dev/null 2>&1
+    
+  stage_cmd "${log_mode}" "python3 ${script_dir}/modified_phypartspiecharts.py ${input_sp_tree} ${sp_tree_method}_PhyParts ${phyparts_number} --output ${output}/${sp_tree_method}_phypartspiecharts_${prefix}_${ortho_method}.svg --to_csv --tree_type ${phypartspiecharts_tree_type} --show_num_mode ${phypartspiecharts_num_mode} --stat ${output}/${sp_tree_method}_phypartspiecharts_${prefix}_${ortho_method}.tsv --threads ${nt}"
+  if [ -s "${output}/${sp_tree_method}_phypartspiecharts_${prefix}_${ortho_method}.svg" ]; then
+    stage_success "Finished."
+    stage_blank_main ""
+  else
+    stage_error "Failed to run modified_phypartspiecharts.py for ${sp_tree_method} results."
+    stage_blank_main ""
+  fi
+}
+################===========================================================================
+     
+################===========================================================================
+# Function concatenated_analysis()
+################===========================================================================
+concatenated_analysis() {
+  local ortho_method="$1"
+  
+  if [ "${run_iqtree}" = "TRUE" ] || [ "${run_raxml}" = "TRUE" ] || [ "${run_raxml_ng}" = "TRUE" ]; then
+    stage_info_main "====>> concatenation analysis for ${ortho_method} alignments <<===="
+    stage_info_main "Step 1: Concatenating alignments ..."
+    concatenation "${ortho_method}" "${output_dir}/06-Final_alignments/${ortho_method}"
+    stage_info_main "Step 2: Species tree inference ..."
+    run_modeltest_ng "${ortho_method}" "${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta" "${output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/${prefix}_${ortho_method}_ModelTest_NG.txt"
+    if [ "${run_iqtree}" = "TRUE" ]; then
+      run_sp_tree_iqtree "${ortho_method}" "${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta" "${output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/IQ-TREE/IQ-TREE_${prefix}_${ortho_method}"
+    fi
+    if [ "${run_raxml}" = "TRUE" ]; then
+      run_sp_tree_raxml "${ortho_method}" "${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta" "${output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/RAxML"
+    fi
+    if [ "${run_raxml_ng}" = "TRUE" ]; then
+      run_sp_tree_raxml_ng "${ortho_method}" "${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta" "${output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/RAxML-NG"
+    fi
+  fi
+}
+################===========================================================================
+
+################===========================================================================
+# Function coalescent_analysis()
+################===========================================================================
+coalescent_analysis() {
+  local ortho_method="$1"
+
+  if [ "${run_astral4}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
+    stage_info_main "====>> coalescent analysis for ${ortho_method} alignments <<===="
+    # Step 1: Preparing gene trees
+    stage_info_main "Step 1: Preparing gene trees ..."
+    gene_tree_iqtree_fasttree "${ortho_method}" "${output_dir}/06-Final_alignments/${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees"
+    # Step 2: Recombining gene trees
+    stage_info_main "Step 2: Recombining gene trees ..."
+    combine_gene_trees "${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees" "${output_dir}/08-Coalescent_analysis/${ortho_method}/02-Combined_gene_trees"
+    # Step 3: Species tree inference
+    stage_info_main "Step 3: Species tree inference ..."
+    if [ "${run_astral4}" = "TRUE" ]; then
+      run_astral4 "${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/02-Combined_gene_trees/Combined_gene_trees.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV"
+    fi
+    if [ "${run_wastral}" = "TRUE" ]; then
+      run_wastral "${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/02-Combined_gene_trees/Combined_gene_trees.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/wASTRAL" "${output_dir}/06-Final_alignments/${ortho_method}"
+    fi
+  fi
+}
+
+###################################################################################################
+#Running the main functions #######################################################################
+###################################################################################################
+if [ "${run_iqtree}" = "TRUE" ] || [ "${run_raxml}" = "TRUE" ] || [ "${run_raxml_ng}" = "TRUE" ]; then
+  stage_info_main "Executing concatenated analysis ..."
   if [ "${HRS}" = "TRUE" ]; then
-    run_coalescent_trees "HRS"
+    concatenated_analysis "HRS"
   fi
   if [ "${RLWP}" = "TRUE" ]; then
-    run_coalescent_trees "RLWP"
+    concatenated_analysis "RLWP"
   fi
   if [ "${LS}" = "TRUE" ]; then
-    run_coalescent_trees "LS"
-  fi
-  if [ "${MI}" = "TRUE" ]; then
-    run_coalescent_trees "MI"
+    concatenated_analysis "LS"
   fi
   if [ "${MO}" = "TRUE" ]; then
-    run_coalescent_trees "MO"
+    concatenated_analysis "MO"
+  fi
+  if [ "${MI}" = "TRUE" ]; then
+    concatenated_analysis "MI"
   fi
   if [ "${RT}" = "TRUE" ]; then
-    run_coalescent_trees "RT"
+    concatenated_analysis "RT"
   fi
   if [ "${one_to_one}" = "TRUE" ]; then
-    run_coalescent_trees "1to1"
+    concatenated_analysis "1to1"
   fi
 fi
+if [ "${run_astral4}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
+  stage_info_main "Executing coalescent analysis ..."
+  if [ "${HRS}" = "TRUE" ]; then
+    coalescent_analysis "HRS"
+  fi
+  if [ "${RLWP}" = "TRUE" ]; then
+    coalescent_analysis "RLWP"
+  fi
+  if [ "${LS}" = "TRUE" ]; then
+    coalescent_analysis "LS"
+  fi
+  if [ "${MO}" = "TRUE" ]; then
+    coalescent_analysis "MO"
+  fi
+  if [ "${MI}" = "TRUE" ]; then
+    coalescent_analysis "MI"
+  fi
+  if [ "${RT}" = "TRUE" ]; then
+    coalescent_analysis "RT"
+  fi
+  if [ "${one_to_one}" = "TRUE" ]; then
+    coalescent_analysis "1to1"
+  fi
+fi
+
+if [ "${run_astral_pro}" = "TRUE" ]; then
+  stage_info_main "Executing ASTRAL-Pro analysis ..."
+  #################===========================================================================
+  # Step 1: Preparing fasta files and single gene trees for PhyloPyPruner
+  stage_info_main "Step 1: Preparing single gene trees for ASTRAL-Pro"
+  #################===========================================================================
+  # 01-MSA and trimming
+  cd "${paralogs_dir}"
+  define_threads "mafft"
+  define_threads "trimal"
+  rm -rf "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/"
+  mkdir -p "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/"
+  temp_file="fasta_file_list.txt"
+    find . -maxdepth 1 -type f -name "*.fasta" -exec basename {} \; > "$temp_file"
+    total_sps=$(find . -maxdepth 1 -type f -name "*.fasta" | wc -l)
+    # Initialize parallel environment
+    init_parallel_env "$work_dir" "$total_sps" "$process" "${temp_file}" || exit 1
+    if [ "${gene_tree}" = "1" ]; then
+      gene_tree_tool="IQ-TREE"
+      define_threads "iqtree"
+    elif [ "${gene_tree}" = "2" ]; then
+      gene_tree_tool="FastTree"
+      define_threads "fasttree"
+      export OMP_NUM_THREADS=${nt_fasttree}
+    fi
+    if [ "${trim_tool}" = "1" ]; then
+      trim_tool_tool="trimAl"
+      define_threads "trimal"
+    elif [ "${trim_tool}" = "2" ]; then
+      trim_tool_tool="HMMCleaner"
+    fi
+    stage_info_main "====>> Running MAFFT, ${trim_tool_tool} and ${gene_tree_tool} for ${total_sps} putative paralog files (${process} in parallel) ====>>"
+    
+    while IFS= read -r file || [ -n "$file" ]; do
+      filename=${file%.fasta}
+      genename=${file%_paralogs_all.fasta}
+      if [ "${process}" != "all" ]; then
+        read -u1000
+      fi
+      {
+        # Update start count
+        update_start_count "$genename" "$stage_logfile"
+        sed -i "s/ single_hit/|single_hit/g;s/ multi/|multi/g;s/ NODE_/|NODE_/g;s/\.[0-9]\+|NODE_/|NODE_/g;s/\.main|NODE_/|NODE_/g" "${file}"
+        # Run MAFFT  
+        run_mafft "${file}" "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.fasta" "${nt_mafft}"
+        remove_n "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.fasta"
+        if [ "${trim_tool}" = "1" ]; then
+          run_trimal "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.fasta" "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta" "${trimal_mode}" \
+          "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
+          "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
+        fi
+        if [ "${trim_tool}" = "2" ]; then
+          run_hmmcleaner "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.fasta" "${hmmcleaner_cost}"
+          if [ -s "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln_hmm.fasta" ]; then
+            update_finish_count "$genename" "$stage_logfile"
+            mv "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln_hmm.fasta" "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta"
+            rm -f "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln_hmm"*
+          else
+            record_failed_sample "$genename"
+          fi
+        fi
+        
+        awk '
+        BEGIN { OFS="\n" }
+        /^>/ {
+            header=$0
+            count[header]++
+            if(count[header] > 1) {
+                printf "%s_%d\n", header, count[header]
+            } else {
+                print header
+            }
+            next
+        }
+        { print $0 }' "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta" > "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.temp" && \
+        mv "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.temp" "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta"
+        if [ ! -s "./${filename}.aln.trimmed.fasta" ]; then
+          record_failed_sample "$genename"
+        fi
+        if [ "${gene_tree}" = "1" ]; then
+          stage_cmd "${log_mode}" "iqtree -s ${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta -m MFP -nt ${nt_iqtree} -bb ${gene_tree_bb} -pre ${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta"
+          iqtree -s "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta" -m MFP -nt ${nt_iqtree} -bb "${gene_tree_bb}" -pre "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta" > /dev/null 2>&1
+          if [ -s "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta.treefile" ]; then
+            mv "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta.treefile" "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta.tre"
+            find . -maxdepth 1 -name "${filename}.aln.trimmed.fasta*" ! -name "*.tre" ! -name "*.fasta" -delete
+          else
+            record_failed_sample "$genename"
+          fi
+        elif [ "${gene_tree}" = "2" ]; then
+          stage_cmd "${log_mode}" "FastTreeMP -nt -gtr -gamma -boot ${gene_tree_bb} ${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta > ./${filename}.aln.trimmed.fasta.tre"
+          FastTreeMP -nt -gtr -gamma -boot "${gene_tree_bb}" "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta" > "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta.tre" 2>/dev/null
+          if [ ! -s "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta.tre" ]; then
+            record_failed_sample "$genename"
+          fi
+        fi
+        rm "${file}" "${filename}.aln.fasta" 2>/dev/null
+        # Update failed count
+        update_finish_count "$genename" "$stage_logfile"
+        if [ "${process}" != "all" ]; then
+          echo >&1000
+        fi
+      } &
+      if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
+        display_only_failed_log "$stage_logfile" "Failed to prepare single gene trees for ASTRAL-Pro:"
+      fi
+    done < "$temp_file"
+    rm "$temp_file"
+    wait
+    echo
+    # Display processing log
+    if [ "${log_mode}" = "full" ]; then
+      display_process_log "$stage_logfile" "Failed to prepare single gene trees for ASTRAL-Pro:"
+    fi
+    rm -f "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/"*.fasta
+    if ! find ./ -type f -name '*.aln.trimmed.fasta.tre' -size +0c -quit 2>/dev/null; then
+      stage_error "Fail to run FastTree or IQ-TREE."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    fi
+    stage_success "Finished."
+    stage_blank_main ""
+  
+  #################===========================================================================
+  # Step 2: Running ASTRAL-Pro
+  stage_info_main "Step 2: Running ASTRAL-Pro"
+  #################===========================================================================
+  cd "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/"
+  run_astral_pro "ASTRAL-pro"
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
 ############################################################################################
 # End of Stage 5
-stage_info_main "Successfully finishing the stage 5: Phylogenetic trees inference."
-stage_info "${log_mode}" "The resulting files have been saved in ${output_dir}/06-Modeltest-NG/ or ${output_dir}/07-Concatenation-based_trees or 08-Coalescent-based_trees."
+stage_success "Successfully finishing the Stage 5: Phylogenetic trees inference."
+stage_info_main_success "The resulting files have been saved in:"
+if { [ "${run_iqtree}" = "TRUE" ] || [ "${run_raxml}" = "TRUE" ] || [ "${run_raxml_ng}" = "TRUE" ]; } && \
+   { [ "${run_astral4}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; }; then
+  stage_info_main_success "(1) ${output_dir}/07-Concatenated_analysis/"
+  stage_info_main_success "(2) ${output_dir}/08-Coalescent_analysis/"
+elif [ "${run_iqtree}" = "FALSE" ] && [ "${run_raxml}" = "FALSE" ] && [ "${run_raxml_ng}" = "FALSE" ] && \
+     { [ "${run_astral4}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; }; then
+  stage_info_main_success "${output_dir}/08-Coalescent_analysis/"
+elif { [ "${run_iqtree}" = "TRUE" ] || [ "${run_raxml}" = "TRUE" ] || [ "${run_raxml_ng}" = "TRUE" ]; } && \
+     [ "${run_astral4}" = "FALSE" ] && [ "${run_wastral}" = "FALSE" ]; then
+  stage_info_main_success "${output_dir}/07-Concatenated_analysis/"
+fi
 
+stage_info_main_success "Reports have been saved in:"
+stage_info_main_success "${output_dir}/hybsuite_reports/"
+stage_info_main_success "The logfile has been saved in:"
+stage_info_main_success "${output_dir}/hybsuite_logs/hybsuite_${current_time}.log"
 # Clean up environment
 cleanup_parallel_env "$work_dir"
-stage_info_main "Thank you for using HybSuite! Enjoy your research!"
+stage_info_main_success "Thank you for using HybSuite! Enjoy your research!"
 stage_blank_main ""
-exit 1
+exit 0
+fi
 ############################################################################################
