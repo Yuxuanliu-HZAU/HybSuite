@@ -5002,6 +5002,35 @@ combine_gene_trees() {
 }
 
 ################===========================================================================
+# Function collapse_gene_trees()
+################===========================================================================
+collapse_gene_trees() {
+  local input_combined_tree="$1"
+
+  if [ "${collapse_threshold}" = "0" ]; then
+    stage_info_main "Collapsing gene trees is disabled."
+  else
+    stage_info_main "Collapsing gene trees is enabled."
+    stage_info_main "The collapsing threshold is ${collapse_threshold}."
+    stage_cmd_main "nw_ed ${input_combined_tree} "i & b <=${collapse_threshold}" o > ${input_combined_tree}.collapsed"
+    nw_ed ${input_combined_tree} "i & b <=${collapse_threshold}" o > ${input_combined_tree}.collapsed
+    cp "${input_combined_tree}.collapsed" "${input_combined_tree}"
+    rm -f ${input_combined_tree}.collapsed
+    if [ -s "${input_combined_tree}" ]; then
+      stage_info_main "The collapsed gene trees have been written to:"
+      stage_info_main "${input_combined_tree}"
+      stage_success "Finished."
+      stage_blank_main ""
+    else
+      stage_warning "Failed to collapse gene trees."
+      stage_warning "The original gene trees have been written to:"
+      stage_warning "${input_combined_tree}"
+      stage_blank_main ""
+    fi
+  fi
+}
+
+################===========================================================================
 # Function run_astral4()
 ################===========================================================================
 run_astral4() {
@@ -5082,6 +5111,68 @@ run_astral4() {
     fi
   }
 ################===========================================================================
+
+################===========================================================================
+# Function run_astral_pro()
+################===========================================================================
+run_astral_pro() {
+  # input: {output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/Combined_gene_trees.tre
+  local input_combined_tree="$1"
+  # output: {output_dir}/08-Coalescent_analysis/ASTRAL-Pro/03-Species_tree
+  local output="$2"
+
+  define_threads "astral_pro"
+  rm -rf "${output}"
+  mkdir -p "${output}"
+  stage_info_main "01-Running ASTRAL-Pro for paralogs inclusion method..."
+  stage_cmd "${log_mode}" "astral-pro3 -t ${nt_astral_pro} -r ${astral_pro_r} -s ${astral_pro_s} -i ${input_combined_tree} -o ${output}/ASTRAL-Pro_${prefix}.tre 2> ${output}/ASTRAL-Pro_${prefix}.log"
+  astral-pro3 \
+  -t "${nt_astral_pro}" \
+  -r "${astral_pro_r}" \
+  -s "${astral_pro_s}" \
+  -i "${input_combined_tree}" \
+  -o "${output}/ASTRAL-Pro_${prefix}.tre" > "${output}/ASTRAL-Pro_${prefix}.log" 2>&1
+  if [ -s "${output}/ASTRAL-Pro_${prefix}.tre" ]; then
+    stage_info_main "Succeed to run ASTRAL-Pro for paralogs inclusion method."
+    stage_info_main "The ASTRAL-Pro tree has been written to:"
+    stage_info_main "${output}/ASTRAL-Pro_${prefix}.tre"
+    stage_success "Finished."
+    stage_blank_main ""
+  else
+    stage_error "Failed to run ASTRAL-Pro for paralogs inclusion method."
+    stage_error "HybSuite exits."
+    stage_blank_main ""
+    exit 1
+  fi
+
+  # Reroot the ASTRAL-Pro tree
+  if [ "${found_outgroup}" = "1" ]; then
+    cd "${output}"
+    stage_info_main "03-Using Newick Utilities to reroot the tree (ASTRAL-Pro)..."
+    outgroup_name=$(cat "${output_dir}"/hybsuite_checklists/Outgroup.txt|fmt)
+    stage_cmd_main "nw_reroot ${output}/ASTRAL-Pro_${prefix}.tre ${outgroup_name} -l > ${output}/ASTRAL-Pro_${prefix}.rr.tre"
+    nw_reroot "${output}/ASTRAL-Pro_${prefix}.tre" "${outgroup_name}" -l > "${output}/ASTRAL-Pro_${prefix}.rr.tre"
+    
+    if [ ! -s "${output}/ASTRAL-Pro_${prefix}.rr.tre" ]; then
+      stage_error "Failed to reroot the tree: ${output}/ASTRAL-Pro_${prefix}.rr.tre." 
+      stage_error "Please check your alignments and trees produced by ASTRAL-Pro." 
+      stage_blank_main ""
+    else
+      stage_info_main "Succeed to reroot the ASTRAL-Pro tree."
+      stage_info_main "The final rooted ASTRAL-Pro tree has been written to:"
+      stage_info_main "${output}/ASTRAL-Pro_${prefix}.rr.tre"
+      stage_success "Finished."
+      stage_blank_main ""
+    fi
+  else
+    stage_info_main "No outgroup name is provided. The tree will not be rerooted."
+    cp ${output}/ASTRAL-Pro_${prefix}.tre ${output}/ASTRAL-Pro_${prefix}.no_rr.tre
+    stage_info_main "The final unrooted ASTRAL-Pro tree has been written to:"
+    stage_info_main "${output}/ASTRAL-Pro_${prefix}.no_rr.tre"
+    stage_success "Finished."
+    stage_blank_main ""
+  fi
+}
 
 ################===========================================================================
 # Function count_species()
@@ -5180,42 +5271,45 @@ run_wastral() {
 # Function run_phypartspiecharts()
 ################===========================================================================
 run_phyparts_piecharts() {
-  local ortho_method="$1"
+  local suffix="$1"
   local sp_tree_method="$2"
   local input_gene_trees="$3"
   local input_sp_tree="$4"
-  # output: {output_dir}/08-Coalescent_analysis/${ortho_method}/04-PhyParts_PieCharts
+  # output: ${output_dir}/08-Coalescent_analysis/${ortho_method}/04-PhyParts_PieCharts
   local output="$5"
     
-  if [ -d "${output}" ]; then
-    rm -rf "${output}"
-  fi
-  mkdir -p "${output}"
-  stage_info_main "Running PhyPartsPieCharts for ${ortho_method} coalescent-based tree (${sp_tree_method}) ..."
-  stage_cmd "${log_mode}" "java -jar ${dependencies_dir}/phypartspiecharts/target/phyparts-0.0.1-SNAPSHOT-jar-with-dependencies.jar -a 1 -v -d ${input_gene_trees} -m ${input_sp_tree} -o ${output}/ASTRAL_PhyParts"
-  java -jar ${dependencies_dir}/phypartspiecharts/target/phyparts-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
-  -a 1 -v -d ${input_gene_trees} \
-  -m ${input_sp_tree} \
-  -o ${output}/${sp_tree_method}_PhyParts > /dev/null 2>&1
-            
-  phyparts_number=$(find ${input_gene_trees} -type f -name "*.tre" | wc -l)
-  python3 ${script_dir}/modified_phypartspiecharts.py \
-  ${input_sp_tree} \
-  ${sp_tree_method}_PhyParts "${phyparts_number}" \
-  --output "${output}/${sp_tree_method}_phypartspiecharts_${prefix}_${ortho_method}.svg" \
-  --to_csv \
-  --tree_type "${phypartspiecharts_tree_type}" \
-  --show_num_mode "${phypartspiecharts_num_mode}" \
-  --stat "${output}/${sp_tree_method}_phypartspiecharts_${prefix}_${ortho_method}.tsv" \
-  --threads "${nt}" > /dev/null 2>&1
-    
-  stage_cmd "${log_mode}" "python3 ${script_dir}/modified_phypartspiecharts.py ${input_sp_tree} ${sp_tree_method}_PhyParts ${phyparts_number} --output ${output}/${sp_tree_method}_phypartspiecharts_${prefix}_${ortho_method}.svg --to_csv --tree_type ${phypartspiecharts_tree_type} --show_num_mode ${phypartspiecharts_num_mode} --stat ${output}/${sp_tree_method}_phypartspiecharts_${prefix}_${ortho_method}.tsv --threads ${nt}"
-  if [ -s "${output}/${sp_tree_method}_phypartspiecharts_${prefix}_${ortho_method}.svg" ]; then
-    stage_success "Finished."
-    stage_blank_main ""
-  else
-    stage_error "Failed to run modified_phypartspiecharts.py for ${sp_tree_method} results."
-    stage_blank_main ""
+  if [ "${run_phyparts}" = "TRUE" ]; then
+    if [ -d "${output}" ]; then
+      rm -rf "${output}"
+    fi
+    mkdir -p "${output}"
+    stage_info_main "Running PhyPartsPieCharts for ${sp_tree_method} coalescent-based tree ..."
+    stage_cmd "${log_mode}" "java -jar ${dependencies_dir}/phypartspiecharts/target/phyparts-0.0.1-SNAPSHOT-jar-with-dependencies.jar -a 1 -v -d ${input_gene_trees} -m ${input_sp_tree} -o ${output}/ASTRAL_PhyParts"
+    java -jar ${dependencies_dir}/phypartspiecharts/target/phyparts-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
+    -a 1 -v -d ${input_gene_trees} \
+    -m ${input_sp_tree} \
+    -o ${output}/${sp_tree_method}_PhyParts > /dev/null 2>&1
+              
+    phyparts_number=$(find ${input_gene_trees} -type f -name "*.tre" | wc -l)
+    cd "${output}"
+    python3 ${script_dir}/modified_phypartspiecharts.py \
+    ${input_sp_tree} \
+    ${sp_tree_method}_PhyParts "${phyparts_number}" \
+    --output "${output}/${sp_tree_method}_phypartspiecharts_${suffix}.svg" \
+    --to_csv \
+    --tree_type "${phypartspiecharts_tree_type}" \
+    --show_num_mode "${phypartspiecharts_num_mode}" \
+    --stat "${output}/${sp_tree_method}_phypartspiecharts_${suffix}.tsv" \
+    --threads "${nt}" > /dev/null 2>&1
+      
+    stage_cmd "${log_mode}" "python3 ${script_dir}/modified_phypartspiecharts.py ${input_sp_tree} ${sp_tree_method}_PhyParts ${phyparts_number} --output ${output}/${sp_tree_method}_phypartspiecharts_${suffix}.svg --to_csv --tree_type ${phypartspiecharts_tree_type} --show_num_mode ${phypartspiecharts_num_mode} --stat ${output}/${sp_tree_method}_phypartspiecharts_${suffix}.tsv --threads ${nt}"
+    if [ -s "${output}/${sp_tree_method}_phypartspiecharts_${suffix}.svg" ]; then
+      stage_success "Finished."
+      stage_blank_main ""
+    else
+      stage_error "Failed to run modified_phypartspiecharts.py for ${sp_tree_method} results."
+      stage_blank_main ""
+    fi
   fi
 }
 ################===========================================================================
@@ -5257,15 +5351,47 @@ coalescent_analysis() {
     stage_info_main "Step 1: Preparing gene trees ..."
     gene_tree_iqtree_fasttree "${ortho_method}" "${output_dir}/06-Final_alignments/${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees"
     # Step 2: Recombining gene trees
-    stage_info_main "Step 2: Recombining gene trees ..."
+    stage_info_main "Step 2: Combining gene trees ..."
     combine_gene_trees "${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees" "${output_dir}/08-Coalescent_analysis/${ortho_method}/02-Combined_gene_trees"
     # Step 3: Species tree inference
     stage_info_main "Step 3: Species tree inference ..."
     if [ "${run_astral4}" = "TRUE" ]; then
       run_astral4 "${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/02-Combined_gene_trees/Combined_gene_trees.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV"
+      if [ -s "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre" ]; then
+        if [ "${run_phyparts}" = "TRUE" ]; then
+          stage_info_main "Step 4 (optional): Running PhyPartsPieCharts and modified_phypartspiecharts.py ..."
+          run_phyparts_piecharts "${prefix}_${ortho_method}" "ASTRAL-IV" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/04-PhyParts_PieCharts/ASTRAL-IV"
+        fi
+      elif [ -s "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL4_${prefix}_${ortho_method}.bootstrap.no_rr.tre" ]; then
+        if [ "${run_phyparts}" = "TRUE" ]; then
+          stage_info_main "Step 4 (optional): Running PhyPartsPieCharts and modified_phypartspiecharts.py ..."
+          run_phyparts_piecharts "${prefix}_${ortho_method}" "ASTRAL-IV" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL4_${prefix}_${ortho_method}.bootstrap.no_rr.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/04-PhyParts_PieCharts/ASTRAL-IV"
+        fi
+      else
+        stage_error "Failed to run ASTRAL-IV."
+        stage_error "HybSuite exits."
+        stage_blank_main ""
+        exit 1
+      fi
     fi
     if [ "${run_wastral}" = "TRUE" ]; then
       run_wastral "${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/02-Combined_gene_trees/Combined_gene_trees.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/wASTRAL" "${output_dir}/06-Final_alignments/${ortho_method}"
+      if [ -s "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/wASTRAL/wASTRAL_${prefix}_${ortho_method}.rr.tre" ]; then
+        if [ "${run_phyparts}" = "TRUE" ]; then
+          stage_info_main "Step 4 (optional): Running PhyPartsPieCharts and modified_phypartspiecharts.py ..."
+          run_phyparts_piecharts "${prefix}_${ortho_method}" "wASTRAL" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/wASTRAL/wASTRAL_${prefix}_${ortho_method}.rr.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/04-PhyParts_PieCharts/wASTRAL"
+        fi
+      elif [ -s "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/wASTRAL/wASTRAL_${prefix}_${ortho_method}.no_rr.tre" ]; then
+        if [ "${run_phyparts}" = "TRUE" ]; then
+          stage_info_main "Step 4 (optional): Running PhyPartsPieCharts and modified_phypartspiecharts.py ..."
+          run_phyparts_piecharts "${prefix}_${ortho_method}" "wASTRAL" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/wASTRAL/wASTRAL_${prefix}_${ortho_method}.no_rr.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/04-PhyParts_PieCharts/wASTRAL"
+        fi
+      else
+        stage_error "Failed to run wASTRAL."
+        stage_error "HybSuite exits."
+        stage_blank_main ""
+        exit 1
+      fi
     fi
   fi
 }
@@ -5324,17 +5450,78 @@ fi
 
 if [ "${run_astral_pro}" = "TRUE" ]; then
   stage_info_main "Executing ASTRAL-Pro analysis ..."
-  #################===========================================================================
-  # Step 1: Preparing fasta files and single gene trees for PhyloPyPruner
-  stage_info_main "Step 1: Preparing single gene trees for ASTRAL-Pro"
-  #################===========================================================================
-  # 01-MSA and trimming
-  cd "${paralogs_dir}"
-  define_threads "mafft"
-  define_threads "trimal"
-  rm -rf "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/"
-  mkdir -p "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/"
-  temp_file="fasta_file_list.txt"
+  if [ -s "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input" ]; then
+    #################===========================================================================
+    # Step 1: Preparing fasta files and single gene trees for PhyloPyPruner
+    stage_info_main "Step 1: Preparing single gene trees for ASTRAL-Pro"
+    #################===========================================================================
+    stage_info_main "Skipped preparing single gene trees for ASTRAL-Pro, since the paralogs gene trees habe been generated in stage 3."
+    rm -rf "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/"
+    mkdir -p "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/"
+    cp "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input"/*.tre "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/"
+    sed -i -E 's/\|[^:]*:/:/g; s/\|//g' "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/"*.tre
+
+    #################===========================================================================
+    stage_info_main "Step 2: Combining gene trees for ASTRAL-Pro"
+    #################===========================================================================
+    rm -rf "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/"
+    mkdir -p "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/"
+    awk '1' "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/"*.tre > "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/Combined_gene_trees.tre"
+    if [ ! -s "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/Combined_gene_trees.tre" ]; then
+      stage_error "Failed to combine gene trees for ASTRAL-Pro."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    else
+      stage_info_main_success "Finished."
+      stage_blank_main ""
+    fi
+    #################===========================================================================
+    stage_info_main "Step 3: Collapsing gene trees for ASTRAL-Pro"
+    #################===========================================================================
+    collapse_gene_trees "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/Combined_gene_trees.tre"
+    if [ ! -s "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/Combined_gene_trees.tre" ]; then
+      stage_error "Failed to collapse gene trees for ASTRAL-Pro."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    else
+      stage_info_main_success "Finished."
+      stage_blank_main ""
+    fi
+    #################===========================================================================
+    stage_info_main "Step 4: Running ASTRAL-Pro"
+    #################===========================================================================
+    run_astral_pro "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/Combined_gene_trees.tre" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/03-Species_tree"
+    if [ ! -s "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/03-Species_tree/ASTRAL-Pro_${prefix}.tre" ]; then
+      stage_error "Failed to run ASTRAL-Pro."
+      stage_error "HybSuite exits."
+      stage_blank_main ""
+      exit 1
+    else
+      stage_info_main_success "Finished."
+      stage_blank_main ""
+    fi
+    #################===========================================================================
+    # Step 5: Running PhyPartsPieCharts and modified_phypartspiecharts.py
+    #################===========================================================================
+    if [ -s "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/03-Species_tree/ASTRAL-Pro_${prefix}.rr.tre" ]; then
+      run_phyparts_piecharts "${prefix}" "ASTRAL-Pro" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/03-Species_tree/ASTRAL-Pro_${prefix}.rr.tre" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/04-PhyParts_PieCharts"
+    elif [ -s "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/03-Species_tree/ASTRAL-Pro_${prefix}.no_rr.tre" ]; then
+      run_phyparts_piecharts "${prefix}" "ASTRAL-Pro" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/03-Species_tree/ASTRAL-Pro_${prefix}.no_rr.tre" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/04-PhyParts_PieCharts"
+    fi
+  else
+    #################===========================================================================
+    # Step 1: Preparing fasta files and single gene trees for PhyloPyPruner
+    stage_info_main "Step 1: Preparing single gene trees for ASTRAL-Pro"
+    #################===========================================================================
+    # 01-MSA and trimming
+    cd "${paralogs_dir}"
+    define_threads "mafft"
+    define_threads "trimal"
+    rm -rf "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/"
+    mkdir -p "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/"
+    temp_file="fasta_file_list.txt"
     find . -maxdepth 1 -type f -name "*.fasta" -exec basename {} \; > "$temp_file"
     total_sps=$(find . -maxdepth 1 -type f -name "*.fasta" | wc -l)
     # Initialize parallel environment
@@ -5353,8 +5540,8 @@ if [ "${run_astral_pro}" = "TRUE" ]; then
     elif [ "${trim_tool}" = "2" ]; then
       trim_tool_tool="HMMCleaner"
     fi
-    stage_info_main "====>> Running MAFFT, ${trim_tool_tool} and ${gene_tree_tool} for ${total_sps} putative paralog files (${process} in parallel) ====>>"
     
+    stage_info_main "====>> Running MAFFT, ${trim_tool_tool} and ${gene_tree_tool} for ${total_sps} putative paralog files (${process} in parallel) ====>>"
     while IFS= read -r file || [ -n "$file" ]; do
       filename=${file%.fasta}
       genename=${file%_paralogs_all.fasta}
@@ -5366,24 +5553,24 @@ if [ "${run_astral_pro}" = "TRUE" ]; then
         update_start_count "$genename" "$stage_logfile"
         sed -i "s/ single_hit/|single_hit/g;s/ multi/|multi/g;s/ NODE_/|NODE_/g;s/\.[0-9]\+|NODE_/|NODE_/g;s/\.main|NODE_/|NODE_/g" "${file}"
         # Run MAFFT  
-        run_mafft "${file}" "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.fasta" "${nt_mafft}"
-        remove_n "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.fasta"
+        run_mafft "${file}" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.fasta" "${nt_mafft}"
+        remove_n "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.fasta"
         if [ "${trim_tool}" = "1" ]; then
-          run_trimal "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.fasta" "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta" "${trimal_mode}" \
+          run_trimal "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.fasta" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta" "${trimal_mode}" \
           "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
           "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
         fi
         if [ "${trim_tool}" = "2" ]; then
-          run_hmmcleaner "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.fasta" "${hmmcleaner_cost}"
-          if [ -s "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln_hmm.fasta" ]; then
+          run_hmmcleaner "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.fasta" "${hmmcleaner_cost}"
+          if [ -s "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln_hmm.fasta" ]; then
             update_finish_count "$genename" "$stage_logfile"
-            mv "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln_hmm.fasta" "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta"
+            mv "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln_hmm.fasta" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta"
             rm -f "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Input/${filename}.aln_hmm"*
           else
             record_failed_sample "$genename"
           fi
         fi
-        
+          
         awk '
         BEGIN { OFS="\n" }
         /^>/ {
@@ -5396,24 +5583,24 @@ if [ "${run_astral_pro}" = "TRUE" ]; then
             }
             next
         }
-        { print $0 }' "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta" > "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.temp" && \
-        mv "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.temp" "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta"
+        { print $0 }' "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta" > "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.temp" && \
+        mv "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.temp" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta"
         if [ ! -s "./${filename}.aln.trimmed.fasta" ]; then
           record_failed_sample "$genename"
         fi
         if [ "${gene_tree}" = "1" ]; then
-          stage_cmd "${log_mode}" "iqtree -s ${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta -m MFP -nt ${nt_iqtree} -bb ${gene_tree_bb} -pre ${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta"
-          iqtree -s "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta" -m MFP -nt ${nt_iqtree} -bb "${gene_tree_bb}" -pre "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta" > /dev/null 2>&1
-          if [ -s "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta.treefile" ]; then
-            mv "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta.treefile" "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta.tre"
+          stage_cmd "${log_mode}" "iqtree -s ${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta -m MFP -nt ${nt_iqtree} -bb ${gene_tree_bb} -pre ${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta"
+          iqtree -s "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta" -m MFP -nt ${nt_iqtree} -bb "${gene_tree_bb}" -pre "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta" > /dev/null 2>&1
+          if [ -s "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta.treefile" ]; then
+            mv "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta.treefile" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta.tre"
             find . -maxdepth 1 -name "${filename}.aln.trimmed.fasta*" ! -name "*.tre" ! -name "*.fasta" -delete
           else
             record_failed_sample "$genename"
           fi
         elif [ "${gene_tree}" = "2" ]; then
-          stage_cmd "${log_mode}" "FastTreeMP -nt -gtr -gamma -boot ${gene_tree_bb} ${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta > ./${filename}.aln.trimmed.fasta.tre"
-          FastTreeMP -nt -gtr -gamma -boot "${gene_tree_bb}" "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta" > "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta.tre" 2>/dev/null
-          if [ ! -s "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/${filename}.aln.trimmed.fasta.tre" ]; then
+          stage_cmd "${log_mode}" "FastTreeMP -nt -gtr -gamma -boot ${gene_tree_bb} ${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta > ./${filename}.aln.trimmed.fasta.tre"
+          FastTreeMP -nt -gtr -gamma -boot "${gene_tree_bb}" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta" > "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta.tre" 2>/dev/null
+          if [ ! -s "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/${filename}.aln.trimmed.fasta.tre" ]; then
             record_failed_sample "$genename"
           fi
         fi
@@ -5435,49 +5622,62 @@ if [ "${run_astral_pro}" = "TRUE" ]; then
     if [ "${log_mode}" = "full" ]; then
       display_process_log "$stage_logfile" "Failed to prepare single gene trees for ASTRAL-Pro:"
     fi
-    rm -f "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/01-Gene_trees/"*.fasta
-    if ! find ./ -type f -name '*.aln.trimmed.fasta.tre' -size +0c -quit 2>/dev/null; then
-      stage_error "Fail to run FastTree or IQ-TREE."
+    rm -f "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/"*.fasta
+    if ! find "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/" -type f -name '*.aln.trimmed.fasta.tre' -size +0c -quit 2>/dev/null; then
+      stage_error "Failed to run FastTree or IQ-TREE."
       stage_error "HybSuite exits."
       stage_blank_main ""
       exit 1
     fi
     stage_success "Finished."
     stage_blank_main ""
-  
-  #################===========================================================================
-  # Step 2: Running ASTRAL-Pro
-  stage_info_main "Step 2: Running ASTRAL-Pro"
-  #################===========================================================================
-  cd "${output_dir}/08-Coalescent_analysis/ASTRAL-pro/"
-  run_astral_pro "ASTRAL-pro"
+    #################===========================================================================
+    # Step 2: Combining gene trees for ASTRAL-Pro
+    stage_info_main "Step 2: Combining gene trees for ASTRAL-Pro"
+    #################===========================================================================
+    cd "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/"
+    rm -rf "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/"
+    mkdir -p "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/"
+    sed -i -E 's/\|[^:]*:/:/g; s/\|//g' "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/"*.tre
+    awk '1' "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/"*.tre > "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/Combined_gene_trees.tre"
+    if [ ! -s "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/Combined_gene_trees.tre" ]; then
+      stage_info_main "The combined gene trees for ASTRAL-Pro have been written to:"
+      stage_info_main "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/Combined_gene_trees.tre"
+      stage_success "Finished."
+      stage_blank_main ""
+    else
+      stage_error "Failed to combine gene trees."
+      stage_error "HybSuite exits."
+      stage_error "Please check your alignments and trees produced by FastTree or IQ-TREE."
+      stage_blank_main ""
+      exit 1
+    fi
+    #################===========================================================================
+    # Step 3: Collapsing gene trees
+    stage_info_main "Step 3: Collapsing gene trees"
+    #################===========================================================================
+    collapse_gene_trees "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/Combined_gene_trees.tre"
+    #################===========================================================================
+    # Step 4: Running ASTRAL-Pro
+    stage_info_main "Step 4: Running ASTRAL-Pro"
+    #################===========================================================================
+    run_astral_pro "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/02-Combined_gene_trees/Combined_gene_trees.tre" "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/03-Species_tree"
+  fi
 fi
-
-
-
-
-
-
-
-
-
-
-
-
 
 ############################################################################################
 # End of Stage 5
 stage_success "Successfully finishing the Stage 5: Phylogenetic trees inference."
 stage_info_main_success "The resulting files have been saved in:"
 if { [ "${run_iqtree}" = "TRUE" ] || [ "${run_raxml}" = "TRUE" ] || [ "${run_raxml_ng}" = "TRUE" ]; } && \
-   { [ "${run_astral4}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; }; then
+   { [ "${run_astral4}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ] || [ "${run_astral_pro}" = "TRUE" ]; }; then
   stage_info_main_success "(1) ${output_dir}/07-Concatenated_analysis/"
   stage_info_main_success "(2) ${output_dir}/08-Coalescent_analysis/"
 elif [ "${run_iqtree}" = "FALSE" ] && [ "${run_raxml}" = "FALSE" ] && [ "${run_raxml_ng}" = "FALSE" ] && \
-     { [ "${run_astral4}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; }; then
+     { [ "${run_astral4}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ] || [ "${run_astral_pro}" = "TRUE" ]; }; then
   stage_info_main_success "${output_dir}/08-Coalescent_analysis/"
 elif { [ "${run_iqtree}" = "TRUE" ] || [ "${run_raxml}" = "TRUE" ] || [ "${run_raxml_ng}" = "TRUE" ]; } && \
-     [ "${run_astral4}" = "FALSE" ] && [ "${run_wastral}" = "FALSE" ]; then
+     [ "${run_astral4}" = "FALSE" ] && [ "${run_wastral}" = "FALSE" ] && [ "${run_astral_pro}" = "FALSE" ]; then
   stage_info_main_success "${output_dir}/07-Concatenated_analysis/"
 fi
 
