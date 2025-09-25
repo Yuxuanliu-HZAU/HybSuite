@@ -75,6 +75,11 @@ General arguments:
   -sp_tree <1-5|all>    Species tree inference method: (Default: 1)
                         1: IQ-TREE, 2: RAxML, 3: RAxML-NG, 4: ASTRAL-IV, 5: wASTRAL, 6: ASTRAL-Pro
   
+  === Nucleotide ambiguity character replacement (Stage 3&4) ===
+  -replace_n <TRUE|FALSE>
+                        Replace ambiguous characters ('n', 'N', '?') with gaps ('-') in alignment files. (Default: FALSE)
+                        Note: Recommended for phylogenetic software compatibility (e.g., IQ-TREE, trimAl).
+
   === Gene trees collapse threshold ===
   -collapse_threshold <VALUE>
                         Specify the minimum support value threshold for internal nodes in gene trees. (Default: 0)
