@@ -75,7 +75,7 @@ Arguments for integrated tools :
   -pp_trim_lb <INT>     Trim long branches. (Default: 5)
 
   === ParaGone ===  
-  -paragone_pool <INT>  Parallel alignment tasks. (Default: 1)
+  -paragone_pool <INT>  Parallel alignment tasks. (Default: 1, same as the option '-process')
   -paragone_treeshrink_q <0-1>        
                         TreeShrink quantile threshold (Default: 0.05)
   -paragone_cutoff_value <FLOAT>       
