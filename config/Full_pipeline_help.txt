@@ -4,7 +4,7 @@ Usage: hybsuite full_pipeline ...
 
 Mandatory arguments: -input_list -input_data (required when including user-provided data) -t -output_dir
 
-Essential arguments: -PH -sp_tree -seqs_min_length -aln_locus_filter -prefix -prefix -nt -process
+Essential arguments: -PH -sp_tree -seqs_min_length -aln_locus_filter -prefix -nt -process
 
 Arguments for inputs:
   -input_list <FILE>    The file listing input sample names and corresponding data types. (Default: None)
