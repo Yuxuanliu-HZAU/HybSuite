@@ -243,11 +243,11 @@ config_main() {
                 done
                 if [ "$found_arg" -eq 1 ]; then
                   echo ""
-                  echo "[HybSuite-WARNING]: The argument for option $2 is not permitted to start with '-'"
-                  echo "                    Please change your argument for the option $2."
-                  echo "[HybSuite-WARNING]: Or you didn't specify any argument for the option $2."
-                  echo "                    Please specify an argument for the option $2."
-                  echo "                    HybSuite exits."
+                  check_error "The argument for option $2 is not permitted to start with '-'"
+                  check_error "Please change your argument for the option $2."
+                  check_error "Or you didn't specify any argument for the option $2."
+                  check_error "Please specify an argument for the option $2."
+                  check_error "HybSuite exits."
                   echo ""
                   exit 1
                 fi
@@ -255,9 +255,9 @@ config_main() {
             esac
             if [ -z "$3" ]; then
               echo ""
-              echo "[HybSuite-ERROR]:   You didn't specify any argument for the option $2 "
-              echo "                    Please specify an argument for the option $2."
-              echo "                    HybSuite exits."
+              check_error "You didn't specify any argument for the option $2 "
+              check_error "Please specify an argument for the option $2."
+              check_error "HybSuite exits."
               echo ""
               exit 1
             fi
@@ -281,16 +281,16 @@ config_main() {
               shift 2
             else
               echo ""
-              echo "[HybSuite-ERROR]:   -$option is an invalid option."
-              echo "                    Please check the help document and use right options."
-              echo "                    HybSuite exits."
+              check_error "-$option is an invalid option."
+              check_error "Please check the help document and use right options."
+              check_error "HybSuite exits."
               echo ""
               exit 1
             fi
             ;;
         *)
-            echo "[HybSuite-ERROR]:   Invalid option '$2'. Options should start with '-'."
-            echo "                    HybSuite exits." 
+            check_error "Invalid option '$2'. Options should start with '-'."
+            check_error "HybSuite exits." 
             echo ""
             exit 1
             ;;
@@ -386,7 +386,7 @@ if [ "$#" -gt 0 ]; then
       exit $?
       ;;
     "full_pipeline")
-      config_main "Full_pipeline.config"
+      config_main "Full_pipeline.config" "$@"
       full_pipeline="TRUE"
       ;;
     "stage1")
@@ -483,6 +483,45 @@ if [ "$#" -eq 1 ]; then
   check_error "HybSuite exits."
   echo ""
   exit 1
+fi
+
+#################===========================================================================
+# Define pipeline stages
+# 01 skip stage
+skip_stage1="FALSE"
+skip_stage2="FALSE"
+skip_stage3="FALSE"
+skip_stage4="FALSE"
+
+if [ "${skip_stage}" = "1" ]; then
+  skip_stage1="TRUE"
+fi
+if [ "${skip_stage}" = "12" ]; then
+  skip_stage1="TRUE"
+  skip_stage2="TRUE"
+fi
+if [ "${skip_stage}" = "123" ]; then
+  skip_stage1="TRUE"
+  skip_stage2="TRUE"
+  skip_stage3="TRUE"
+fi
+
+# 02 run to stage
+run_until="FALSE"
+if [ "${run_to_stage}" = "1" ]; then
+  skip_stage2="TRUE"
+  skip_stage3="TRUE"
+  skip_stage4="TRUE"
+  run_until="TRUE"
+fi
+if [ "${run_to_stage}" = "2" ]; then
+  skip_stage3="TRUE"
+  skip_stage4="TRUE"
+  run_until="TRUE"
+fi
+if [ "${run_to_stage}" = "3" ]; then
+  skip_stage4="TRUE"
+  run_until="TRUE"
 fi
 
 #################===========================================================================
@@ -880,13 +919,13 @@ check_necessary_options() {
 if [ "${check}" = "FALSE" ]; then
   stage_info_main "HybSuite Checking is skipped."
 elif [ "${check}" = "TRUE" ]; then
-  stage_info_main_ "<<<======= HybSuite CHECKING =======>>>"
+  stage_info_main_purple "<<<======= HybSuite CHECKING =======>>>"
   stage_info_main "Message Severity Convention:"
   stage_info_main "[ATTENTION]  Important notices requiring user awareness"
   stage_info_main "[WARNING]    Configuration issues that may impact analysis"
   stage_info_main "[ERROR]      Fatal errors causing pipeline termination (e.g. missing dependencies)"
   stage_blank_main ""
-  stage_info_main "=> Step 1: Input Parameter Validation"
+  stage_info_main_blue "=> Step 1: Input Parameter Validation"
   stage_info_main "01-Verifying required command-line options..."
   stage_info_main "Validation results:"
   ###Verify if the user has entered the necessary parameters
@@ -1102,7 +1141,7 @@ elif [ "${check}" = "TRUE" ]; then
       stage_blank_main ""
       exit 1
     fi
-    if [ ! -d "${aln_dir}" ] && [ "${aln_dir}" != "${paralogs_dir}" ]; then
+    if [ ! -d "${aln_dir}" ] && [ "${aln_dir}" != "${output_dir}/06-Final_alignments" ]; then
       stage_error "The directory containing all aligned sequences (specified by '-aln_dir') does not exist."
       stage_error "Please check and correct the '-aln_dir' parameter."
       stage_error "HybSuite exits."
@@ -1263,7 +1302,7 @@ elif [ "${check}" = "TRUE" ]; then
   ###################################
   ### Step 2: Check dependencies ####
   ###################################
-  stage_info_main "=> Step 2: Check dependencies" 
+  stage_info_main_blue "=> Step 2: Check dependencies" 
   stage_info_main "01-Check required software in all conda environments..."
   # sra-tools
   check_sra_tools() {
@@ -1522,7 +1561,7 @@ elif [ "${check}" = "TRUE" ]; then
   ######################################################
   ### Step 3: Check the inputs #########################
   ######################################################
-  stage_info_main "=> Step 3: Check the inputs" 
+  stage_info_main_blue "=> Step 3: Check the inputs" 
   # 01-Check the form of the input list file
   stage_info_main "01-Check the form of the input list file (specified by '-input_list') ..."
   stage_info_main "Checking results:"
@@ -1633,7 +1672,7 @@ fi
 
 if [ "${check}" = "TRUE" ]; then
   if [ -s "${input_list}" ]; then
-    stage_info_main "=> Step 4: Check species checklists"
+    stage_info_main_blue "=> Step 4: Check species checklists"
     all_sp_num=$(grep -c '^' "${input_list}" || wc -l < "${input_list}")
     all_genus_num=$(awk -F '_' '{print $1}' "${input_list}" | sort -u | grep -c '^')
     awk -F '_' '{print $1}' "${input_list}" | sort -u >> "${output_dir}/hybsuite_checklists/All_Genus_name_list.txt"
@@ -2193,26 +2232,27 @@ work_dir="${output_dir}/hybsuite_logs"
     /^>/ {
         if (header) {
             print header;
-            print processed_seq;
+            gsub(/[Nn?]/, gap, seq);
+            if (seq) print seq;
         }
         header = $0;
         seq = "";
-        processed_seq = "";
         next;
     }
     {
+        gsub(/\r/, "");
         seq = seq $0;
     }
     END {
         if (header) {
             print header;
             gsub(/[Nn?]/, gap, seq);
-            print seq;
+            if (seq) print seq;
         }
     }
     ' "$input_fasta" > "${input_fasta}.tmp" && 
     mv "${input_fasta}.tmp" "$input_fasta"
-}
+  }
   
   run_mafft() {
       local input=$1
@@ -2378,7 +2418,7 @@ run_hmmcleaner() {
     fi
 }
 # Stage 1: NGS dataset construction
-if [ "${run_stage1}" = "TRUE" ]; then
+if ([ "${run_stage1}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]) && [ "${skip_stage1}" = "FALSE" ]; then
   ############################################################################################
   #===> Stage 1 NGS dataset construction <===#################################################
   ############################################################################################
@@ -2720,7 +2760,7 @@ if [ "${run_stage1}" = "TRUE" ]; then
     stage_success "HybSuite execution completed successfully, please reference our publication in your work."
     stage_blank_main ""
     exit 0
-  elif [ "${full_pipeline}" = "TRUE" ]; then
+  elif [ "${full_pipeline}" = "TRUE" ] && [ "${run_until}" = "TRUE" ]; then
     stage_info_main "Now moving on to the next stage ..."
     stage_blank_main ""
   fi
@@ -2731,7 +2771,7 @@ fi
 ############################################################################################
 # Stage 2 Data assembly and filtering ######################################################
 ############################################################################################
-if [ "${run_stage2}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
+if ([ "${run_stage2}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]) && [ "${skip_stage2}" = "FALSE" ]; then
   ############################################################################################
   # 0.Preparation
   # (1) Change working directory and conda environment
@@ -3269,7 +3309,7 @@ if [ "${run_stage2}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
     stage_success "HybSuite execution completed successfully, please reference our publication in your work."
     stage_blank_main ""
     exit 0
-  else
+  elif [ "${full_pipeline}" = "TRUE" ] && [ "${run_until}" = "TRUE" ]; then
     stage_info_main "Moving on to the next stage..."
     stage_blank_main ""
   fi
@@ -3280,7 +3320,7 @@ fi
 ############################################################################################
 # Stage 3 Paralogs handling ################################################################
 ############################################################################################
-if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
+if ([ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]) && [ "${skip_stage3}" = "FALSE" ]; then
   #################===========================================================================
   # 0.Preparation
   stage_info_main_purple "<<<======= Stage 3 Paralogs handling =======>>>"
@@ -3515,7 +3555,7 @@ if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
         fi
       } &
       if [ "${log_mode}" = "cmd" ] || [ "${log_mode}" = "full" ]; then
-        if [ "${trimal_tool}" = "1" ]; then
+        if [ "${trim_tool}" = "1" ]; then
           display_only_failed_log "$stage_logfile" "Failed to trim ${ortho_method} alignments via trimAl:"
         else
           display_only_failed_log "$stage_logfile" "Failed to trim ${ortho_method} alignments via HMMCleaner:"
@@ -3627,8 +3667,9 @@ if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
     local ortho_method="$1"
     
     #01-Run AMAS.py to check every original and trimmed ${ortho_method} alignment
-    mkdir -p "${output_dir}/hybsuite_reports/Alignments_stats"
-    rm -f "${output_dir}/hybsuite_reports/Alignments_stats"${ortho_method}*
+    rm -rf "${output_dir}/06-Final_alignments/${ortho_method}"
+    mkdir -p "${output_dir}/hybsuite_reports/Alignments_stats" "${output_dir}/06-Final_alignments/${ortho_method}"
+    rm -f "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}"*
     stage_info_main "01-Running AMAS.py to check every original ${ortho_method} alignment ..."
     cd "${output_dir}/04-Alignments/${ortho_method}/"
     stage_cmd "${log_mode}" "AMAS.py summary -f fasta -d dna -i ${output_dir}/04-Alignments/${ortho_method}/*.aln.trimmed.fasta -o ${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-01_Alignments_stats_AMAS.tsv"
@@ -3695,13 +3736,13 @@ if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
 
     # 07_Final_alignments_stats.txt
     awk -v all_sp="${total_sps_num}" -v cov_thresh="${aln_locus_filter}" -v cov_length_thresh="${aln_min_length}" '$9!=0 && $3 >= cov_length_thresh && ($2 / all_sp) >= cov_thresh {print $0}' "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-01_Alignments_stats_AMAS.tsv" > "${output_dir}"/hybsuite_reports/Alignments_stats/${ortho_method}-07_Final_alignments_stats_AMAS.txt
-    rm -rf "${paralogs_dir}/${ortho_method}/"
-    mkdir -p "${paralogs_dir}/${ortho_method}/"
+    rm -rf "${output_dir}/06-Final_alignments/${ortho_method}/"
+    mkdir -p "${output_dir}/06-Final_alignments/${ortho_method}/"
     while IFS= read -r line || [ -n "$line" ]; do
       cp "${output_dir}"/05-Trimmed_alignments/${ortho_method}/"${line}" "${output_dir}"/06-Final_alignments/${ortho_method}/
     done < "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-06_Final_alignments_list.txt"
 
-    stage_success "Congratulations! Finished generating ${ortho_method} final alignments in ${paralogs_dir}/${ortho_method}/"
+    stage_success "Congratulations! Finished generating ${ortho_method} final alignments in ${output_dir}/06-Final_alignments/${ortho_method}/${ortho_method}/"
     num_aln_final=$(wc -l < "${output_dir}/hybsuite_reports/Alignments_stats/${ortho_method}-06_Final_alignments_list.txt")
     stage_info_main_success "Totally $num_aln_final ${ortho_method} final alignments were generated, which will be used for species tree inference in stage 4."
     stage_blank_main ""
@@ -4188,23 +4229,23 @@ if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
     stage_info_main_blue "Step 3: Realigning and trimming ${step_parts} orthogroup alignments generated via PhyloPyPruner ..."
     #################===========================================================================
     if [ "${LS}" = "TRUE" ]; then
-      stage_info_main "====>> LS ====>>"
+      stage_info_main_light_purple "====>> LS ====>>"
       MSA_and_trim "LS" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Output_LS/output_alignments" "aln.trimmed_pruned"*".fasta"
     fi
     if [ "${MI}" = "TRUE" ]; then
-      stage_info_main "====>> MI ====>>"
+      stage_info_main_light_purple "====>> MI ====>>"
       MSA_and_trim "MI" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Output_MI/output_alignments" "aln.trimmed_pruned"*".fasta"
     fi
     if [ "${MO}" = "TRUE" ]; then
-      stage_info_main "====>> MO ====>>"
+      stage_info_main_light_purple "====>> MO ====>>"
       MSA_and_trim "MO" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Output_MO/output_alignments" "aln.trimmed_pruned"*".fasta"
     fi
     if [ "${RT}" = "TRUE" ]; then
-      stage_info_main "====>> RT ====>>"
+      stage_info_main_light_purple "====>> RT ====>>"
       MSA_and_trim "RT" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Output_RT/output_alignments" "aln.trimmed_pruned"*".fasta"
     fi
     if [ "${one_to_one}" = "TRUE" ]; then
-      stage_info_main "====>> 1to1 ====>>"
+      stage_info_main_light_purple "====>> 1to1 ====>>"
       MSA_and_trim "1to1" "${output_dir}/03-Paralogs_handling/PhyloPyPruner/Output_1to1/output_alignments" "aln.trimmed_pruned"*".fasta"
     fi
 
@@ -4263,7 +4304,7 @@ if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
       outgroup_args="$outgroup_args --internal_outgroup $line"
     done < "${output_dir}/hybsuite_checklists/Outgroup.txt"
     # Preparation: change species names to correct ones for running ParaGone 
-    sed -i "s/_var\._/_var_/g;s/_subsp\._/_subsp_/g;s/_f\._/_f_/g"  "${paralogs_dir}/"*
+    sed -i "s/_var\._/_var_/g;s/_subsp\._/_subsp_/g;s/_f\._/_f_/g"  "${paralogs_dir}/"*.fasta
     
     #for file in "${paralogs_dir}/"*; do
     #  sed -i "s/_var\._/_var_/g"  "${file}"
@@ -4294,12 +4335,12 @@ if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
       fi
       log_info="${log_info} ... ====>>"
 
-      paragone_step1_cmd="paragone check_and_align ${input_dir}${outgroup_args} --pool ${paragone_pool} --threads ${nt_paragone} --mafft_algorithm ${mafft_algorithm} --trimal_${trimal_mode}"
-      paragone_step2_cmd="paragone alignment_to_tree 04_alignments_trimmed_cleaned --pool ${paragone_pool} --threads ${nt_paragone}"
+      paragone_step1_cmd="paragone check_and_align ${input_dir}${outgroup_args} --pool ${process} --threads ${nt_paragone} --mafft_algorithm ${mafft_algorithm} --trimal_${trimal_mode}"
+      paragone_step2_cmd="paragone alignment_to_tree 04_alignments_trimmed_cleaned --pool ${process} --threads ${nt_paragone}"
       paragone_step3_cmd="paragone qc_trees_and_extract_fasta 04_alignments_trimmed_cleaned --min_tips ${paragone_min_tips} --treeshrink_q_value ${paragone_treeshrink_q_value} --cut_deep_paralogs_internal_branch_length_cutoff ${paragone_cutoff_value}"
-      paragone_step4_cmd="paragone align_selected_and_tree 04_alignments_trimmed_cleaned --pool ${paragone_pool} --threads ${nt_paragone}"
+      paragone_step4_cmd="paragone align_selected_and_tree 04_alignments_trimmed_cleaned --pool ${process} --threads ${nt_paragone}"
       paragone_step5_cmd="paragone prune_paralogs --minimum_taxa ${paragone_minimum_taxa}"
-      paragone_step6_cmd="paragone final_alignments --pool ${paragone_pool} --threads ${nt_paragone}"
+      paragone_step6_cmd="paragone final_alignments --pool ${process} --threads ${nt_paragone}"
 
       if [ "${trimal_gapthreshold}" != "_____" ]; then
         paragone_step1_cmd="${paragone_step1_cmd} --trimal_gapthreshold ${trimal_gapthreshold}"
@@ -4367,7 +4408,7 @@ if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
       #################===========================================================================
       stage_info_main "Running ParaGone step1 ... "
       #################===========================================================================
-      stage_cmd "${log_mode}" "${paragone_step1_cmd}"
+      stage_cmd_main "${paragone_step1_cmd}"
       eval "${paragone_step1_cmd}" > /dev/null 2>&1
       if [ ! -n "$(find "./04_alignments_trimmed_cleaned" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
         stage_error "Fail to run ParaGone step1."
@@ -4382,7 +4423,7 @@ if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
       #################===========================================================================
       stage_info_main "Running ParaGone step2 ... "
       #################===========================================================================
-      stage_cmd "${log_mode}" "${paragone_step2_cmd}"
+      stage_cmd_main "${paragone_step2_cmd}"
       eval "${paragone_step2_cmd}" > /dev/null 2>&1
       if [ ! -n "$(find "./05_trees_pre_quality_control" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
         stage_error "Fail to run ParaGone step2."
@@ -4397,7 +4438,7 @@ if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
       #################===========================================================================
       stage_info_main "Running ParaGone step3 ... "
       #################===========================================================================
-      stage_cmd "${log_mode}" "${paragone_step3_cmd}"
+      stage_cmd_main "${paragone_step3_cmd}"
       eval "${paragone_step3_cmd}" > /dev/null 2>&1
       if [ ! -n "$(find "./09_sequences_from_qc_trees" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
         stage_error "Fail to run ParaGone step3."
@@ -4412,7 +4453,7 @@ if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
       #################===========================================================================
       stage_info_main "Running ParaGone step4 ... "
       #################===========================================================================
-      stage_cmd "${log_mode}" "${paragone_step4_cmd}"
+      stage_cmd_main "${paragone_step4_cmd}"
       eval "${paragone_step4_cmd}" > /dev/null 2>&1
       if [ ! -n "$(find "./13_pre_paralog_resolution_trees" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ]; then
         stage_error "Fail to run ParaGone step4."
@@ -4426,7 +4467,7 @@ if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
       #################===========================================================================
       stage_info_main "Running ParaGone step5 ... "
       #################===========================================================================
-      stage_cmd "${log_mode}" "${paragone_step5_cmd}"
+      stage_cmd_main "${paragone_step5_cmd}"
       eval "${paragone_step5_cmd}" > /dev/null 2>&1
       if [ ! -n "$(find "./14_pruned_MO" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ] \
       && [ ! -n "$(find "./15_pruned_MI" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ] \
@@ -4444,7 +4485,7 @@ if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
       #################===========================================================================
       stage_info_main "Running ParaGone step6 ... "
       #################===========================================================================
-      stage_cmd "${log_mode}" "${paragone_step6_cmd}"
+      stage_cmd_main "${paragone_step6_cmd}"
       eval "${paragone_step6_cmd}" > /dev/null 2>&1
       if [ ! -n "$(find "./23_MO_final_alignments" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ] \
       && [ ! -n "$(find "./24_MI_final_alignments" -maxdepth 1 -mindepth 1 -print -quit 2>/dev/null)" ] \
@@ -4578,7 +4619,7 @@ if [ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
     stage_success "HybSuite execution completed successfully, please reference our publication in your work."
     stage_blank_main ""
     exit 0
-  else
+  elif [ "${full_pipeline}" = "TRUE" ] && [ "${run_until}" = "TRUE" ]; then
     stage_info_main "Moving on to the next stage..."
     stage_blank_main ""
   fi
@@ -4588,11 +4629,11 @@ fi
 ######################################################################################
 # Stage 4: Species tree inference ####################################################
 ######################################################################################
-if [ "${run_stage4}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]; then
+if ([ "${run_stage4}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]) && [ "${skip_stage4}" = "FALSE" ]; then
 # 0.Preparation
 stage_info_main_purple "<<<======= Stage 4 Species tree inference =======>>>"
 if [ "${full_pipeline}" = "TRUE" ]; then
-  paralogs_dir="${output_dir}/06-Final_alignments"
+  aln_dir="${output_dir}/06-Final_alignments"
 fi
 
 ################===========================================================================
@@ -4979,7 +5020,7 @@ gene_tree_iqtree_fasttree() {
         # Update start count
         update_start_count "$filename" "$stage_logfile"
         if [ "${gene_tree}" = "1" ]; then
-          stage_cmd "${log_mode}" "iqtree -s ${input}/${filename}.aln.trimmed.fasta -m MFP -nt ${nt_iqtree} -bb ${gene_tree_bb} -pre ${paralogs_dir}/${ortho_method}/${filename}.aln.trimmed.fasta"
+          stage_cmd "${log_mode}" "iqtree -s ${input}/${filename}.aln.trimmed.fasta -m MFP -nt ${nt_iqtree} -bb ${gene_tree_bb} -pre ${aln_dir}/${ortho_method}/${filename}.aln.trimmed.fasta"
           iqtree -s "${input}/${filename}.aln.trimmed.fasta" -m MFP -nt ${nt_iqtree} -bb "${gene_tree_bb}" -pre "${output}/${filename}" > /dev/null 2>&1
           if [ -s "${output}/${filename}.treefile" ]; then
             mv "${output}/${filename}.treefile" "${output}/${filename}.tre"
@@ -5450,7 +5491,7 @@ concatenated_analysis() {
   if [ "${run_iqtree}" = "TRUE" ] || [ "${run_raxml}" = "TRUE" ] || [ "${run_raxml_ng}" = "TRUE" ]; then
     stage_info_main "====>> concatenation analysis for ${ortho_method} alignments <<===="
     stage_info_main_blue "Step 1: Concatenating alignments ..."
-    concatenation "${ortho_method}" "${paralogs_dir}/${ortho_method}"
+    concatenation "${ortho_method}" "${aln_dir}/${ortho_method}"
     stage_info_main_blue "Step 2: Species tree inference ..."
     run_modeltest_ng "${ortho_method}" "${output_dir}/07-Concatenated_analysis/${ortho_method}/01-Supermatrix/${prefix}_${ortho_method}.fasta" "${output_dir}/07-Concatenated_analysis/${ortho_method}/02-Species_tree/${prefix}_${ortho_method}_ModelTest_NG.txt"
     if [ "${run_iqtree}" = "TRUE" ]; then
@@ -5476,7 +5517,7 @@ coalescent_analysis() {
     stage_info_main_purple "====>> Coalescent analysis on ${ortho_method} alignments <<===="
     # Step 1: Preparing gene trees
     stage_info_main_blue "Step 1: Preparing gene trees ..."
-    gene_tree_iqtree_fasttree "${ortho_method}" "${paralogs_dir}/${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees"
+    gene_tree_iqtree_fasttree "${ortho_method}" "${aln_dir}/${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees"
     # Step 2: Recombining gene trees
     stage_info_main_blue "Step 2: Combining gene trees ..."
     combine_gene_trees "${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees" "${output_dir}/08-Coalescent_analysis/${ortho_method}/02-Combined_gene_trees"
@@ -5489,7 +5530,7 @@ coalescent_analysis() {
       run_astral4 "${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/02-Combined_gene_trees/Combined_gene_trees.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV"
     fi
     if [ "${run_wastral}" = "TRUE" ]; then
-      run_wastral "${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/02-Combined_gene_trees/Combined_gene_trees.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/wASTRAL" "${paralogs_dir}/${ortho_method}"
+      run_wastral "${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/02-Combined_gene_trees/Combined_gene_trees.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/wASTRAL" "${aln_dir}/${ortho_method}"
     fi
     # Step 4: Run PhyPartsPieCharts and modified_phypartspiecharts.py
     stage_info_main_blue "Step 5 (optional): Gene-species tree concordance analysis ..."
@@ -5655,7 +5696,7 @@ if [ "${run_astral_pro}" = "TRUE" ]; then
     stage_info_main_blue "Step 1: Preparing single gene trees for ASTRAL-Pro"
     #################===========================================================================
     # 01-MSA and trimming
-    cd "${paralogs_dir}"
+    cd "${aln_dir}"
     define_threads "mafft"
     define_threads "trimal"
     rm -rf "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/"
