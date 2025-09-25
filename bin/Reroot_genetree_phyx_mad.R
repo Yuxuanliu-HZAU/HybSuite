@@ -9,14 +9,10 @@ library("phytools")
 #Gets the parameters passed to the script
 args <- commandArgs(trailingOnly = TRUE)
   gene <- args[1]
-  path <- paste0(args[2], "/01-Gene_trees")
-  path2 <- paste0(args[2], "/02-Rerooted_gene_trees")
-  og1 <- args[3]
-  og2 <- args[4]
-  og3 <- args[5]
-  og4 <- args[6]
-  og5 <- args[7]
-  Outgroup <- c(og1, og2, og3, og4, og5)
+  input_path <- args[2]
+  output_path <- args[3]
+  outgroup_name <- gsub('^"|"$', '', args[4])  # Remove quotes from the outgroup name
+print(outgroup_name)
 #2.Define the mad function:
 mad <- function(unrooted_newick,output_mode){
   if(nargs()==0){ #print help message
@@ -192,13 +188,32 @@ mad <- function(unrooted_newick,output_mode){
   }
 }
 #3.reroot trees via MAD or phyx
-tree <- read.tree(paste0(path, "/", gene, "/", "RAxML_bestTree.", gene, ".tre", sep=""))
-Outgroup <- Outgroup[!is.null(Outgroup)]
-if(sum(Outgroup %in% tree$tip.label) != 0){
-  Outgroup <- Outgroup[Outgroup %in% tree$tip.label]
-  # if outgroup present reroot use outgroup via phyx function 'pxrr'
-  system(paste0("pxrr -t ", path, "/", gene, "/", "RAxML_bestTree.", gene, ".tre", " -r -g ", sample(Outgroup, size=1), " -o ", path2, "/", gene, "_rr.tre", sep=""))
+tree <- read.tree(paste0(input_path, "/", gene, ".tre", sep=""))
+# Split input species string into a vector
+outgroup_list <- unlist(strsplit(outgroup_name, "\\s+"))
+# Check which species are present in the tree
+valid_outgroups <- outgroup_list[outgroup_list %in% tree$tip.label]
+# If no specified outgroup species are in the tree, valid_outgroups will be a vector of length 0
+# Combine valid outgroup species into a string, with species separated by spaces
+outgroup_string <- paste(valid_outgroups, collapse=" ")
+print(outgroup_string)
+
+if(length(valid_outgroups) > 0){
+  # Check if outgroup is already at root
+  # Get most recent common ancestor node of outgroup species
+  mrca_outgroup <- getMRCA(tree, valid_outgroups)
+  # Get all nodes on path from root to mrca
+  path_to_root <- nodepath(tree, from=mrca_outgroup, to=Ntip(tree) + 1)
+  # If path length is 1, outgroup is already at root
+  if(length(path_to_root) > 1){
+    # If the outer group is not the root, perform a double root operation
+    system(paste0("nw_reroot ", input_path, "/", gene, ".tre ", outgroup_string, "|nw_order -c d - ", " > ", output_path, "/", gene, ".rr.tre", sep=""))
+  } else {
+    # If the outer group is already at root, just copy the file
+    file.copy(paste0(input_path, "/", gene, ".tre"), 
+              paste0(output_path, "/", gene, ".rr.tre"))
+  }
 } else {
-  # otherwise use MAD see [Tria et al. (2017)](https://www.nature.com/articles/s41559-017-0193)
-  cat(mad(tree), file=paste0(path2, "/", gene, "_rr.tre", sep=""))
+  # If there is no outgroup, use MAD to root the tree
+  cat(mad(tree), file=paste0(output_path, "/", gene, ".rr.tre", sep=""))
 }
