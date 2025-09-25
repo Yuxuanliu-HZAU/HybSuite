@@ -37,6 +37,11 @@ General arguments:
                         Specify the minimum support value threshold for internal nodes in gene trees. (Default: 0)
                         Nodes with support values ≤ this threshold will be collapsed into polytomies.
 
+  === Nucleotide ambiguity character replacement ===
+  -replace_n <TRUE|FALSE>
+                        Replace ambiguous characters ('n', 'N', '?') with gaps ('-') in alignment files. (Default: FALSE)
+                        Note: Recommended for phylogenetic software compatibility (e.g., IQ-TREE, trimAl).
+
   === Threads control ===
   -nt <INT|AUTO>        Global thread setting. (Default: 1)
   -nt_amas <INT>        AMAS.py threads (Default: 1)
@@ -96,6 +101,45 @@ Arguments for integrated tools :
   -astral_pro_r <INT>   ASTRAL-Pro rounds of search. (Default: 4)
   -astral_pro_s <INT>   ASTRAL-Pro rounds of subsampling. (Default: 4)
 
+  === MAFFT (only for paralogs inclusion method -> ASTRAL-Pro) ===  
+  -mafft_algorithm <str>               
+                        MAFFT algorithm [auto|linsi] (Default: auto)
+  -mafft_adjustdirection <TRUE/FALSE>  
+                        Whether to adjust sequence directions (Default: TRUE)
+  -mafft_maxiterate <INT>              
+                        Maximum number of iterations for MAFFT (Default: auto)
+                        Specifies the maximum number of iterations MAFFT will perform during multiple sequence alignment. Higher iteration counts may improve alignment accuracy but will increase computation time.
+  -mafft_pair <str>                    
+                        Pairing strategy for MAFFT (Default: auto)
+                        Specifies the pairing strategy used by MAFFT during multiple sequence alignment. Options include auto, localpair, globalpair, etc. Choosing the appropriate strategy can affect the alignment results and efficiency.
+  
+  === trimAl (only for paralogs inclusion method -> ASTRAL-Pro) ===
+  -trimal_mode <str>                   
+                        trimAl mode [automated1|strict|strictplus|gappyout|nogaps|noallgaps] (Default: automated1)
+  -trimal_gapthreshold <0-1>           
+                        Gap threshold (Default: 0.12)
+  -trimal_simthreshold <0-1>           
+                        Similarity threshold (Default: auto)
+  -trimal_cons <0-100>                 
+                        Consensus threshold (Default: auto)
+  -trimal_block <INT>                  
+                        Minimum block size (Default: auto)
+  -trimal_w <INT>                      
+                        Window size (Default: auto)
+  -trimal_gw <INT>                     
+                        Gap window size (Default: auto)
+  -trimal_sw <INT>                     
+                        Similarity window size (Default: auto)
+  -trimal_resoverlap <0-1>             
+                        Minimum overlap of a positions with other positions in the column. (Default: auto) 
+  -trimal_seqoverlap <0-100>           
+                        Minimum percentage of sequences without gaps in a column. (Default: auto)
+  
+  === HMMCleaner (only for paralogs inclusion method -> ASTRAL-Pro) ===
+  -hmmcleaner_cost <NUM1_NUM2_NUM3_NUM4>
+                        Cost parameters that defines the low similarity segments detected by HmmCleaner. (Default: -0.15_-0.08_0.15_0.45) 
+                        Users can change each value but they have to be in increasing order. (NUM1 < NUM2 < 0 < NUM3 < NUM4)
+
   === PhyPartsPieCharts & modified_phypartspiecharts ===
   -run_phyparts <TRUE|FALSE>
                         Enable/disable PhyParts concordance analysis and modified pie chart visualization. (Default: TRUE)
@@ -124,3 +168,5 @@ Command example :
 
   === Run ASTRAL-IV and PhyParts ===
   hybsuite stage4 -aln_dir ./06-Final_alignments -t ./Angiosperms353 -OI 1234567a -output_dir ./ -nt -process 5 -sp_tree 4 -run_phyparts TRUE
+
+  
