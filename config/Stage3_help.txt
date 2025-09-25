@@ -43,6 +43,11 @@ General arguments:
   === Alignments trimming tool control ===
   -trim_tool <1/2>      Choose the software to trim/clean alignments. (1: trimAl; 2: HMMCleaner) (Default: 1) 
 
+  === Nucleotide ambiguity character replacement ===
+  -replace_n <TRUE|FALSE>
+                        Replace ambiguous characters ('n', 'N', '?') with gaps ('-') in alignment files. (Default: FALSE)
+                        Note: Recommended for phylogenetic software compatibility (e.g., IQ-TREE, trimAl).
+
   === Threads control ===
   -nt <INT|AUTO>        Global thread setting. (Default: 1)
   -nt_paragone <INT>    ParaGone threads. (Default: 1)
