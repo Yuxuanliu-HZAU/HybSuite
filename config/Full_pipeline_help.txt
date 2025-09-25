@@ -20,6 +20,14 @@ Arguments for outputs:
   -prefix <STRING>      Prefix for output files. (Default: HybSuite)
 
 General arguments:
+  === Stages running control ===
+  -skip_stage <1|12|123|>
+                        Specify pipeline stages to skip during execution. (Default: None, running all stages)
+                        Note: Particularly useful for re-running specific HybSuite pipeline stages.
+                        (e.g., '-skip_stage 1' for skipping stage 1)
+  -run_to_stage <1|2|3> Specify pipeline stages to run up to (Default: None, running all stages)
+                        (e.g., '-run_to_stage 3' for stopping before stage 4)
+
   === Public raw reads downloading control (Stage 1) ===
   -rm_sra <TRUE/FALSE>  Whether to remove SRA files after conversion. (Default: TRUE)
   -download_format <fastq|fastq_gz>
@@ -147,7 +155,7 @@ Arguments for integrated tools :
   -pp_trim_lb <INT>     Trim long branches. (Default: 5)
 
   === ParaGone (Stage 3) ===  
-  -paragone_pool <INT>  Parallel alignment tasks. (Default: 1)
+  -paragone_pool <INT>  Parallel alignment tasks. (Default: 1, same as the option '-process')
   -paragone_treeshrink_q <0-1>        
                         TreeShrink quantile threshold (Default: 0.05)
   -paragone_cutoff_value <FLOAT>       
