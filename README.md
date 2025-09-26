@@ -17,28 +17,33 @@ If you have any questions/issues/suggestions, please leave a message [here](http
 ## 🧬 Overview
 
 **HybSuite** is a comprehensive, transparent, and flexible pipeline for Hyb-Seq phylogenomics analysis. From NGS raw reads to phylogenetic trees, the pipeline seamlessly integrates:     
-- **Data assembly** (via [HybPiper](https://github.com/mossmatters/HybPiper))    
-- **Sequences and alignments filtering, paralog handling** (seven methods are available: HRS, RLWP, LS, MI, MO, RT, 1to1; see our [wiki page](https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial))    
-- **Species tree inference with multiple methodologies:**    
-  - **concatenation-based analysis:**    
+- **Data assembly**     
+- **Sequences and alignments filtering, paralog handling** ()    
+
+
+*The full pipeline has totally 4 stages:*    
+**Stage 1: NGS dataset construction**    
+  - **Download public data** (via [SraToolKit]() )
+  - **Raw read trimming** (via [Trimmomatic]() )   
+**Stage 2: Data assembly & paralog detection**    
+  - Assemble target loci and identify putative paralogs (via [HybPiper](https://github.com/mossmatters/HybPiper))
+  - Filter paralogs (HybSuite codes)
+**Stage 3: Paralog handling & alignment processing**    
+  - paralogs using multiple paralog handling methods:
+    seven methods are available: HRS, RLWP, LS, MI, MO, RT, 1to1; see our [wiki page](https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial)
+  - Generate filtered alignments for downstream analysis.
+**Stage 4: Species tree inference**
+  **Purpose:** Reconstruct phylogenetic species trees using multiple approaches:
+  - **Species tree inference with multiple methodologies:**    
+    **concatenation-based analysis:**    
     - [IQ-TREE](https://github.com/iqtree/iqtree2)
     - [RAxML](https://github.com/stamatak/standard-RAxML)
     - [RAxML-NG](https://github.com/amkozlov/raxml-ng);
-  - **coalescent analysis:**    
+    **coalescent analysis:**    
     - [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md)
     - [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md);
-  - **coalescent analysis allowing multi-copy genes:**    
+    **coalescent analysis allowing multi-copy genes:**    
     - [ASTRAL-pro3](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral-pro3.md).
-
-*The full pipeline has totally 4 stages:*    
-- **Stage 1: NGS dataset construction**    
-  **Purpose:** Download public data, and read trimming    
-- **Stage 2: Data assembly & paralog detection**    
-  **Purpose:** Assemble target loci, identify and filtering putative paralogs.    
-- **Stage 3: Paralog handling & alignment processing**    
-  **Purpose:** Process paralogs using multiple orthology inference methods and generating filtered alignments for downstream analysis.
-- **Stage 4: Species tree inference**
-  **Purpose:** Reconstruct phylogenetic species trees using multiple approaches (concatenated or coalescent analysis).
 
 ![](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/master/images/HybSuite-workflow.png)
 
