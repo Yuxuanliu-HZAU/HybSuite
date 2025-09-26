@@ -16,7 +16,7 @@ If you have any questions/issues/suggestions, please leave a message [here](http
 
 ## 🧬 Overview
 
-**HybSuite** is a comprehensive, transparent, and flexible pipeline for Hyb-Seq phylogenomics analysis. It seamlessly processes NGS raw reads through to phylogenetic trees, including data assembly (via [HybPiper](https://github.com/mossmatters/HybPiper)), sequences and alignments filtering, paralogs handling (seven available methods), and species tree inference with multiple methodologies.
+**HybSuite** is a comprehensive, transparent, and flexible pipeline for Hyb-Seq phylogenomics analysis. It seamlessly processes NGS raw reads through to phylogenetic trees, including data assembly (via [HybPiper](https://github.com/mossmatters/HybPiper)), sequences and alignments filtering, paralog handling (seven methods are available: HRS, RLWP, LS, MI, MO, RT, 1to1; see our [wiki page](https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial)), and species tree inference with multiple methodologies (concatenation-based analysis: [IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), or [RAxML-NG](https://github.com/amkozlov/raxml-ng); coalescent analysis: [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md) or [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md); coalescent analysis allowing multi-copy genes: [ASTRAL-pro3](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral-pro3.md).
 
 *The full pipeline has totally 4 stages:*    
 - **Stage 1: NGS dataset construction**    
@@ -28,7 +28,7 @@ If you have any questions/issues/suggestions, please leave a message [here](http
 - **Stage 4: Species tree inference**
   **Purpose:** Reconstruct phylogenetic species trees using multiple approaches (concatenated or coalescent analysis).
 
-Final species trees can either be **concatenation-based trees** infered via [IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), or [RAxML-NG](https://github.com/amkozlov/raxml-ng), or **coalescent-based tree** summarized by [ASTER](https://github.com/chaoszhang/ASTER/tree/master), including [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md) or [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md). We also integrate [ASTRAL-pro3](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral-pro3.md), which can be applied for species tree inference with paralogs inclusion.
+![](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/master/images/HybSuite-workflow.png)
 
 ## ✨ Key Features
 
@@ -37,13 +37,12 @@ Final species trees can either be **concatenation-based trees** infered via [IQ-
 🧩 **Modular**: Execute individual stages or complete pipeline in one command  
 ⚡ **Flexible**: 7 paralog handling methods & 5+ species tree inference options  
 🚀 **Scalable**: Built-in parallelization for large-scale phylogenomic datasets
-  
-![](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/master/images/HybSuite-workflow.png)
 
+---
 
 # 🚀 Quick Start
 
-### Quick installation
+## Quick installation
 ```
 conda create -n hybsuite
 conda activate hybsuite
@@ -53,7 +52,7 @@ conda install yuxuanliu::hybsuite
 More details of installing HybSuite can be found in:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Installation
 
-### Basic Syntax
+## Basic Syntax
 ```
 hybsuite <subcommand> [options] ...
 ```
@@ -76,7 +75,6 @@ hybsuite <subcommand> [options] ...
 - `rename_assembled_data` | `rad` - Rename HybPiper assembled data directory (run rename_assembled_data.py).
 - `modified_phypartspiecharts` | `mpp` - Visualize gene-species tree conflict (run modified_phypartspiecharts.py).
 
-
 ### Getting the help menu
 - **General help**
 ```
@@ -94,7 +92,9 @@ hybsuite full_pipeline -h
 hybsuite -v
 ```
 
-### Other instructions
+---
+
+# Other instructions
 > [!TIP]
 > Every aspect of HybSuite can be found on our wiki, just feel free to visit:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/
