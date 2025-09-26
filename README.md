@@ -17,10 +17,11 @@ If you have any questions/issues/suggestions, please leave a message [here](http
 ## 🧬 Overview
 
 **HybSuite** is a comprehensive, transparent, and flexible pipeline for Hyb-Seq phylogenomics analysis from NGS raw reads (can be Hyb-Seq, Transcriptome, Whole Genome Sequencing) to phylogenetic trees.       
-*The full pipeline is composed of totally 4 stages:*    
+<br>
+**The full pipeline is composed of totally 4 stages:**   
 - **Stage 1: NGS dataset construction**    
   - (1) Download public raw reads from NCBI (via [SRA Toolkit](https://github.com/ncbi/sra-tools) );
-  - (2) Integrate user-provided raw reads;
+  - (2) Integrate user-provided raw reads (if provided);
   - (3) Raw reads trimming (via [Trimmomatic](https://github.com/usadellab/Trimmomatic));  
 - **Stage 2: Data assembly & paralog detection**    
   - (1) Target loci assembly and putative paralogs retrieval (via [HybPiper](https://github.com/mossmatters/HybPiper))
@@ -28,48 +29,36 @@ If you have any questions/issues/suggestions, please leave a message [here](http
   - (3) Filter putative paralogs;
   - (4) Plot original and filtered paralogs heatmap;
 - **Stage 3: Paralog handling & alignment processing**    
-  - handle paralogs using multiple paralog handling methods:
-    seven methods are available: HRS, RLWP, LS, MI, MO, RT, 1to1; 
-  - Generate filtered alignments for downstream analysis.
-  - Optionally execute seven paralogs-handling methods (HRS, RLWP, LS, MO, MI, RT, 1to1; see our [wiki page](https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial)):
-    - **HRS**:
-    (1) retrieve seqeunces via command 'hybpiper retrieve_sequences' in HybPiper;
-    (2) integrate pre-assembled sequences (if provided);
-    (3) filter sequences by length to remove potential mis-assembled seqeunces;
-    (4) mutiple sequences aligning (via [MAFFT]()) and trimming ([trimAl]() or [HMMCleaner]());
-    (5) filter trimmed alignments to generate final alignments.
-    - **RLWP**: 
-    (1) retrieve seqeunces via 'hybpiper retrieve_sequences' via HybPiper;
-    (2) integrate pre-assembled sequences (if provided);
-    (3) filter sequences by length to remove potential mis-assembled seqeunces;
-    (4) remove loci with putative paralogs masked in more than <threshold> samples;
-    (5) mutiple sequences aligning and trimming;
-    (6) filter trimmed alignments to generate final alignments.
-    - **PhyloPypruner pipeline (LS, MI, MO, RT, 1to1)**:
-    (1) mutiple sequences aligning and trimming for all putative paralogs;
-    (2) gene trees inference of all putative paralogs;
-    (3) obtain orthogroup alignments using tree-based orthology inference algorithms via PhyloPypruner;
-    (4) realigning and trimming the orthogroup alignments;
-    (5) filtering trimmed orthogroup alignments to generate final alignments.
-    - **ParaGone pipeline (MI, MO, RT, 1to1)**:
-    (1) use the directory cantaining all putative paralogs generated in stage 2 as input;
-    (2) obtain orthogroup alignments using tree-based orthology inference algorithms via ParaGone;
-    (3) filter trimmed orthogroup alignments to generate final alignments.
+  - Optionally execute seven paralogs-handling methods (HRS, RLWP, LS, MO, MI, RT, 1to1; see our [wiki page](https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial)) and generate filtered alignments for downstream analysis:    
+    - **HRS**:    
+    (1) Retrieve seqeunces via command `hybpiper retrieve_sequences` in [HybPiper](https://github.com/mossmatters/HybPiper);     
+    (2) Integrate pre-assembled sequences (if provided);    
+    (3) Filter sequences by length to remove potential mis-assembled seqeunces;    
+    (4) Mutiple sequences aligning (via [MAFFT](https://github.com/GSLBiotech/mafft)) and trimming (via [trimAl](https://github.com/inab/trimal) or [HMMCleaner](https://metacpan.org/dist/Bio-MUST-Apps-HmmCleaner/view/bin/HmmCleaner.pl));    
+    (5) Filter trimmed alignments to generate final alignments.    
+    - **RLWP**:     
+    (1) Retrieve seqeunces via 'hybpiper retrieve_sequences' via HybPiper;    
+    (2) Integrate pre-assembled sequences (if provided);    
+    (3) Filter sequences by length to remove potential mis-assembled seqeunces;   
+    (4) Remove loci with putative paralogs masked in more than <threshold> samples;   
+    (5) Mutiple sequences aligning (via [MAFFT](https://github.com/GSLBiotech/mafft)) and trimming (via [trimAl](https://github.com/inab/trimal) or [HMMCleaner](https://metacpan.org/dist/Bio-MUST-Apps-HmmCleaner/view/bin/HmmCleaner.pl));    
+    (6) Filter trimmed alignments to generate final alignments.    
+    - **PhyloPypruner pipeline (LS, MI, MO, RT, 1to1)**:    
+    (1) Mutiple sequences aligning (via [MAFFT](https://github.com/GSLBiotech/mafft)) and trimming (via [trimAl](https://github.com/inab/trimal) or [HMMCleaner](https://metacpan.org/dist/Bio-MUST-Apps-HmmCleaner/view/bin/HmmCleaner.pl)) for all putative paralogs;    
+    (2) Gene trees inference of all putative paralogs;    
+    (3) Obtain orthogroup alignments using tree-based orthology inference algorithms (via [PhyloPypruner](https://github.com/fethalen/phylopypruner));    
+    (4) Realign (via [MAFFT](https://github.com/GSLBiotech/mafft)) and trim (via [trimAl](https://github.com/inab/trimal) or [HMMCleaner](https://metacpan.org/dist/Bio-MUST-Apps-HmmCleaner/view/bin/HmmCleaner.pl)) the orthogroup alignments;    
+    (5) Filter trimmed orthogroup alignments to generate final alignments.    
+    - **ParaGone pipeline (MI, MO, RT, 1to1)**:    
+    (1) Use the directory cantaining all putative paralogs generated in stage 2 as input;    
+    (2) Obtain orthogroup alignments using tree-based orthology inference algorithms via [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone);    
+    (3) Filter trimmed orthogroup alignments to generate final alignments.    
   
 - **Stage 4: Species tree inference**
-  **Purpose:** Reconstruct phylogenetic species trees using multiple approaches:
-  - **Species tree inference with multiple methodologies:**    
-    **concatenation-based analysis:**    
-    - [IQ-TREE](https://github.com/iqtree/iqtree2)
-    - [RAxML](https://github.com/stamatak/standard-RAxML)
-    - [RAxML-NG](https://github.com/amkozlov/raxml-ng);
-    **coalescent analysis:**    
-    - [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md)
-    - [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md);
-    **coalescent analysis allowing multi-copy genes:**    
-    - [ASTRAL-pro3](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral-pro3.md).
-
-![](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/master/images/HybSuite-workflow.png)
+  - Multiple species tree inference methods available:        
+    - **Concatenation-based approach:** [IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), or [RAxML-NG](https://github.com/amkozlov/raxml-ng);    
+    - **Coalescent-based approach:** [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md) or [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md);    
+    - **Multi-copy genes aware coalescent-based approach**: [ASTRAL-pro3](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral-pro3.md).    
 
 ## ✨ Key Features
 
@@ -79,11 +68,13 @@ If you have any questions/issues/suggestions, please leave a message [here](http
 ⚡ **Flexible**: 7 paralog handling methods & 5+ species tree inference options    
 🚀 **Scalable**: Built-in parallelization for large-scale phylogenomic datasets    
 
+![](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/master/images/HybSuite-workflow.png)
+
 ---
 
-# 🚀 Quick Start
+# Quick Start
 
-## Quick installation
+## 🚀 Quick installation
 ```
 conda create -n hybsuite
 conda activate hybsuite
@@ -93,12 +84,12 @@ conda install yuxuanliu::hybsuite
 More details of installing HybSuite can be found in:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Installation
 
-## Basic Syntax
+## 📚 Basic syntax
 ```
 hybsuite <subcommand> [options] ...
 ```
 
-### Available subcommands for running the pipeline
+### ⚙️ Available subcommands for running the pipeline
 
 - `full_pipeline` - Complete end-to-end analysis (Stages 1-4)
 - `stage1` - NGS dataset construction and quality control
@@ -106,7 +97,7 @@ hybsuite <subcommand> [options] ...
 - `stage3` - Paralog handling and alignment processing
 - `stage4` - Species tree inference and analysis
 
-### Available subcommands for running HybSuite extension tools
+### 🧰 Available subcommands for running HybSuite extension tools
 
 - `filter_seqs_by_length` | `fsl` - Filter sequences by length (run filter_seqs_by_length.py).
 - `filter_seqs_by_coverage` | `fsc` - Filter sequences by sample and locus coverage (run filter_seqs_by_sample_and_locus_coverage.py).
@@ -116,7 +107,8 @@ hybsuite <subcommand> [options] ...
 - `rename_assembled_data` | `rad` - Rename HybPiper assembled data directory (run rename_assembled_data.py).
 - `modified_phypartspiecharts` | `mpp` - Visualize gene-species tree conflict (run modified_phypartspiecharts.py).
 
-### Getting the help menu
+## 🆘 Obtaining the help menu
+
 - **General help**
 ```
 hybsuite -h
@@ -140,27 +132,28 @@ hybsuite -v
 > Every aspect of HybSuite can be found on our wiki, just feel free to visit:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/
 
-- **Usage tutorial**    
-Full instructions on running the HybSuite pipeline, including pipeline input preparation and parameter configuration, are available on our wiki:
+- **📖 Usage Tutorial**    
+Full instructions on running HybSuite pipeline, including input preparation and parameter configuration:  
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial
 
-- **Pipeline parameters**   
+- **🎛️ Pipeline Parameters**   
+Complete parameter documentation:  
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Pipeline-parameters
 
-- **Pipeline output**    
-Full details about the results, output directories and files are available on our wiki:    
+- **📂 Pipeline Output**    
+Detailed results structure with output directories/files:  
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Results-and-output-files
 
-- **Extension tools usage**
-Full instructions on the usage of HybSuite extension tools are available on our wiki:
+- **🧰 Extension Tools**  
+Comprehensive guide for HybSuite extension tools:  
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Extension-tools
 
-- **Tips for running HybSuite**
-Full instructions on the tips for running HybSuite pipeline are available on our wiki:
+- **💡 Running Tips**  
+Best practices and optimization suggestions:  
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tips-for-running-HybSuite
 
-- **Example dataset running codes**
-You can find the codes for running our example dataset:
+- **🔍 Example Dataset**  
+Ready-to-run demonstration codes:  
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Example-dataset
 
 ---
