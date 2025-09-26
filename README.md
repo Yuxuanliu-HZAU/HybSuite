@@ -92,10 +92,10 @@ hybsuite <subcommand> [options] ...
 ### ⚙️ Available subcommands for running the pipeline
 
 - `full_pipeline` - Complete end-to-end analysis (Stages 1-4)
-- `stage1` - NGS dataset construction and quality control
-- `stage2` - Data assembly and paralog detection
-- `stage3` - Paralog handling and alignment processing
-- `stage4` - Species tree inference and analysis
+- `stage1` - Run Stage 1: NGS dataset construction    
+- `stage2` - Run stage 2: Data assembly and paralog detection
+- `stage3` - Run Stage 3: Paralog handling and alignment processing
+- `stage4` - Run Stage 4: Species tree inference
 
 ### 🧰 Available subcommands for running HybSuite extension tools
 
@@ -132,27 +132,27 @@ hybsuite -v
 > Every aspect of HybSuite can be found on our wiki, just feel free to visit:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/
 
-- **📖 Usage Tutorial**    
+- **📖 Usage tutorial**    
 Full instructions on running HybSuite pipeline, including input preparation and parameter configuration:  
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial
 
-- **🎛️ Pipeline Parameters**   
+- **🎛️ Pipeline parameters**   
 Complete parameter documentation:  
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Pipeline-parameters
 
-- **📂 Pipeline Output**    
+- **📂 Pipeline output**    
 Detailed results structure with output directories/files:  
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Results-and-output-files
 
-- **🧰 Extension Tools**  
+- **🧰 Extension tools**  
 Comprehensive guide for HybSuite extension tools:  
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Extension-tools
 
-- **💡 Running Tips**  
+- **💡 Running tips**  
 Best practices and optimization suggestions:  
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tips-for-running-HybSuite
 
-- **🔍 Example Dataset**  
+- **🔍 Example dataset**  
 Ready-to-run demonstration codes:  
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Example-dataset
 
@@ -160,13 +160,34 @@ https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Example-dataset
 
 # Changelog
 
+**1.1.5** *September, 2025* - **MAJOR UPDATE !**
+
+- **Pipeline restructuring**    
+  - **Stage consolidation**: Combined previous stages 3 and 4, simplifying the pipeline from 5 to 4 stages.
+  - **Stagewise execution**: Added flexible stage-by-stage execution capability.
+
+- **Enhanced functionality**    
+  **Gene tree inference**:    
+  - Added support for [IQ-TREE](https://github.com/iqtree/iqtree2) and [FASTTree](http://www.microbesonline.org/fasttree/).
+  - Deprecated RAxML.
+  
+  **Alignment trimming**:    
+  - New alternative: Integrated [HMMCleaner](https://metacpan.org/dist/Bio-MUST-Apps-HmmCleaner/view/bin/HmmCleaner.pl)
+  - Maintained trimAl as the default setting.
+
+  **Species tree inference**:    
+  - Added [ASTRAL-pro3](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral-pro3.md) for multi-copy gene aware coalescent analysis.
+
+**1.1.3-1.1.4** *August, 2025*
+
+Fixed some bugs in stages control. These versions have been abondoned.
+
 **1.1.2** *August, 2025*
 
-Integrated [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md) into the pipeline stage 5.           
+Integrated [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md) into the pipeline stage 4.           
 
 **Usage Update:**    
-- Run [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md) with parameter: `-tree 5`
-- Run [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md) with parameter: `-tree 6`    
+- Run [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md) with parameter: `-tree 4`    
 
 **New dependency:**     
 - [ASTER(conda version)](https://github.com/chaoszhang/ASTER)
