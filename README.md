@@ -37,7 +37,7 @@ If you have any questions/issues/suggestions, please leave a message [here](http
     (4) Mutiple sequences aligning (via [MAFFT](https://github.com/GSLBiotech/mafft)) and trimming (via [trimAl](https://github.com/inab/trimal) or [HMMCleaner](https://metacpan.org/dist/Bio-MUST-Apps-HmmCleaner/view/bin/HmmCleaner.pl));    
     (5) Filter trimmed alignments to generate final alignments.    
     - **RLWP**:     
-    (1) Retrieve seqeunces via `hybpiper retrieve_sequences` via HybPiper;    
+    (1) Retrieve seqeunces via `hybpiper retrieve_sequences` via [HybPiper](https://github.com/mossmatters/HybPiper);    
     (2) Integrate pre-assembled sequences (if provided);    
     (3) Filter sequences by length to remove potential mis-assembled seqeunces;   
     (4) Remove loci with putative paralogs masked in more than <threshold> samples;   
