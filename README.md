@@ -8,66 +8,119 @@
 
 If you have any questions/issues/suggestions, please leave a message [here](https://github.com/Yuxuanliu-HZAU/HybSuite/issues).  
 
-**Latest version**: 1.1.2
+**Latest version**: 1.1.5
 
 ---
 
-## Introduction
+# Introduction
 
-HybSuite is a bash wrapper, and designed for **reconstructing phylogenetic trees using NGS (Next-Generation Sequencing) raw data (mainly Hyb-Seq data) in a single run**. Depending on the user's preference, final tree can either be a **concatenated trees** constructed by [IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), or [RAxML-NG](https://github.com/amkozlov/raxml-ng), or a **coalescent-based species tree** summarized by [ASTER](https://github.com/chaoszhang/ASTER/tree/master), including [ASTRAL-III](https://github.com/smirarab/ASTRAL) or [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md). Please keep in mind that, all results (downloaded data, orthologous groups, alignments, trees) can be produced in a single run!
+## 🧬 Overview
 
-Hence, HybSuite can significantly streamline the process of Hyb-Seq phylogenomics analysis, making it more accessible to researchers from diverse research backgrounds.    
+**HybSuite** is a comprehensive, transparent, and flexible pipeline for Hyb-Seq phylogenomics analysis. It seamlessly processes NGS raw reads through to phylogenetic trees, including data assembly (via [HybPiper](https://github.com/mossmatters/HybPiper)), sequences and alignments filtering, paralogs handling (seven available methods), and species tree inference with multiple methodologies.
 
+*The full pipeline has totally 4 stages:*    
+- **Stage 1: NGS dataset construction**    
+  **Purpose:** Download public data, and read trimming    
+- **Stage 2: Data assembly & paralog detection**    
+  **Purpose:** Assemble target loci, identify and filtering putative paralogs.    
+- **Stage 3: Paralog handling & alignment processing**
+  **Purpose:** Process paralogs using multiple orthology inference methods and generating filtered alignments for downstream analysis.
+- **Stage 4: Species tree inference**
+  **Purpose:** Reconstruct phylogenetic species trees using multiple approaches (concatenated or coalescent analysis).
+
+Final species trees can either be **concatenation-based trees** infered via [IQ-TREE](https://github.com/iqtree/iqtree2), [RAxML](https://github.com/stamatak/standard-RAxML), or [RAxML-NG](https://github.com/amkozlov/raxml-ng), or **coalescent-based tree** summarized by [ASTER](https://github.com/chaoszhang/ASTER/tree/master), including [ASTRAL-IV](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral4.md) or [wASTRAL](https://github.com/chaoszhang/ASTER/blob/master/tutorial/wastral.md). We also integrate [ASTRAL-pro3](https://github.com/chaoszhang/ASTER/blob/master/tutorial/astral-pro3.md), which can be applied for species tree inference with paralogs inclusion.
+
+## ✨ Key Features
+
+🔄 **Transparent**: Full workflow visibility with real-time progress logging at each step
+📝 **Reproducible**: Automatically archives exact software commands & parameters for every run  
+🧩 **Modular**: Execute individual stages or complete pipeline in one command  
+⚡ **Flexible**: 7 paralog handling methods & 5+ species tree inference options  
+🚀 **Scalable**: Built-in parallelization for large-scale phylogenomic datasets
+  
 ![](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/master/images/HybSuite-workflow.png)
 
-## Pipeline introduction
 
-* The HybSuite pipeline starts with **NGS(Next-generation sequencing) raw data** (mainly Hyb-Seq, but other types such as RNA-seq and WGS (Whole genome sequencing) are also supported). All public raw data in NCBI can be automatically downloaded if the user provides the corresponding accession numbers (usually prefixed with SRR- or ERR-).     
-* After which, [Trimmomatic-0.39](https://github.com/usadellab/Trimmomatic) is invoked to remove the adapters and produce clean data. The data assembly and targeted bait capture are then executed via [HybPiper](https://github.com/mossmatters/HybPiper).     
-* HybSuite will then run one or more of the following methods to infer orthology groups:     
-  (more details about methods can be found [here](https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Methods))    
-  - **HRS pipeline** (**H**ybPiper **R**etrieved **S**equences)             
-  > **Note:** Directly use sequence retrieved by running `hybpiper retrieve_sequences` via [HybPiper](https://github.com/mossmatters/HybPiper) for downstream analysis.    
-  - **RLWP pipeline** (**R**emove **L**oci **W**ith **P**aralogues)    
-  > **Note:** This pipeline removes loci exceeding a user-defined threshold of samples with paralog occurrences.    
-  > Putative paralogs are produced by running `hybpiper paralog_retriever` via [HybPiper](https://github.com/mossmatters/HybPiper) before this pipeline.    
-  - **LS algorithm** (**L**argest **S**ubtree)    
-  > **Note:** HybSuite implements LS algorithum via [PhyloPyPruner](https://pypi.org/project/phylopypruner/), following the approach of [(Kocot et al 2013)](https://journals.sagepub.com/doi/10.4137/EBO.S12813).    
-  - **MI algorithm** (**M**aximum **I**nclusion)    
-  - **MO algorithm** (**M**onophyletic **O**utgroups)    
-  - **RT algorithm** (**R**ooted **T**ree)    
-  - **1to1 algorithm** (**1:1** orthologs)    
-  > **Note:** HybSuite implements MI, MO, RT, 1to1 algorithums alternatively via [PhyloPyPruner](https://pypi.org/project/phylopypruner/) or [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone), following the approach of [(Yang and Smith 2014)](https://bitbucket.org/yangya/workspace/projects/PROJ) (Default: PhyloPyPruner).   
-  
-     
-  
-* Next, Hybsuite filters loci and species based on a series of criterias, and trims alignments via [TrimAl](https://github.com/inab/trimal) to obtain the final filtered and trimmed alignments, which are used to construct phylogenetic trees.    
-* Finally, HybSuite will assist the user in constructing phylogenetic trees using either concatenation-based or coalscent-based method according to the user's preferences.
-* All essential arguments for the software options used in the pipeline can be specified directly when running HybSuite.
+# 🚀 Quick Start
 
-![](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/main/images/HybSuite_pipeline.png)
+### Quick installation
+```
+conda create -n hybsuite
+conda activate hybsuite
+conda install yuxuanliu::hybsuite
+```
 
----
-
-# Installing and running HybSuite
-
-## HybSuite installation
-Full instruction of installing HybSuite:    
+More details of installing HybSuite can be found in:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Installation
 
-## HybSuite input and usage instruction
+### Basic Syntax
+```
+hybsuite <subcommand> [options] ...
+```
 
-Full instructions on running the HybSuite pipeline, including pipeline input preparation and parameter configuration, are available on our wiki:
-https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial
+### Available subcommands for running the pipeline
 
-## HybSuite pipeline output
+- `full_pipeline` - Complete end-to-end analysis (Stages 1-4)
+- `stage1` - NGS dataset construction and quality control
+- `stage2` - Data assembly and paralog detection
+- `stage3` - Paralog handling and alignment processing
+- `stage4` - Species tree inference and analysis
 
-Full details about the results, output directories and files are available on our wiki:    
-https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Results-and-output-files
+### Available subcommands for running HybSuite extension tools
 
+- `filter_seqs_by_length` | `fsl` - Filter sequences by length (run filter_seqs_by_length.py).
+- `filter_seqs_by_coverage` | `fsc` - Filter sequences by sample and locus coverage (run filter_seqs_by_sample_and_locus_coverage.py).
+- `plot_paralog_heatmap` | `pph` -  Plot paralog heatmap (run plot_paralog_heatmap.py).
+- `rlwp` - Remove loci with putative paralogs masked in more than <threshold> samples (run RLWP.py).
+- `fasta_formatter` | `ff` - Format fasta files (run Fasta_formatter.py).
+- `rename_assembled_data` | `rad` - Rename HybPiper assembled data directory (run rename_assembled_data.py).
+- `modified_phypartspiecharts` | `mpp` - Visualize gene-species tree conflict (run modified_phypartspiecharts.py).
+
+
+### Getting the help menu
+- **General help**
+```
+hybsuite -h
+```
+
+- **Subcommand help**
+```
+hybsuite stage1 -h
+hybsuite full_pipeline -h
+```
+
+- **Version information**
+```
+hybsuite -v
+```
+
+### Other instructions
 > [!TIP]
 > Every aspect of HybSuite can be found on our wiki, just feel free to visit:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/
+
+- **Usage tutorial**    
+Full instructions on running the HybSuite pipeline, including pipeline input preparation and parameter configuration, are available on our wiki:
+https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial
+
+- **Pipeline parameters**   
+https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Pipeline-parameters
+
+- **Pipeline output**    
+Full details about the results, output directories and files are available on our wiki:    
+https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Results-and-output-files
+
+- **Extension tools usage**
+Full instructions on the usage of HybSuite extension tools are available on our wiki:
+https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Extension-tools
+
+- **Tips for running HybSuite**
+Full instructions on the tips for running HybSuite pipeline are available on our wiki:
+https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tips-for-running-HybSuite
+
+- **Example dataset running codes**
+You can find the codes for running our example dataset:
+https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Example-dataset
 
 ---
 
