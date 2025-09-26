@@ -16,7 +16,7 @@ If you have any questions/issues/suggestions, please leave a message [here](http
 
 ## 🧬 Overview
 
-**HybSuite** is a comprehensive, transparent, and flexible pipeline for Hyb-Seq phylogenomics analysis from NGS raw reads (can be Hyb-Seq, Transcriptome, Whole Genome Sequencing) to phylogenetic trees.       
+**HybSuite** performs end-to-end hybrid capture (Hyb-Seq) phylogenomic analysis from raw reads (Hyb-Seq preferred; compatible with RNA-seq, WGS, and genome skimming data) to phylogenetic trees.       
 <br>
 **The full pipeline is composed of totally 4 stages:**   
 - **Stage 1: NGS dataset construction**    
