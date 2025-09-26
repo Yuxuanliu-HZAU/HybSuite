@@ -118,6 +118,7 @@ hybsuite -h
 ```
 hybsuite stage1 -h
 hybsuite full_pipeline -h
+hybsuite filter_seqs_by_length -h
 ```
 
 - **Version information**
