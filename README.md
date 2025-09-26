@@ -43,13 +43,13 @@ If you have any questions/issues/suggestions, please leave a message [here](http
     (4) Remove loci with putative paralogs masked in more than <threshold> samples;   
     (5) Mutiple sequences aligning (via [MAFFT](https://github.com/GSLBiotech/mafft)) and trimming (via [trimAl](https://github.com/inab/trimal) or [HMMCleaner](https://metacpan.org/dist/Bio-MUST-Apps-HmmCleaner/view/bin/HmmCleaner.pl));    
     (6) Filter trimmed alignments to generate final alignments.    
-    - **PhyloPypruner pipeline (LS, MI, MO, RT, 1to1)**:    
+    - **[PhyloPypruner](https://github.com/fethalen/phylopypruner) pipeline (LS, MI, MO, RT, 1to1)**:    
     (1) Mutiple sequences aligning (via [MAFFT](https://github.com/GSLBiotech/mafft)) and trimming (via [trimAl](https://github.com/inab/trimal) or [HMMCleaner](https://metacpan.org/dist/Bio-MUST-Apps-HmmCleaner/view/bin/HmmCleaner.pl)) for all putative paralogs;    
     (2) Gene trees inference of all putative paralogs;    
     (3) Obtain orthogroup alignments using tree-based orthology inference algorithms (via [PhyloPypruner](https://github.com/fethalen/phylopypruner));    
     (4) Realign (via [MAFFT](https://github.com/GSLBiotech/mafft)) and trim (via [trimAl](https://github.com/inab/trimal) or [HMMCleaner](https://metacpan.org/dist/Bio-MUST-Apps-HmmCleaner/view/bin/HmmCleaner.pl)) the orthogroup alignments;    
     (5) Filter trimmed orthogroup alignments to generate final alignments.    
-    - **ParaGone pipeline (MI, MO, RT, 1to1)**:    
+    - **[ParaGone](https://github.com/chrisjackson-pellicle/ParaGone) pipeline (MI, MO, RT, 1to1)**:    
     (1) Use the directory cantaining all putative paralogs generated in stage 2 as input;    
     (2) Obtain orthogroup alignments using tree-based orthology inference algorithms via [ParaGone](https://github.com/chrisjackson-pellicle/ParaGone);    
     (3) Filter trimmed orthogroup alignments to generate final alignments.    
