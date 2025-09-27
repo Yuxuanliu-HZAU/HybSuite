@@ -68,8 +68,6 @@ If you have any questions/issues/suggestions, please leave a message [here](http
 ⚡ **Flexible**: 7 paralog handling methods & 5+ species tree inference options    
 🚀 **Scalable**: Built-in parallelization for large-scale phylogenomic datasets    
 
-![](https://github.com/Yuxuanliu-HZAU/HybSuite/blob/master/images/HybSuite-workflow.png)
-
 ---
 
 # Quick Start
