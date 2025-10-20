@@ -4,10 +4,11 @@ Usage: hybsuite stage3 ...
 
 Mandatory arguments: -input_list -eas_dir -paralogs_dir -t -output_dir
 
-Essential arguments: -PH -prefix -run_phyparts -aln_locus_filter -nt -process
+Essential arguments: -PH -prefix -run_phyparts -aln_min_sample -nt -process
 
 Arguments for inputs:
   -input_list <FILE>    The file listing input sample names and corresponding data types used in stage 1&2. (Default: None)
+  -input_data <DIR>     The directory containing all input data (in this stage, only required when the inputs include pre-assembled data). (Default: None).
   -eas_dir <DIR>        The output directory containing HybPiper assembly sequences (generated in stage 3). (Default: <output_dir>/01-Assembled_data)
   -paralogs_dir <DIR>   The directory containing all putative paralog sequences generated in stage 2 or by users themselves. (Default: None)
                         It's advisable to set this parameter as '<output_dir>/02-All_paralogs/03-Filtered_paralogs'.
@@ -18,8 +19,8 @@ Arguments for outputs:
   -prefix <STRING>      Prefix for output files. (Default: HybSuite)
 
 General arguments:
-  === Paralogs handling control ===
-  -PH <1-7|a|b|all>     Paralogs handling methods to execute: (one or more of them can be chosen)
+  === Paralog handling control ===
+  -PH <1-7|a|b|all>     Paralog handling methods to execute: (one or more of them can be chosen)
                         1: HRS, 2: RLWP, 3: LS, 4: MI, 5: MO, 6: RT, 7: 1to1
                         a: PhyloPyPruner, b: ParaGone (Default: 1a)
   
@@ -29,12 +30,9 @@ General arguments:
                         HRS and RLWP sequences shorter than this value will be removed.
   -aln_min_length <INT> 
                         Minimum sequence bp length for filtering HRS and RLWP final alignments. (Default: 4)
-  -aln_locus_filter <0-1>
-                        Minimum sample coverage for final alignments. (Default: 0)
-                        Final alignments (aligned and trimmed) with sample coverage below this threshold will be removed.
-  -aln_sample_filter <0-1>
-                        Minimum locus coverage for final alignments. (Default: 0)
-                        Final alignments (aligned and trimmed) with sample coverage below this threshold will be removed.
+  -aln_min_sample <INT>
+                        Minimum sample number for final alignments. (Default: 0)
+                        Final alignments (aligned and trimmed) with sample number below this threshold will be removed.
 
   === Gene tree builder control ===
   -gene_tree <1/2>      Choose the software to construct paralogs gene trees. (1: IQ-TREE; 2: FastTree) (Default: 1) 
@@ -85,6 +83,12 @@ Arguments for integrated tools :
   -paragone_min_tips <INT>             
                         Minimum tips per tree (Default: 4)
   
+  === HybPiper ===
+  -hybpiper_skip_chimeric_genes <FALSE|TRUE>
+                        Whether to skip recovering sequences for putative chimeric genes when running "hybpiper retrieve_sequences" (HRS method) in Stage 3. (Default: FALSE)
+  -hybpiper_retrieved_seqs_type <dna|intron|supercontig>
+                        The type of sequence to extract when running "hybpiper retrieve_sequences" in Stage 3. (default:dna, which means extracting coding sequences)
+
   === MAFFT ===  
   -mafft_algorithm <str>               
                         MAFFT algorithm [auto|linsi] (Default: auto)
@@ -129,5 +133,5 @@ Command example :
   hybsuite stage3 -eas_dir ./01-Assembled_data -paralogs_dir ./02-All_paralogs/03-Filtered_paralogs -t ./Angiosperms353 -OI 1234567a -output_dir ./ -nt -process 5
   
   === With alignments filtering ===
-  hybsuite stage3 -eas_dir ./01-Assembled_data -paralogs_dir ./02-All_paralogs/03-Filtered_paralogs -t ./Angiosperms353 -OI 124567b -output_dir ./ -nt -process 5 -aln_min_length 100 -aln_locus_filter 0.1
+  hybsuite stage3 -eas_dir ./01-Assembled_data -paralogs_dir ./02-All_paralogs/03-Filtered_paralogs -t ./Angiosperms353 -OI 124567b -output_dir ./ -nt -process 5 -aln_min_length 100 -aln_min_sample 0.1
 

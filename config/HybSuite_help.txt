@@ -48,7 +48,7 @@ Subcommands for running HybSuite pipeline:
                         (3) filter putative paralogs;
                         (4) plot original and filtered paralogs heatmap;
     -----------------------------------------------------------------------------
-    stage3              Run HybSuite Stage 3: 'Paralogs handling',
+    stage3              Run HybSuite Stage 3: 'Paralog handling',
                         optionally execute seven paralogs-handling methods (HRS, RLWP, LS, MO, MI, RT, 1to1):
                         HRS:
                         (1) retrieve seqeunces via command 'hybpiper retrieve_sequences' in HybPiper;

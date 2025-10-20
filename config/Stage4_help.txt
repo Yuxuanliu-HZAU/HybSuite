@@ -10,8 +10,8 @@ Arguments for inputs:
   -input_list <FILE>    The file listing input sample names and corresponding data types used in stage 1&2. (Default: None)
   -aln_dir              The directory containing different orthogroups alignments generated in stage 3. (Default: <output_dir>/06-Final_alignments)
                         It's advisable to set this parameter as '<output_dir>/06-Final_alignments'.
-  -PH <1-7|a|b|all>     Alignments used by Paralogs handling methods: (one or more of them can be chosen)
-                        1: HRS, 2: RLWP, 3: LS, 4: MI, 5: MO, 6: RT, 7: 1to1
+  -PH <1-7|a|b|all>     Choose alignments generated via paralog handling methods as input:
+                        1: HRS, 2: RLWP, 3: LS, 4: MI, 5: MO, 6: RT, 7: 1to1 (one or more of them can be chosen)
                         a: PhyloPyPruner, b: ParaGone (Default: 1a)
 
 Arguments for outputs:
@@ -19,11 +19,6 @@ Arguments for outputs:
   -prefix <STRING>      Prefix for output files. (Default: HybSuite)
 
 General arguments:
-  === Orthology inference control ===
-  -PH <1-7|a|b|all>     Choose alignments generated via paralogs handling methods as input:
-                        1: HRS, 2: RLWP, 3: LS, 4: MI, 5: MO, 6: RT, 7: 1to1 (one or more of them can be chosen)
-                        a: PhyloPyPruner, b: ParaGone (Default: 1a)
-
   === Species tree builder control ===
   -sp_tree <1-5|all>    Species tree inference method:
                         1: IQ-TREE, 2: RAxML, 3: RAxML-NG, 4: ASTRAL-IV, 5: wASTRAL

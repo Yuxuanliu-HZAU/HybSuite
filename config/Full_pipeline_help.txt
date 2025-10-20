@@ -4,7 +4,7 @@ Usage: hybsuite full_pipeline ...
 
 Mandatory arguments: -input_list -input_data (required when including user-provided data) -t -output_dir
 
-Essential arguments: -PH -sp_tree -seqs_min_length -aln_locus_filter -prefix -nt -process
+Essential arguments: -PH -sp_tree -seqs_min_length -aln_min_sample -prefix -nt -process
 
 Arguments for inputs:
   -input_list <FILE>    The file listing input sample names and corresponding data types. (Default: None)
@@ -43,10 +43,10 @@ General arguments:
   -seqs_max_length_ratio <0-1>              
                         Minimum length ratio relative to the longest value per locus for putative paralogs. (Default: 0)
                         Putative paralogs shorter than this percentage of the maximum length will be filtered.
-  -seqs_locus_filter <0-1>           
+  -seqs_min_sample_coverage <0-1>           
                         Minimum sample coverage for putative paralogs. (Default: 0)
                         For all putative paralogs in stage 2, HRS and RLWP sequences in stage 3, loci lower than this sample coverage will be filtered.
-  -seqs_sample_filter <0-1>            
+  -seqs_min_locus_coverage <0-1>            
                         Minimum locus coverage for putative paralogs. (Default: 0)
                         For all putative paralogs in stage 2, taxa (samples) with lower than this locus coverage will be filtered.
 
@@ -54,8 +54,8 @@ General arguments:
   -heatmap_color {black,blue,red,green,purple,orange,yellow,brown,pink}
                         Color scheme for heatmap gradient. (Default: black)
 
-  === Paralogs handling control (Stage 3) ===
-  -PH <1-7|a|b|all>     Paralogs handling methods to execute: (one or more of them can be chosen)
+  === Paralog handling control (Stage 3) ===
+  -PH <1-7|a|b|all>     Paralog handling methods to execute: (one or more of them can be chosen)
                         1: HRS, 2: RLWP, 3: LS, 4: MI, 5: MO, 6: RT, 7: 1to1
                         a: PhyloPyPruner, b: ParaGone (Default: 1a)
   
@@ -65,12 +65,9 @@ General arguments:
                         HRS and RLWP sequences shorter than this value will be removed.
   -aln_min_length <INT> 
                         Minimum sequence bp length for filtering HRS and RLWP final alignments. (Default: 4)
-  -aln_locus_filter <0-1>
-                        Minimum sample coverage for final alignments. (Default: 0)
-                        Final alignments (aligned and trimmed) with sample coverage below this threshold will be removed.
-  -aln_sample_filter <0-1>
-                        Minimum locus coverage for final alignments. (Default: 0)
-                        Final alignments (aligned and trimmed) with sample coverage below this threshold will be removed.
+  -aln_min_sample <INT>
+                        Minimum sample number for final alignments. (Default: 5)
+                        Final alignments (aligned and trimmed) with sample number below this threshold will be removed.
 
   === Alignments trimming tool control (Stage 3) ===
   -trim_tool <1/2>      Choose the software to trim/clean alignments. (1: trimAl; 2: HMMCleaner) (Default: 1)
@@ -146,9 +143,16 @@ Arguments for integrated tools :
   -trimmomatic_sliding_window_q <15-30>
                         Window average quality. (Default: 15)
 
-  === HybPiper (Stage 2) ===
-  -hybpiper_m <str>     Sequence retrieval method [blast|diamond] (Default: blast)
-
+  === HybPiper (Stage 2 & 3) ===
+  -hybpiper_mapping_tool <blast|diamond>     
+                        The tool used for mapping reads to targets in HybPiper (only for protein targets) (Default: blast)
+  -hybpiper_check_chimeric_contigs	<FALSE|TRUE>
+                        Check whether a stitched contig is a potential chimera of contigs from multiple paralogs when running "hybpiper assemble". (Default: FALSE)
+  -hybpiper_skip_chimeric_genes <FALSE|TRUE>
+                        Whether to recover sequences for putative chimeric genes when running "hybpiper retrieve_sequences" (HRS method) in Stage 3. (Default: FALSE)
+  -hybpiper_retrieved_seqs_type <dna|intron|supercontig>
+                        The type of sequence to extract when running "hybpiper retrieve_sequences" in Stage 3.
+  
   === PhyloPyPruner (Stage 3) ===
   -pp_min_taxa <INT>    Minimum taxa per cluster. (Default: 4)
   -pp_min_support <0-1> Minimum support value. (Default: 0=auto)
