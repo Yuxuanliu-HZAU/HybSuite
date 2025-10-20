@@ -1,0 +1,70 @@
+{% set name = "hybsuite" %}
+{% set version = "1.1.5" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  path: .  # 使用相对路径，指向当前HybSuite目录
+
+build:
+  number: 0
+  skip: true  # [win]
+
+requirements:
+  build:
+    - python =3.9.15
+    - pip
+    - setuptools
+    - make
+  run:
+    - bash
+    - sra-tools
+    - pigz
+    - trimmomatic
+    - hybpiper
+    - amas
+    - mafft
+    - trimal
+    - modeltest-ng
+    - iqtree
+    - raxml
+    - raxml-ng
+    - newick_utils
+    - r-base
+    - r-phytools
+    - r-ape
+    - python =3.9.15
+    - pip
+    - paragone =1.1.1
+    - pyqt
+    - pyqt5-sip
+    - ete3
+    - pandas
+    - seaborn
+    - matplotlib
+    - numpy
+    - aster
+
+test:
+  commands:
+    - test -f $PREFIX/bin/hybsuite
+    - hybsuite -h || true
+
+about:
+  home: https://github.com/Yuxuanliu-HZAU/HybSuite
+  license: GNU General Public License v3.0
+  license_family: GPL
+  license_file: LICENSE
+  summary: 'HybSuite: An integrated pipeline for hybrid capture phylogenomics from reads to trees'
+  description: |
+    HybSuite is a comprehensive pipeline that automates the entire process from downloading
+    NGS raw data to constructing phylogenetic trees for hybrid capture phylogenomics. It integrates multiple orthology inference
+    methods and tree reconstruction tools to provide a robust framework for phylogenomic analysis.
+  doc_url: https://github.com/Yuxuanliu-HZAU/HybSuite/blob/main/README.md
+  dev_url: https://github.com/Yuxuanliu-HZAU/HybSuite
+
+extra:
+  recipe-maintainers:
+    - Yuxuanliu-HZAU
