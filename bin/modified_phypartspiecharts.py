@@ -30,6 +30,7 @@ import argparse
 import re
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Dict, Tuple, List, Optional
 from dataclasses import dataclass
@@ -84,6 +85,9 @@ class PhyPartsConfig:
     show_num_mode: str = "12"
     stat_output: Optional[str] = None
     threads: int = 1
+    replace_underscore: bool = False  # Add parameter: control whether to replace underscores with spaces in tip species names
+    font_family: Optional[str] = None  # Add parameter: control the font family of the tip species names
+    rotate_nodes: Optional[str] = None  # Add parameter: rotate nodes by specifying pairs of tip names
 
     def __post_init__(self):
         # Validate output file format
@@ -203,6 +207,72 @@ class PhyPartsPieCharts:
             logging.info("Node matching completed")
         except Exception as e:
             logging.error(f"Error in get_phyparts_nodes: {e}")
+            raise
+
+    def rotate_tree_nodes(self) -> None:
+        """Rotate tree nodes based on user-specified tip pairs"""
+        if not self.config.rotate_nodes:
+            return
+        
+        try:
+            logging.info("Processing node rotation requests...")
+            # Parse rotation specifications
+            # Format: "tip1,tip2;tip3,tip4" or "tip1,tip2"
+            rotation_pairs = self.config.rotate_nodes.split(';')
+            
+            rotation_count = 0
+            for idx, pair in enumerate(rotation_pairs, 1):
+                pair = pair.strip()
+                if not pair:
+                    continue
+                    
+                tips = [t.strip() for t in pair.split(',')]
+                if len(tips) != 2:
+                    logging.warning(f"Invalid rotation pair {idx}: {pair}. Expected format: 'tip1,tip2'. Skipping.")
+                    continue
+                
+                tip1, tip2 = tips
+                
+                # Find the tips in the tree (重新查找以确保基于最新的树状态)
+                tip1_node = None
+                tip2_node = None
+                
+                # 优化查找逻辑：找到两个节点后立即退出
+                for leaf in self.plot_tree.iter_leaves():
+                    if leaf.name == tip1:
+                        tip1_node = leaf
+                    if leaf.name == tip2:
+                        tip2_node = leaf
+                    # 如果两个节点都找到了，提前退出
+                    if tip1_node is not None and tip2_node is not None:
+                        break
+                
+                # Check if both tips were found
+                if tip1_node is None:
+                    logging.warning(f"Rotation {idx}: Tip '{tip1}' not found in tree. Skipping.")
+                    continue
+                if tip2_node is None:
+                    logging.warning(f"Rotation {idx}: Tip '{tip2}' not found in tree. Skipping.")
+                    continue
+                
+                # Find their common ancestor
+                try:
+                    common_ancestor = self.plot_tree.get_common_ancestor(tip1_node, tip2_node)
+                except Exception as e:
+                    logging.warning(f"Rotation {idx}: Could not find common ancestor for '{tip1}' and '{tip2}': {e}. Skipping.")
+                    continue
+                
+                # Rotate (swap children) at the common ancestor
+                if len(common_ancestor.children) == 2:
+                    common_ancestor.swap_children()
+                    rotation_count += 1
+                    logging.info(f"Rotation {idx}: Successfully rotated node at common ancestor of '{tip1}' and '{tip2}'")
+                else:
+                    logging.warning(f"Rotation {idx}: Common ancestor of '{tip1}' and '{tip2}' does not have exactly 2 children. Cannot rotate.")
+            
+            logging.info(f"Node rotation completed: {rotation_count} rotation(s) applied")
+        except Exception as e:
+            logging.error(f"Error in rotate_tree_nodes: {e}")
             raise
 
     def process_data(self) -> None:
@@ -421,47 +491,66 @@ class PhyPartsPieCharts:
             # Get output format
             output_format = Path(self.config.output).suffix.lower()[1:]  # Remove dot
             
-            # Set image size and DPI
-            if output_format == "png":
-                # For PNG format, use simple width calculation to avoid floating point operations
-                if self.config.dpi == 300:
-                    width = 2000  # Base width
+            # Set environment variable for headless rendering (important for PDF)
+            original_qt_platform = os.environ.get('QT_QPA_PLATFORM', None)
+            if output_format == "pdf":
+                os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+            
+            try:
+                # Render with format-specific settings
+                if output_format == "png":
+                    # For PNG format, use simple width calculation to avoid floating point operations
+                    if self.config.dpi == 300:
+                        width = 2000  # Base width
+                    else:
+                        # Use integer multiplication and division
+                        width = 2000 * self.config.dpi // 300
+                    
+                    # Ensure width is integer
+                    width = int(width)
+                    height = width  # Equal width and height
+                    
+                    logging.info(f"Rendering PNG with width={width}, height={height}, dpi={self.config.dpi}")
+                    
+                    self.plot_tree.render(str(self.config.output),  
+                                        tree_style=ts, 
+                                        w=width,  
+                                        h=height,  
+                                        dpi=self.config.dpi,
+                                        units="px")
+                elif output_format == "pdf":
+                    # For PDF format, let it auto-size (no width/height specified)
+                    logging.info(f"Rendering PDF with auto-size")
+                    
+                    self.plot_tree.render(str(self.config.output),  
+                                        tree_style=ts)
                 else:
-                    # Use integer multiplication and division
-                    width = 2000 * self.config.dpi // 300
-                
-                # Ensure width is integer
-                width = int(width)
-                height = width  # Equal width and height
-                
-                logging.info(f"Rendering PNG with width={width}, height={height}, dpi={self.config.dpi}")
-                
-                self.plot_tree.render(str(self.config.output),  
-                                    tree_style=ts, 
-                                    w=width,  
-                                    h=height,  
-                                    dpi=self.config.dpi,
-                                    units="px")
-            else:
-                # Use default settings for SVG and PDF formats
-                width = 595  # Ensure integer
-                logging.info(f"Rendering {output_format.upper()} with width={width}")
-                
-                self.plot_tree.render(str(self.config.output),  
-                                    tree_style=ts, 
-                                    w=width,
-                                    dpi=300,
-                                    units="px")
+                    # For SVG format, also let it auto-size for consistency
+                    logging.info(f"Rendering {output_format.upper()} with auto-size")
+                    
+                    self.plot_tree.render(str(self.config.output),  
+                                        tree_style=ts)
 
-            if self.config.output_node_tree:
-                node_style = TreeStyle()
-                node_style.show_leaf_name = False
-                node_style.layout_fn = self._node_text_layout
-                nodes_output = str(Path(self.config.output).parent / f"tree_nodes{Path(self.config.output).suffix}")
-                self.plot_tree.render(nodes_output, tree_style=node_style)
-                logging.info(f"Node tree visualization saved as: {nodes_output}")
+                if self.config.output_node_tree:
+                    node_style = TreeStyle()
+                    node_style.show_leaf_name = False
+                    node_style.layout_fn = self._node_text_layout
+                    nodes_output = str(Path(self.config.output).parent / f"tree_nodes{Path(self.config.output).suffix}")
+                    
+                    # Apply same auto-size approach for node tree
+                    self.plot_tree.render(nodes_output, tree_style=node_style)
+                    logging.info(f"Node tree visualization saved as: {nodes_output}")
 
-            logging.info(f"Tree successfully saved as: {self.config.output}")
+                logging.info(f"Tree successfully saved as: {self.config.output}")
+                
+            finally:
+                # Restore original environment variable
+                if output_format == "pdf":
+                    if original_qt_platform is not None:
+                        os.environ['QT_QPA_PLATFORM'] = original_qt_platform
+                    else:
+                        os.environ.pop('QT_QPA_PLATFORM', None)
+                        
         except Exception as e:
             logging.error(f"Error rendering tree: {e}")
             raise
@@ -568,24 +657,36 @@ class PhyPartsPieCharts:
                 if self.config.show_num_mode[0] is not None:
                     top_value = self._get_display_value(node.name, self.config.show_num_mode[0])
                     top_text = faces.TextFace(top_value, fsize=adjusted_size)
+                    if self.config.font_family:
+                        top_text.ftype = self.config.font_family
                     faces.add_face_to_node(top_text, node, 0, position="branch-top")
                 
                 if self.config.show_num_mode[1] is not None:
                     bottom_value = self._get_display_value(node.name, self.config.show_num_mode[1])
                     bottom_text = faces.TextFace(bottom_value, fsize=adjusted_size)
+                    if self.config.font_family:
+                        bottom_text.ftype = self.config.font_family
                     faces.add_face_to_node(bottom_text, node, 0, position="branch-bottom")
         else:
+            # 处理物种名：根据配置决定是否替换下划线为空格
+            display_name = node.name.replace('_', ' ') if self.config.replace_underscore else node.name
             # Use adjusted font size
             adjusted_size = int(20 * self.config.tip_size_factor)  # Base size is 20
-            F = faces.TextFace(node.name, fsize=adjusted_size, 
+            F = faces.TextFace(display_name, fsize=adjusted_size, 
                               fstyle='italic' if self.config.italic_names else 'normal')
+            if self.config.font_family:
+                F.ftype = self.config.font_family
             faces.add_face_to_node(F, node, 0, position="aligned")
 
     def _node_text_layout(self, node):
         """Node text layout"""
+        # 处理物种名：根据配置决定是否替换下划线为空格
+        display_name = node.name.replace('_', ' ') if self.config.replace_underscore else node.name
         # Use adjusted font size
         adjusted_size = int(20 * self.config.tip_size_factor)  # Base size is 20
-        F = faces.TextFace(node.name, fsize=adjusted_size)
+        F = faces.TextFace(display_name, fsize=adjusted_size)
+        if self.config.font_family:
+            F.ftype = self.config.font_family
         faces.add_face_to_node(F, node, 0, position="branch-right")
 
 def main():
@@ -617,6 +718,18 @@ def main():
     parser.add_argument("--no_italic", action="store_false",
                        help="Display species names in normal font style (default: italic)",
                        dest="italic_names")
+    
+    # Add parameter: control whether to replace underscores with spaces in tip species names
+    parser.add_argument("--replace_underscore", action="store_true",
+                       help="Replace underscores with spaces in tip species names (default: False)",
+                       dest="replace_underscore")
+    
+    # Add font family parameter
+    parser.add_argument("--font", type=str, default=None,
+                       help="""Font family name for all text in the tree (default: system default).
+Common fonts: Arial, Helvetica, Times New Roman, Courier, Verdana, etc.
+Note: Font must be installed on your system.""",
+                       dest="font_family")
     
     # Add control tip label font size parameter
     parser.add_argument("--tip_size", type=float, default=1.0,
@@ -664,6 +777,15 @@ Example: --show_num_mode 0  (hide all numbers)
                        help="Number of threads to use (default: 1)",
                        dest="threads")
 
+    # Add node rotation parameter
+    parser.add_argument("--rotate", type=str, default=None,
+                       help="""Rotate nodes by specifying pairs of tip names.
+The common ancestor of each pair will be rotated (children swapped).
+Format: 'tip1,tip2' for single rotation or 'tip1,tip2;tip3,tip4' for multiple rotations.
+Example: --rotate 'species_A,species_B' or --rotate 'sp1,sp2;sp3,sp4'
+This allows you to control the topology presentation without changing the tree structure.""",
+                       dest="rotate_nodes")
+
     args = parser.parse_args()
     args_dict = vars(args)
     
@@ -671,6 +793,10 @@ Example: --show_num_mode 0  (hide all numbers)
         config = PhyPartsConfig(**args_dict)
         processor = PhyPartsPieCharts(config)
         processor.get_phyparts_nodes()
+        
+        # Apply node rotations before processing data
+        processor.rotate_tree_nodes()
+        
         processor.process_data()
         
         if config.to_csv:

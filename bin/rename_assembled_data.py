@@ -4,7 +4,7 @@ import argparse
 import sys
 
 def print_banner():
-    banner = """
+    banner = r"""
     ........>>>> One Single Run
      _     _                 _          ________               _     
     | |   | |               | |        / _______|             |_|     _  
