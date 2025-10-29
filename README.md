@@ -24,11 +24,11 @@ If you have any questions/issues/suggestions, please leave a message [here](http
   - (2) Integrate user-provided raw reads (if provided);
   - (3) Raw reads trimming (via [Trimmomatic](https://github.com/usadellab/Trimmomatic));  
 - **Stage 2: Data assembly & paralog detection**    
-  - (1) Target loci assembly and putative paralogs retrieval (via [HybPiper](https://github.com/mossmatters/HybPiper))
+  - (1) Target loci assembly and paralog sequence retrieval (via [HybPiper](https://github.com/mossmatters/HybPiper))
   - (2) Integrate pre-assembled sequences (if provided);
   - (3) Filter putative paralogs;
   - (4) Plot original and filtered paralogs heatmap;
-- **Stage 3: Paralog handling & alignment processing**    
+- **Stage 3: Paralog handling and paralog retrieval**    
   - Optionally execute seven paralogs-handling methods (HRS, RLWP, LS, MO, MI, RT, 1to1; see our [wiki page](https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial)) and generate filtered alignments for downstream analysis:    
     - **HRS**:    
     (1) Retrieve seqeunces via command `hybpiper retrieve_sequences` in [HybPiper](https://github.com/mossmatters/HybPiper);     
@@ -128,7 +128,7 @@ hybsuite -v
 
 ---
 
-# Other instructions
+# Full instructions
 > [!TIP]
 > Every aspect of HybSuite can be found on our wiki, just feel free to visit:    
 https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/
@@ -160,6 +160,17 @@ https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Example-dataset
 ---
 
 # Changelog
+
+### **2.0** *~ February 2026 (Chinese Spring Festival)* — **Advance Notice!**
+
+We are excited to announce that **HybSuite v2.0** will be released before or around the **2026 Chinese Spring Festival**! 🎉  
+The new version will include several major updates and powerful new features:
+
+- **[CAPSUITE](https://github.com/edgardomortiz/Captus) Integration** — A new optional module for data assembly in *HybSuite Stage 2*, offering enhanced flexibility and performance.
+- **[Plotly](https://plotly.com/) Visualization Support** — Automatically generate comprehensive HTML reports summarizing statistics from each stage.  
+  These reports will include publication-ready figures and tables for easier result interpretation and presentation.
+
+**Stay tuned!**
 
 **1.1.5** *September, 2025* - **MAJOR UPDATE !**
 
