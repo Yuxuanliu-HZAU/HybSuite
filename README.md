@@ -161,9 +161,9 @@ https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Example-dataset
 
 # Changelog
 
-**2.0 (in preparation)** *~February 2026 (Chinese Spring Festival)* — **Advance Notice!**
+**1.2 (in preparation)** *~February 2026 (Chinese Spring Festival)* — **Advance Notice!**
 
-We tend to announce that **HybSuite v2.0** will be released before or around the **2026 Chinese Spring Festival**! 🎉  
+We tend to announce that **HybSuite v1.2** will be released before or around the **2026 Chinese Spring Festival**! 🎉  
 The new version will include several major updates and powerful new features:
 
 - **[CAPTUS](https://github.com/edgardomortiz/Captus) Integration** — A new optional module for data assembly in *HybSuite Stage 2*, offering enhanced flexibility and performance.
