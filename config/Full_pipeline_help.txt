@@ -21,7 +21,7 @@ Arguments for outputs:
 
 General arguments:
   === Stages running control ===
-  -skip_stage <1|12|123|>
+  -skip_stage <1|2|3|12|123|>
                         Specify pipeline stages to skip during execution. (Default: None, running all stages)
                         Note: Particularly useful for re-running specific HybSuite pipeline stages.
                         (e.g., '-skip_stage 1' for skipping stage 1)
