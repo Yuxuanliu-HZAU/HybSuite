@@ -317,6 +317,9 @@ config_main() {
   done < "$config_dir/Option-default-list.txt"
   rm "$config_dir"/Option*
 
+  if [ "${t}" = "Angiosperms353" ]; then
+    t="${script_dir}/../Target_sequence_database/Angiosperms353.fasta"
+  fi
   for var in input_data output_dir NGS_dir eas_dir t iqtree_constraint_tree raxml_constraint_tree rng_constraint_tree aln_dir paralogs_dir; do
     eval "val=\$$var"
     if [ ! -z "$val" ] && [ "$val" != "_____" ]; then
@@ -537,7 +540,7 @@ if [ "${run_to_stage}" = "3" ]; then
 fi
 
 #################===========================================================================
-# Define OI and tree
+# Define target file, OI and tree
 HRS="FALSE"
 RLWP="FALSE"
 LS="FALSE"
@@ -574,16 +577,9 @@ fi
 if echo "${PH}" | grep -q "b"; then
   run_paragone="TRUE"
   run_phylopypruner="FALSE"
-fi
-if [ "${PH}" = "all" ]; then
-  HRS="TRUE"
-  RLWP="TRUE"
-  LS="TRUE"
-  MO="TRUE"
-  MI="TRUE"
-  RT="TRUE"
-  one_to_one="TRUE"
-  run_phylopypruner="TRUE"
+  if [ "${LS}" = "TRUE" ]; then
+    run_phylopypruner="TRUE"
+  fi
 fi
 if ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ]) && [ "${run_paragone}" = "FALSE" ] && [ "${run_phylopypruner}" = "FALSE" ]; then
   run_phylopypruner="TRUE"
@@ -1796,7 +1792,7 @@ if [ "${check}" = "TRUE" ]; then
     stage_info_main_blue "=> Step 4: Check species checklists"
     all_sp_num=$(grep -c '^' "${input_list}" || wc -l < "${input_list}")
     all_genus_num=$(awk -F '_' '{print $1}' "${input_list}" | sort -u | grep -c '^')
-    awk -F '_' '{print $1}' "${input_list}" | sort -u >> "${output_dir}/hybsuite_checklists/All_Genus_name_list.txt"
+    awk -F '_' '{print $1}' "${input_list}" | sort -u > "${output_dir}/hybsuite_checklists/All_Genus_name_list.txt"
     if [ "${found_public}" = "1" ]; then
       SRR_sp_num=$(awk -F'\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/' "${input_list}" | grep -c '^')
       SRR_genus_num=$(awk -F'\t' '$2 ~ /^(SRR|ERR|DRR|KRR|LRR)/ {print $1}' "${input_list}" | awk -F'_' '{print $1}' | sort -u | grep -c '^')
@@ -1862,9 +1858,6 @@ if [ "${NGS_dir}" = "_____" ]; then
   stage_info "NGS dataset directory was not specified, set to: ${NGS_dir} by default"
 fi
 if [ -s "${input_list}" ]; then
-  if [ -d "${output_dir}/hybsuite_checklists" ]; then
-    rm "${output_dir}/hybsuite_checklists"/* > /dev/null 2>&1
-  fi
   if [ -s "${t}" ]; then
     grep '>' ${t} | awk -F'-' '{print $NF}' | sort | uniq > "${output_dir}/hybsuite_checklists/Ref_gene_name_list.txt"
   fi
@@ -3405,6 +3398,7 @@ if ([ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]) && [ "${ski
     local seq_suffix="$3"
 
     # 01-Aligning ${ortho_method} sequences via MAFFT...
+    define_threads "mafft"
     stage_info_main "01-Aligning ${ortho_method} sequences via MAFFT..."
     stage_info_main "====>> Aligning ${ortho_method} sequences via MAFFT (${process} in parallel; ${nt_mafft} threads) ====>>"
     cd "${seq_dir}"
@@ -3431,6 +3425,7 @@ if ([ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]) && [ "${ski
       fi
       # Update start count
       update_start_count "$file_name" "$stage_logfile"
+      # stage_cmd_main "sed -e 's/ single_hit//g;s/ multi_hit_stitched_contig_comprising_.*_hits//g' "${file}" > "${output_dir}/04-Alignments/${ortho_method}/${file_name}.fasta""
       sed -e 's/ single_hit//g;s/ multi_hit_stitched_contig_comprising_.*_hits//g' "${file}" > "${output_dir}/04-Alignments/${ortho_method}/${file_name}.fasta"
       run_mafft "${output_dir}/04-Alignments/${ortho_method}/${file_name}.fasta" "${output_dir}/04-Alignments/${ortho_method}/${file_name}.aln.fasta" "${nt_mafft}"
       rm -f "${output_dir}/04-Alignments/${ortho_method}/${file_name}.fasta"
@@ -3456,10 +3451,6 @@ if ([ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]) && [ "${ski
     done < "$temp_file"
     wait
     echo
-    # Display processing log
-    if [ "${log_mode}" = "full" ]; then
-      display_process_log "$stage_logfile" "Failed to align ${ortho_method} sequences via MAFFT:"
-    fi
     if ! find "${output_dir}/04-Alignments/${ortho_method}/" -maxdepth 1 -type f -name "*.fasta" | grep -q .; then
       stage_error "No any alignments were generated in ${output_dir}/04-Alignments/${ortho_method}/."
       stage_error "Please check the parameters for MAFFT."
@@ -3499,6 +3490,7 @@ if ([ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]) && [ "${ski
         # Update start count
         update_start_count "$file_name" "$stage_logfile"
         if [ "${trim_tool}" = "1" ]; then
+          define_threads "trimal"
           run_trimal "${output_dir}/04-Alignments/${ortho_method}/${file_name}.aln.fasta" "${output_dir}/05-Trimmed_alignments/${ortho_method}/${file_name}.aln.trimmed.fasta" "${trimal_mode}" \
           "${trimal_gapthreshold}" "${trimal_simthreshold}" "${trimal_cons}" "${trimal_block}" "${trimal_resoverlap}" "${trimal_seqoverlap}" \
           "${trimal_w}" "${trimal_gw}" "${trimal_sw}"
@@ -3887,7 +3879,6 @@ if ([ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]) && [ "${ski
     #################===========================================================================
     # 01-MSA and trimming
     define_threads "mafft"
-    define_threads "trimal"
     temp_file="fasta_file_list.txt"
     find . -maxdepth 1 -type f -name "*.fasta" -exec basename {} \; > "$temp_file"
     total_sps=$(find . -maxdepth 1 -type f -name "*.fasta" | wc -l)
@@ -4050,6 +4041,9 @@ if ([ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]) && [ "${ski
         eval "${base_cmd}" > /dev/null 2>&1
 
         # Move the output files
+        if [ -d "${input_dir}/PhyloPyPruner/${output_phylopypruner_dir}" ]; then
+          rm -rf "${input_dir}/PhyloPyPruner/${output_phylopypruner_dir}"
+        fi
         mv "${input_dir}/PhyloPyPruner/phylopypruner_output/" "${input_dir}/PhyloPyPruner/${output_phylopypruner_dir}/"
         sed_i "s/|.*$//" "${input_dir}/PhyloPyPruner/${output_phylopypruner_dir}/output_alignments/"*.fasta
         
@@ -4155,7 +4149,7 @@ if ([ "${run_stage3}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]) && [ "${ski
   #Stage3-Optional method: MO/MI/RT/1to1 for ParaGone ########################################
   ############################################################################################
   #ParaGone (optional)
-  if ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ]) && [ "${run_paragone}" = "TRUE" ] && [ "${run_phylopypruner}" = "FALSE" ]; then
+  if ([ "$MO" = "TRUE" ] || [ "$MI" = "TRUE" ] || [ "$RT" = "TRUE" ] || [ "${one_to_one}" = "TRUE" ]) && [ "${run_paragone}" = "TRUE" ]; then
     #################===========================================================================
     step_parts=""
     [ "$MO" = "TRUE" ] && step_parts="${step_parts}MO/"
@@ -4835,7 +4829,7 @@ run_sp_tree_raxml_ng() {
       stage_info_main "02-Using Newick Utilities to reroot the tree (RAxML-NG)..."
       outgroup_name=$(cat "${output_dir}"/hybsuite_checklists/Outgroup.txt|fmt)
       stage_cmd_main "nw_reroot ${output}/RAxML-NG_${prefix}_${ortho_method}.raxml.support ${outgroup_name} -l -s > ${output}/RAxML-NG_${prefix}_${ortho_method}.rr.tre"
-      nw_reroot "${output}/RAxML-NG_${prefix}_${ortho_method}.raxml.support" "${outgroup_name}" -l -s > "${output}/RAxML-NG_${prefix}_${ortho_method}.rr.tre"
+      nw_reroot "${output}/RAxML-NG_${prefix}_${ortho_method}.raxml.support" ${outgroup_name} -l -s > "${output}/RAxML-NG_${prefix}_${ortho_method}.rr.tre"
     
       if [ ! -s "${output}/RAxML-NG_${prefix}_${ortho_method}.rr.tre" ]; then
         stage_error "Failed to reroot the tree: ${output}/RAxML-NG_${prefix}_${ortho_method}.tre." 
@@ -5058,7 +5052,7 @@ run_astral4() {
       stage_info_main "03-Using Newick Utilities to reroot the tree (ASTRAL-IV)..."
       outgroup_name=$(cat "${output_dir}"/hybsuite_checklists/Outgroup.txt|fmt)
       stage_cmd_main "nw_reroot ${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre ${outgroup_name} -l -s > ${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre"
-      nw_reroot "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre" "${outgroup_name}" -l -s > "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre"
+      nw_reroot "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre" ${outgroup_name} -l -s > "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre"
     
       if [ ! -s "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre" ]; then
         stage_error "Failed to reroot the tree: ${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre." 
@@ -5118,7 +5112,7 @@ run_astral_pro() {
     stage_info_main "02-Using Newick Utilities to reroot the tree (ASTRAL-Pro)..."
     outgroup_name=$(cat "${output_dir}"/hybsuite_checklists/Outgroup.txt|fmt)
     stage_cmd_main "nw_reroot ${output}/ASTRAL-Pro_${prefix}.tre ${outgroup_name} -l -s > ${output}/ASTRAL-Pro_${prefix}.rr.tre"
-    nw_reroot "${output}/ASTRAL-Pro_${prefix}.tre" "${outgroup_name}" -l -s > "${output}/ASTRAL-Pro_${prefix}.rr.tre"
+    nw_reroot "${output}/ASTRAL-Pro_${prefix}.tre" ${outgroup_name} -l -s > "${output}/ASTRAL-Pro_${prefix}.rr.tre"
     
     if [ ! -s "${output}/ASTRAL-Pro_${prefix}.rr.tre" ]; then
       stage_error "Failed to reroot the tree: ${output}/ASTRAL-Pro_${prefix}.rr.tre." 
@@ -5209,7 +5203,7 @@ run_wastral() {
     stage_info_main "02-Using Newick Utilities to reroot the tree (wASTRAL)..."
     outgroup_name=$(cat "${output_dir}"/hybsuite_checklists/Outgroup.txt|fmt)
     stage_cmd_main "nw_reroot ${output}/wASTRAL_${prefix}_${ortho_method}.tre ${outgroup_name} -l -s > ${output}/wASTRAL_${prefix}_${ortho_method}.rr.tre"
-    nw_reroot "${output}/wASTRAL_${prefix}_${ortho_method}.tre" "${outgroup_name}" -l -s > "${output}/wASTRAL_${prefix}_${ortho_method}.rr.tre"
+    nw_reroot "${output}/wASTRAL_${prefix}_${ortho_method}.tre" ${outgroup_name} -l -s > "${output}/wASTRAL_${prefix}_${ortho_method}.rr.tre"
     
     if [ ! -s "${output}/wASTRAL_${prefix}_${ortho_method}.rr.tre" ]; then
       stage_error "Failed to reroot the tree: ${output}/wASTRAL_${prefix}_${ortho_method}.rr.tre." 
@@ -5545,7 +5539,6 @@ if [ "${run_astral_pro}" = "TRUE" ]; then
     # 01-MSA and trimming
     cd "${aln_dir}"
     define_threads "mafft"
-    define_threads "trimal"
     rm -rf "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/"
     mkdir -p "${output_dir}/08-Coalescent_analysis/ASTRAL-Pro/01-Gene_trees/"
     temp_file="fasta_file_list.txt"
