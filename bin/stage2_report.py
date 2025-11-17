@@ -90,7 +90,6 @@ handler.setFormatter(ColoredFormatter(
 ))
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
-logger.info(f"Generating reports for HybSuite stage2 output ...")
 def natural_sort_key(s):
     """Provide a natural sort key for filenames"""
     # Convert to string if it's bytes or other type
@@ -209,7 +208,7 @@ def process_directory(input_dir, ref_lengths, seq_type, filename_suffix=None, th
             ref_length = ref_lengths.get(locus, 0)
             
             if ref_length == 0:
-                logger.warning(f"No reference length found for locus: {locus}")
+                # logger.warning(f"No reference length found for locus: {locus}")
                 continue
             
             all_loci.add(locus)
@@ -892,23 +891,20 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
         buttons = []
         sort_configs = [
             ('none', 'None', 'category descending'),
-            ('total_x', 'Total X', 'total descending'),
-            ('total_y', 'Total Y', 'category descending'),
-            ('total_both', 'Total Both', 'total descending'),
+            ('total_both_descending', 'Descending', 'total descending'),
+            ('total_both_ascending', 'Ascending', 'total ascending'),
         ]
         
+        total_desc_names = {'total_both_descending'}
+        total_asc_names = {'total_both_ascending'}
+
         for sort_name, sort_label, locus_order in sort_configs:
-            # Determine sample order based on sort type
-            if 'y' in sort_name.lower() or 'both' in sort_name.lower():
-                # Sort samples by total of Filtered data (higher recovery first)
-                if 'total' in sort_name:
-                    sample_order = sorted(samples_unique, key=lambda s: sample_stats[s]['total'], reverse=True)
-                else:
-                    sample_order = samples_unique
+            if sort_name in total_desc_names:
+                sample_order = sorted(samples_unique, key=lambda s: sample_stats[s]['total'], reverse=True)
+            elif sort_name in total_asc_names:
+                sample_order = sorted(samples_unique, key=lambda s: sample_stats[s]['total'])
             else:
-                # Keep alphabetical order
                 sample_order = samples_unique
-            
             # Use the provided visual mode config
             button_data = create_button_data(
                 sample_order, 
@@ -1725,24 +1721,21 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
         buttons = []
         sort_configs = [
             ('none', 'None', 'category descending'),
-            ('total_x', 'Total X', 'total descending'),
-            ('total_y', 'Total Y', 'category descending'),
-            ('total_both', 'Total Both', 'total descending'),
+            ('total_both_descending', 'Descending', 'total descending'),
+            ('total_both_ascending', 'Ascending', 'total ascending'),
         ]
         
+        total_desc_names = {'total_both_descending'}
+        total_asc_names = {'total_both_ascending'}
+        
         for sort_name, sort_label, locus_order in sort_configs:
-            # Determine sample order based on sort type
-            if 'y' in sort_name.lower() or 'both' in sort_name.lower():
-                # Sort samples by total of Filtered data (higher paralog first)
-                if 'total' in sort_name:
-                    sample_order = sorted(samples_unique_paralog, key=lambda s: sample_stats_paralog[s]['total'], reverse=True)
-                else:
-                    sample_order = samples_unique_paralog
+            if sort_name in total_desc_names:
+                sample_order = sorted(samples_unique_paralog, key=lambda s: sample_stats_paralog[s]['total'], reverse=True)
+            elif sort_name in total_asc_names:
+                sample_order = sorted(samples_unique_paralog, key=lambda s: sample_stats_paralog[s]['total'])
             else:
-                # Keep alphabetical order
                 sample_order = samples_unique_paralog
-            
-            # Use the provided visual mode config
+
             button_data = create_button_data_paralog(
                 sample_order, 
                 mode_config['group_by_type'], 
@@ -2291,7 +2284,7 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
         ]
     )
     
-    report_title = "HybSuite Stage2: Sequence Length Recovery Report"
+    report_title = "HybSuite Stage2: Assembled Sequence Statistics Report"
     html_header = f"""
         <head>
             <meta charset="UTF-8">
@@ -2345,6 +2338,7 @@ Number of loci: {df['locus'].nunique()}</code></pre>
 def main(args):
     """Main function"""
     
+    logger.info(f"Generating reports for HybSuite stage2 output ...")
     # Load reference sequences
     ref_lengths = get_reference_lengths(args.reference)
     
@@ -2539,9 +2533,11 @@ def standalone():
     )
     
     # Required input parameters
-    parser.add_argument('-o', '--original_dir', required=True,
+    parser.add_argument('-in', '--input', required=False,
+                        help='Directory "02-All_paralogs" outputted in HybSuite Stage 2')
+    parser.add_argument('-o_dir', '--original_dir', required=False,
                         help='Directory containing original (pre-filter) FASTA files')
-    parser.add_argument('-f', '--filtered_dir', required=True,
+    parser.add_argument('-f_dir', '--filtered_dir', required=False,
                         help='Directory containing filtered FASTA files')
     parser.add_argument('-r', '--ref', required=True, dest='reference',
                         help='Reference sequences file (FASTA format)')
@@ -2574,10 +2570,32 @@ def standalone():
     args = parser.parse_args()
     
     # Validate input
-    if not os.path.isdir(args.original_dir):
-        parser.error(f"Original directory does not exist: {args.original_dir}")
-    if not os.path.isdir(args.filtered_dir):
-        parser.error(f"Filtered directory does not exist: {args.filtered_dir}")
+    if not args.input and not (args.original_dir and args.filtered_dir):
+        parser.error(
+        "You must either:\n"
+        "  1) use '--input' to specify the HybSuite stage2 directory '02-All_paralogs',\n"
+        "  OR\n"
+        "  2) provide both '-o/--original_dir' (directory with original FASTA files for all loci) "
+        "  and '-f/--filtered_dir' (directory with filtered FASTA files for all loci).")
+    else:
+        if args.original_dir and args.filtered_dir:
+            if not os.path.isdir(args.original_dir):
+                parser.error(f"Original directory does not exist: {args.original_dir}")
+            if not os.path.isdir(args.filtered_dir):
+                parser.error(f"Filtered directory does not exist: {args.filtered_dir}")
+
+        if args.input:
+            if not os.path.isdir(args.input):
+                parser.error(f"The input directory ('02-All_paralogs' produced by HybSuite stage2) does not exist: {args.input}")
+            else:
+                args.original_dir=os.path.join(args.input, '01-Original_paralogs')
+                if not os.path.isdir(args.original_dir):
+                    parser.error(f"Expected subdirectory not found: {args.original_dir}")
+                
+                args.filtered_dir=os.path.join(args.input, '03-Filtered_paralogs')
+                if not os.path.isdir(args.filtered_dir):
+                    parser.error(f"Expected subdirectory not found: {args.filtered_dir}")
+
     if not os.path.isfile(args.reference):
         parser.error(f"Reference file does not exist: {args.reference}")
     
