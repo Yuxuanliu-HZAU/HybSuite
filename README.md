@@ -23,12 +23,12 @@ If you have any questions/issues/suggestions, please leave a message [here](http
   - (1) Download public raw reads from NCBI (via [SRA Toolkit](https://github.com/ncbi/sra-tools) );
   - (2) Integrate user-provided raw reads (if provided);
   - (3) Raw reads trimming (via [Trimmomatic](https://github.com/usadellab/Trimmomatic));  
-- **Stage 2: Data assembly & paralog detection**    
+- **Stage 2: Data assembly and filtering**    
   - (1) Target loci assembly and paralog sequence retrieval (via [HybPiper](https://github.com/mossmatters/HybPiper))
   - (2) Integrate pre-assembled sequences (if provided);
   - (3) Filter putative paralogs;
   - (4) Plot original and filtered paralogs heatmap;
-- **Stage 3: Paralog handling and paralog retrieval**    
+- **Stage 3: Paralog handling**    
   - Optionally execute seven paralogs-handling methods (HRS, RLWP, LS, MO, MI, RT, 1to1; see our [wiki page](https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Tutorial)) and generate filtered alignments for downstream analysis:    
     - **HRS**:    
     (1) Retrieve seqeunces via command `hybpiper retrieve_sequences` in [HybPiper](https://github.com/mossmatters/HybPiper);     
