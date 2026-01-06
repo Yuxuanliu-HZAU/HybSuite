@@ -23,6 +23,16 @@ General arguments:
   -sp_tree <1-5|all>    Species tree inference method:
                         1: IQ-TREE, 2: RAxML, 3: RAxML-NG, 4: ASTRAL-IV, 5: wASTRAL
   
+  === Steps control ===
+  -run_coalescent_step <1|2|3|4|5|12|123|1234|12345> 
+                        Control which coalescent analysis steps to run:
+                        1: Construct single gene trees, 2: Combine and collapse gene trees, 3: Infer species tree, 4: Reroot gene trees, 5: PhyParts concordance analysis
+                        (Default: 1234)
+  -run_concatenated_step <1|2|12> 
+                        Control which concatenated analysis steps to run:
+                        1: Construct concatenated alignment, 2: Infer species tree
+                        (Default: 12)
+  
   === Gene tree builder control ===
   -gene_tree <1/2>      Choose the software to construct paralogs gene trees. (1: IQ-TREE; 2: FastTree) (Default: 1) 
   -gene_tree_bb <INT>   Choose the bootstrap value for paralogs gene trees inference. (Default: 1000)
@@ -154,14 +164,17 @@ Arguments for integrated tools :
                         8: Ratio of conflicting to all signal genes ((red+green)/(blue+red+green))
                         9: Original node support values from the input tree
 
-Command example :
-  === Run IQ-TREE ===
-  hybsuite stage4 -aln_dir ./06-Final_alignments -t ./Angiosperms353 -OI 1234567a -output_dir ./ -nt -process 5 -sp_tree 1
-  
-  === Run ASTRAL-IV ===
-  hybsuite stage4 -aln_dir ./06-Final_alignments -t ./Angiosperms353 -OI 1234567a -output_dir ./ -nt -process 5 -sp_tree 4
 
-  === Run ASTRAL-IV and PhyParts ===
-  hybsuite stage4 -aln_dir ./06-Final_alignments -t ./Angiosperms353 -OI 1234567a -output_dir ./ -nt -process 5 -sp_tree 4 -run_phyparts TRUE
+
+
+Command example :
+  # Run HybSuite stage4 with IQ-TREE
+  $ hybsuite stage4 -aln_dir ./06-Final_alignments -t ./Angiosperms353 -PH 1234567a -output_dir ./ -nt -process 5 -sp_tree 1
+  
+  # Run HybSuite stage4 with ASTRAL-IV
+  $ hybsuite stage4 -aln_dir ./06-Final_alignments -t ./Angiosperms353 -PH 1234567a -output_dir ./ -nt -process 5 -sp_tree 4
+
+  # Run HybSuite stage4 with ASTRAL-IV and PhyParts
+  $ hybsuite stage4 -aln_dir ./06-Final_alignments -t ./Angiosperms353 -PH 1234567a -output_dir ./ -nt -process 5 -sp_tree 4 -run_phyparts TRUE
 
   

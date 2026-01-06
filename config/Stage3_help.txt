@@ -10,7 +10,7 @@ Arguments for inputs:
   -input_list <FILE>    The file listing input sample names and corresponding data types used in stage 1&2. (Default: None)
   -input_data <DIR>     The directory containing all input data (in this stage, only required when the inputs include pre-assembled data). (Default: None).
   -eas_dir <DIR>        The output directory containing HybPiper assembly sequences (generated in stage 3). (Default: <output_dir>/01-Assembled_data)
-  -paralogs_dir <DIR>   The directory containing all putative paralog sequences generated in stage 2 or by users themselves. (Default: None)
+  -paralogs_dir <DIR>   The directory containing all paralog sequences generated in stage 2 or by users themselves. (Default: None)
                         It's advisable to set this parameter as '<output_dir>/02-All_paralogs/03-Filtered_paralogs'.
   -t <FILE>             Target file for data assembly. (follows the format required in HybPiper)
 
@@ -74,7 +74,7 @@ Arguments for integrated tools :
 
   === ParaGone ===  
   -paragone_pool <INT>  Parallel alignment tasks. (Default: 1, same as the option '-process')
-  -paragone_treeshrink_q <0-1>        
+  -treeshrink_q_value <0-1>        
                         TreeShrink quantile threshold (Default: 0.05)
   -paragone_cutoff_value <FLOAT>       
                         Branch length cutoff (Default: 0.03)
@@ -129,9 +129,9 @@ Arguments for integrated tools :
                         Users can change each value but they have to be in increasing order. (NUM1 < NUM2 < 0 < NUM3 < NUM4)
 
 Command example :
-  === Without alignments filtering ===
-  hybsuite stage3 -eas_dir ./01-Assembled_data -paralogs_dir ./02-All_paralogs/03-Filtered_paralogs -t ./Angiosperms353 -OI 1234567a -output_dir ./ -nt -process 5
+  # Run HybSuite stage3 without alignments filtering
+  $ hybsuite stage3 -eas_dir ./01-Assembled_data -paralogs_dir ./02-All_paralogs/03-Filtered_paralogs -t ./Angiosperms353 -PH 1234567a -output_dir ./ -nt -process 5
   
-  === With alignments filtering ===
-  hybsuite stage3 -eas_dir ./01-Assembled_data -paralogs_dir ./02-All_paralogs/03-Filtered_paralogs -t ./Angiosperms353 -OI 124567b -output_dir ./ -nt -process 5 -aln_min_length 100 -aln_min_sample 0.1
+  # Run HybSuite stage3 with alignments filtering
+  $ hybsuite stage3 -eas_dir ./01-Assembled_data -paralogs_dir ./02-All_paralogs/03-Filtered_paralogs -t ./Angiosperms353 -PH 124567b -output_dir ./ -nt -process 5 -aln_min_length 100 -aln_min_sample 0.1
 

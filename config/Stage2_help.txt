@@ -59,9 +59,9 @@ Arguments for integrated tools:
                         Check whether a stitched contig is a potential chimera of contigs from multiple paralogs when running "hybpiper assemble". (Default: TRUE)
 
 Command example:
-  === Without putative filtering paralogs ===
-  hybsuite stage2 -NGS_dir ./NGS_dir -t ./Angiosperms353.fasta -output_dir ./ -nt 5 -process 5
-  
-  === With putative filtering paralogs ===
-  hybsuite stage2 -NGS_dir ./NGS_dir -t ./Angiosperms353.fasta -output_dir ./ -nt 5 -process 5 -seqs_min_length 100 -seqs_min_sample_coverage 0.1
+  # Run HybSuite stage2 with filtering paralog sequences
+  $ hybsuite stage2 -NGS_dir ./NGS_dir -t ./Angiosperms353.fasta -output_dir ./ -nt 5 -process 5 -seqs_min_length 100 -seqs_min_sample_coverage 0.1
+
+  # Run HybSuite stage2 without filtering paralog sequences
+  $ hybsuite stage2 -NGS_dir ./NGS_dir -t ./Angiosperms353.fasta -output_dir ./ -nt 5 -process 5
 

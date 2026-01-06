@@ -97,6 +97,8 @@ Subcommands for running HybSuite extension tools:
                         Filter sequences by sample and locus coverage (run filter_seqs_by_sample_and_locus_coverage.py).
     plot_paralog_heatmap | pph 
                         Plot paralog heatmap (run plot_paralog_heatmap.py).
+    plot_recovery_heatmap | prh
+                        Plot recovery heatmap (run plot_recovery_heatmap_v2.py).
     rlwp                Remove loci with putative paralogs masked in more than <threshold> samples (run RLWP.py).
     fasta_formatter | ff
                         Format fasta files (run Fasta_formatter.py).
@@ -104,6 +106,7 @@ Subcommands for running HybSuite extension tools:
                         Rename HybPiper assembled data directory (run rename_assembled_data.py).
     modified_phypartspiecharts | mpp
                         Visualize gene-species tree conflict (run modified_phypartspiecharts.py).
+    stage2_report       Generate report files summarizing all paralog sequences recovered and retrieved in stage 2.
     -----------------------------------------------------------------------------
 
 To view parameters and help for a subcommand, 

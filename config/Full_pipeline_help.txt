@@ -80,6 +80,16 @@ General arguments:
   -sp_tree <1-5|all>    Species tree inference method: (Default: 1)
                         1: IQ-TREE, 2: RAxML, 3: RAxML-NG, 4: ASTRAL-IV, 5: wASTRAL, 6: ASTRAL-Pro
   
+  === Steps control in stage 4 ===
+  -run_coalescent_step <1|2|3|4|5|12|123|1234|12345> 
+                        Control which coalescent analysis steps to run:
+                        1: Construct single gene trees, 2: Combine and collapse gene trees, 3: Infer species tree, 4: Reroot gene trees, 5: PhyParts concordance analysis
+                        (Default: 1234)
+  -run_concatenated_step <1|2|12> 
+                        Control which concatenated analysis steps to run:
+                        1: Construct concatenated alignment, 2: Infer species tree
+                        (Default: 12)
+  
   === Nucleotide ambiguity character replacement (Stage 3&4) ===
   -replace_n <TRUE|FALSE>
                         Replace ambiguous characters ('n', 'N', '?') with gaps ('-') in alignment files. (Default: FALSE)
@@ -160,7 +170,7 @@ Arguments for integrated tools :
 
   === ParaGone (Stage 3) ===  
   -paragone_pool <INT>  Parallel alignment tasks. (Default: 1, same as the option '-process')
-  -paragone_treeshrink_q <0-1>        
+  -treeshrink_q_value <0-1>        
                         TreeShrink quantile threshold (Default: 0.05)
   -paragone_cutoff_value <FLOAT>       
                         Branch length cutoff (Default: 0.03)
@@ -169,6 +179,10 @@ Arguments for integrated tools :
   -paragone_min_tips <INT>             
                         Minimum tips per tree (Default: 4)
   
+  === TreeShrink (Stage 3) ===
+  -treeshrink_q_value <0-1>        
+                        TreeShrink quantile threshold (Default: 0.05)
+
   === MAFFT (Stage 3) ===  
   -mafft_algorithm <str>               
                         MAFFT algorithm [auto|linsi] (Default: auto)
@@ -274,7 +288,7 @@ Command example :
   -input_list ./Input_list.txt \
   -input_data ./Input_data \
   -t Angiosperms353.fasta \
-  -OI 1234567 \
+  -PH 1234567 \
   -sp_tree 12345 \
   -output_dir ./ \
   -nt 5 -process 5
@@ -284,7 +298,7 @@ Command example :
   -input_list ./Input_list.txt \
   -input_data ./Input_data \
   -t Angiosperms353.fasta \
-  -OI 4567b \
+  -PH 4567b \
   -sp_tree 4 \
   -output_dir ./ \
   -nt 5 -process 5

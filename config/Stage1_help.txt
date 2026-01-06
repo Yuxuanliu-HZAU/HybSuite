@@ -53,9 +53,9 @@ Arguments for integrated tools:
                         Window average quality. (Default: 15)
 
 Command example:
-  === Use 1 thread and 1 parallel processing ===
-  hybsuite stage1 -input_list ./input_list.txt -input_data ./Input_data -NGS_dir ./NGS_dir -output_dir ./
+  # Run HybSuite stage1 with 1 thread and 1 parallel processing
+  $ hybsuite stage1 -input_list ./input_list.txt -input_data ./Input_data -NGS_dir ./NGS_dir -output_dir ./
   
-  === Use 5 threads and 5 parallel processing ===
-  hybsuite stage1 -input_list ./input_list.txt -input_data ./Input_data -NGS_dir ./NGS_dir -output_dir ./ -nt 5 -process 5
+  # Run HybSuite stage1 with 5 threads and 5 parallel processing
+  $ hybsuite stage1 -input_list ./input_list.txt -input_data ./Input_data -NGS_dir ./NGS_dir -output_dir ./ -nt 5 -process 5
 
