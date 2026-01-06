@@ -102,6 +102,7 @@ hybsuite <subcommand> [options] ...
 - `filter_seqs_by_length` | `fsl` - Filter sequences by length (run filter_seqs_by_length.py).
 - `filter_seqs_by_coverage` | `fsc` - Filter sequences by sample and locus coverage (run filter_seqs_by_sample_and_locus_coverage.py).
 - `plot_paralog_heatmap` | `pph` -  Plot paralog heatmap (run plot_paralog_heatmap.py).
+- `plot_recovery_heatmap` | `prh` -  Plot recovery heatmap (run plot_recovery_heatmap_v2.py).
 - `rlwp` - Remove loci with putative paralogs masked in more than <threshold> samples (run RLWP.py).
 - `fasta_formatter` | `ff` - Format fasta files (run Fasta_formatter.py).
 - `rename_assembled_data` | `rad` - Rename HybPiper assembled data directory (run rename_assembled_data.py).
