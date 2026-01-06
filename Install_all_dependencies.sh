@@ -95,6 +95,7 @@ install_python_deps "numpy"
 install_python_deps "PyQt5"
 install_python_deps "ete3"
 install_python_deps "phylopypruner"
+install_python_deps "plotly"
 
 validate() {
     for cmd in "$@"; do
