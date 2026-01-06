@@ -8,7 +8,7 @@
 
 If you have any questions/issues/suggestions, please leave a message [here](https://github.com/Yuxuanliu-HZAU/HybSuite/issues).  
 
-**Latest version**: 1.1.5
+**Latest version**: 1.1.6
 
 ---
 
