@@ -4,7 +4,7 @@
 #===> Preparation and HybSuite Checking <===#
 #Options setting
 ###set the run name:
-hybsuite_version="1.1.5"
+hybsuite_version="1.1.6"
 current_time=$(date +"%Y-%m-%d_%H:%M:%S")
 # Read the variable list file and set the default values
 # Obtain the script path
