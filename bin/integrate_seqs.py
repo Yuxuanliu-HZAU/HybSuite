@@ -48,6 +48,7 @@ def detect_fasta_format(fasta_file):
     Detect the format of the fasta file
     Return: 'old' represents the old format (>locus_name ...)
           'new' represents the new format (>... [gene=locus_name] ...)
+          'captus' represents the Captus format (>Species_name__locus_name__ ... or >Species_name__locus_name ...)
     """
     with open(fasta_file, 'r') as f:
         for line in f:
@@ -56,6 +57,16 @@ def detect_fasta_format(fasta_file):
                 # Check if it contains the [gene=...] label
                 if '[gene=' in line:
                     return 'new'
+                # Check if it contains double underscores (Captus format)
+                # Format: >Species_name__locus_name__ or >Species_name__locus_name
+                elif '__' in line:
+                    # Extract the first word after >
+                    first_word = line[1:].split()[0]
+                    # Check if it contains at least one double underscore
+                    if '__' in first_word:
+                        return 'captus'
+                    else:
+                        return 'old'
                 else:
                     return 'old'
     # Default return the old format
@@ -96,6 +107,19 @@ def parse_fasta(fasta_file, locus_list=None):
                         current_locus = match.group(1)
                     else:
                         current_locus = None
+                elif file_format == 'captus':
+                    # Captus format: >Species_name__locus_name__ or >Species_name__locus_name
+                    # Extract the first word after >
+                    first_word = line[1:].split()[0]
+                    # Split by double underscores
+                    parts = first_word.split('__')
+                    if len(parts) >= 2:
+                        # The second part is the locus name
+                        # e.g., Spiraea_canescens__6016 -> 6016
+                        # e.g., Spiraea_canescens__6026__00 -> 6026
+                        current_locus = parts[1]
+                    else:
+                        current_locus = None
                 else:
                     # Old format: the first word after >
                     current_locus = line[1:].split()[0]
@@ -126,11 +150,18 @@ def find_locus_file(output_dir, locus_name, output_suffix):
         file_path = os.path.join(output_dir, f"{locus_name}{output_suffix}.{ext}")
         if os.path.exists(file_path):
             return file_path
-    # If it does not exist, return the default .fasta file name
-    return os.path.join(output_dir, f"{locus_name}{output_suffix}")
+    # If it does not exist, determine a sensible default:
+    # - If the suffix itself already looks like an extension (.fasta/.fa/.FNA),
+    #   use <locus_name><suffix> (e.g. 6016.fasta).
+    # - Otherwise, append a .fasta extension (e.g. 6016_paralogs_all.fasta).
+    lower_suffix = output_suffix.lower()
+    if lower_suffix.endswith(('.fasta', '.fa', '.fna')):
+        return os.path.join(output_dir, f"{locus_name}{output_suffix}")
+    else:
+        return os.path.join(output_dir, f"{locus_name}{output_suffix}.fasta")
 
 
-def integrate_sequences(input_dir, output_dir, output_suffix, locus_list=None, sample_list=None, log_file=None, single_copy=False):
+def integrate_sequences(input_dir, output_dir, output_suffix, locus_list=None, sample_list=None, log_file=None, single_copy=False, per_species_dir=None):
     """
     Integrate all fasta files in the input directory into the output directory
     If the locus_list is provided, only process the loci in the list
@@ -140,6 +171,10 @@ def integrate_sequences(input_dir, output_dir, output_suffix, locus_list=None, s
     """
     # Create the output directory
     os.makedirs(output_dir, exist_ok=True)
+
+    # Create the per-species output directory (if specified)
+    if per_species_dir is not None:
+        os.makedirs(per_species_dir, exist_ok=True)
     
     message = f"[{current_time}] [INFO] Input directory: {input_dir}\n"
     print(message, end="")
@@ -183,7 +218,7 @@ def integrate_sequences(input_dir, output_dir, output_suffix, locus_list=None, s
         fasta_files.extend(Path(input_dir).glob(ext))
     
     if not fasta_files:
-        message = f"[{current_time}] [WARNING] No fasta files found in the input directory\n"
+        message = f"[{current_time}] [WARNING] No fasta files found in the input directory (specified by '-input_data' when running HybSuite main program)\n"
         print(f"{RED}{message}{RESET}", end="")
         with open(log_file, "a") as f:
             f.write(message)
@@ -207,42 +242,195 @@ def integrate_sequences(input_dir, output_dir, output_suffix, locus_list=None, s
             with open(log_file, "a") as f:
                 f.write(message)
             continue
-        
+
+        # For per-species export, track the sequences that are actually written
+        # for this species and each locus in the integrated (locus-based) output.
+        species_locus_seqs_for_export = {}
+
+        # Track whether we have detected any duplicate entries for this species
+        # in the existing output files (same species present before integration).
+        duplicate_detected_for_species = False
+
         # Write the sequence of each locus to the corresponding output file
         for locus_name, sequences in loci.items():
             output_file = find_locus_file(output_dir, locus_name, output_suffix)
-            
-            # Sort sequences by length (longest first)
-            sorted_seqs = sorted(sequences, key=len, reverse=True)
-            
-            if single_copy:
-                # Single-copy mode: Only keep the longest sequence
-                with open(output_file, 'a') as f:
-                    f.write(f">{species_name} single_hit\n")
-                    f.write(f"{sorted_seqs[0]}\n")
-            else:
-                # Multi-copy mode (default): Keep all sequences
-                if len(sorted_seqs) == 1:
-                    # Only one sequence for this locus: use simple naming
+
+            # Read existing records for this locus (if any)
+            existing_records = []  # list of (header_line, seq_string)
+            if os.path.exists(output_file):
+                with open(output_file, 'r') as ef:
+                    current_header = None
+                    current_seq_lines = []
+                    for line in ef:
+                        line = line.rstrip('\n')
+                        if line.startswith('>'):
+                            if current_header is not None:
+                                existing_records.append((current_header, ''.join(current_seq_lines)))
+                            current_header = line
+                            current_seq_lines = []
+                        else:
+                            if current_header is not None:
+                                current_seq_lines.append(line)
+                    if current_header is not None:
+                        existing_records.append((current_header, ''.join(current_seq_lines)))
+
+            # Helper to extract and normalize species name from an existing header line
+            def extract_species_from_header(header_line):
+                header_body = header_line[1:]
+                # Take token up to first space (or whole string if no space)
+                if ' ' in header_body:
+                    token = header_body.split(' ')[0]
+                else:
+                    token = header_body
+
+                # Normalize by stripping trailing '.main' or '.<digits>' if present
+                if token.endswith('.main'):
+                    base_name = token[:-5]
+                else:
+                    # Check for a trailing .<digits> pattern
+                    m = re.match(r"^(.*)\.([0-9]+)$", token)
+                    if m:
+                        base_name = m.group(1)
+                    else:
+                        base_name = token
+
+                return base_name
+
+            # Separate existing records into those belonging to this species and others
+            existing_species_seqs = []
+            other_species_records = []
+            for header_line, seq in existing_records:
+                species_in_output = extract_species_from_header(header_line)
+                if species_in_output == species_name:
+                    existing_species_seqs.append(seq)
+                else:
+                    other_species_records.append((header_line, seq))
+
+            # If we see any existing sequences for this species in the output, report once
+            if existing_species_seqs and not duplicate_detected_for_species:
+                duplicate_detected_for_species = True
+                message = f"[{current_time}] [INFO] Duplicate species detected in output for species: {species_name} (existing sequences will be merged with input)\n"
+                print(message, end="")
+                with open(log_file, "a") as f:
+                    f.write(message)
+
+            # Combine existing sequences (for this species and locus) with new sequences
+            combined_seqs = existing_species_seqs + sequences
+
+            # If there are no existing records for this species and locus, keep original behaviour (append only)
+            if not existing_species_seqs:
+                # Sort sequences by length (longest first)
+                sorted_seqs = sorted(sequences, key=len, reverse=True)
+
+                if single_copy:
+                    # Single-copy mode: Only keep the longest sequence
                     with open(output_file, 'a') as f:
                         f.write(f">{species_name} single_hit\n")
                         f.write(f"{sorted_seqs[0]}\n")
+                    # For per-species export, only the longest sequence is written for this locus
+                    species_locus_seqs_for_export[locus_name] = [sorted_seqs[0]]
                 else:
-                    # Multiple sequences for this locus: use .main and NODE naming
-                    # Write the longest sequence with ".main single_hit"
-                    with open(output_file, 'a') as f:
-                        f.write(f">{species_name}.main single_hit\n")
-                        f.write(f"{sorted_seqs[0]}\n")
-                    
-                    # Write other sequences with NODE naming
-                    for idx, seq in enumerate(sorted_seqs[1:]):
+                    # Multi-copy mode (default): Keep all sequences
+                    if len(sorted_seqs) == 1:
+                        # Only one sequence for this locus: use simple naming
                         with open(output_file, 'a') as f:
-                            node_num = idx + 1
-                            f.write(f">{species_name}.{idx} NODE_{node_num}_length_{len(seq)}\n")
+                            f.write(f">{species_name} single_hit\n")
+                            f.write(f"{sorted_seqs[0]}\n")
+                        species_locus_seqs_for_export[locus_name] = [sorted_seqs[0]]
+                    else:
+                        # Multiple sequences for this locus: use .main and NODE naming
+                        # Write the longest sequence with ".main NODE naming"
+                        with open(output_file, 'a') as f:
+                            f.write(f">{species_name}.main NODE_0_length_{len(sorted_seqs[0])}\n")
+                            f.write(f"{sorted_seqs[0]}\n")
+
+                        # Write other sequences with NODE naming
+                        for idx, seq in enumerate(sorted_seqs[1:]):
+                            with open(output_file, 'a') as f:
+                                node_num = idx + 1
+                                f.write(f">{species_name}.{idx} NODE_{node_num}_length_{len(seq)}\n")
+                                f.write(f"{seq}\n")
+                        species_locus_seqs_for_export[locus_name] = sorted_seqs
+            else:
+                # There are existing sequences for this species and locus in the output file.
+                # We need to merge them with the new sequences and rewrite the whole locus file.
+                if single_copy:
+                    # Single-copy mode: keep only the longest sequence across existing + new for this species
+                    longest_seq = max(combined_seqs, key=len)
+
+                    with open(output_file, 'w') as f:
+                        # First write back all other species records as they were
+                        for header_line, seq in other_species_records:
+                            f.write(f"{header_line}\n")
                             f.write(f"{seq}\n")
+
+                        # Then write the single-copy record for this species
+                        f.write(f">{species_name} single_hit\n")
+                        f.write(f"{longest_seq}\n")
+
+                    # For per-species export, only the longest integrated sequence is kept for this locus
+                    species_locus_seqs_for_export[locus_name] = [longest_seq]
+                else:
+                    # Multi-copy mode: keep all sequences (existing + new) for this species
+                    sorted_combined = sorted(combined_seqs, key=len, reverse=True)
+
+                    with open(output_file, 'w') as f:
+                        # First write back all other species records as they were
+                        for header_line, seq in other_species_records:
+                            f.write(f"{header_line}\n")
+                            f.write(f"{seq}\n")
+
+                        # Then write all sequences for this species with updated naming
+                        if len(sorted_combined) == 1:
+                            f.write(f">{species_name} single_hit\n")
+                            f.write(f"{sorted_combined[0]}\n")
+                        else:
+                            # Longest sequence as .main
+                            f.write(f">{species_name}.main NODE_0_length_{len(sorted_combined[0])}\n")
+                            f.write(f"{sorted_combined[0]}\n")
+
+                            # Remaining sequences as NODE_1, NODE_2, ...
+                            for idx, seq in enumerate(sorted_combined[1:]):
+                                node_num = idx + 1
+                                f.write(f">{species_name}.{idx} NODE_{node_num}_length_{len(seq)}\n")
+                                f.write(f"{seq}\n")
+
+                    # For per-species export, keep all integrated sequences for this locus
+                    species_locus_seqs_for_export[locus_name] = sorted_combined
         
+        # After writing all loci for this species, optionally export per-species FASTA
+        if per_species_dir is not None and species_locus_seqs_for_export:
+            species_output_file = os.path.join(per_species_dir, f"{species_name}.fasta")
+            with open(species_output_file, 'w') as sf:
+                for locus_name, seqs_for_locus in species_locus_seqs_for_export.items():
+                    # seqs_for_locus is already the set of integrated sequences for this species and locus
+                    # Sort again by length (longest first) to be explicit
+                    sorted_seqs = sorted(seqs_for_locus, key=len, reverse=True)
+
+                    if len(sorted_seqs) == 1:
+                        # Single sequence for this locus
+                        sf.write(f">{locus_name}\n")
+                        sf.write(f"{sorted_seqs[0]}\n")
+                    else:
+                        # Multiple sequences for this locus
+                        # Longest sequence marked as main
+                        sf.write(f">{locus_name} main\n")
+                        sf.write(f"{sorted_seqs[0]}\n")
+
+                        # Remaining sequences with NODE_NODE_X_length_XXX naming
+                        for idx, seq in enumerate(sorted_seqs[1:]):
+                            node_num = idx + 1
+                            sf.write(f">{locus_name} NODE_NODE_{node_num}_length_{len(seq)}\n")
+                            sf.write(f"{seq}\n")
+
         # Count total sequences
-        total_seqs = sum(len(seqs) for seqs in loci.values())
+        if single_copy:
+            # In single-copy mode, only one sequence per locus is written
+            total_seqs = len(loci)
+        else:
+            # In multi-copy mode, all sequences are written
+            total_seqs = sum(len(seqs) for seqs in loci.values())
+        
         message = f"[{current_time}] [INFO] Finished integrating species: {species_name} ({len(loci)} loci, {total_seqs} sequences)\n"
         print(f"{GREEN}{message}{RESET}", end="")
         with open(log_file, "a") as f:
@@ -252,6 +440,97 @@ def integrate_sequences(input_dir, output_dir, output_suffix, locus_list=None, s
     print(f"{GREEN}{message}{RESET}", end="")
     with open(log_file, "a") as f:
         f.write(message)
+
+    if per_species_dir is not None:
+        species_locus_map = {}
+
+        extensions = ['*.fasta', '*.fa', '*.FNA']
+        locus_files = []
+        for ext in extensions:
+            locus_files.extend(Path(output_dir).glob(ext))
+
+        for locus_file in locus_files:
+            base_name = locus_file.stem
+            if output_suffix and base_name.endswith(output_suffix):
+                locus_name = base_name[:-len(output_suffix)]
+            else:
+                locus_name = base_name
+
+            with open(locus_file, 'r') as lf:
+                current_header = None
+                current_seq_lines = []
+                for line in lf:
+                    line = line.rstrip('\n')
+                    if line.startswith('>'):
+                        if current_header is not None:
+                            header_body = current_header[1:]
+                            if ' ' in header_body:
+                                token = header_body.split(' ')[0]
+                            else:
+                                token = header_body
+
+                            if token.endswith('.main'):
+                                base_species = token[:-5]
+                            else:
+                                m = re.match(r"^(.*)\.([0-9]+)$", token)
+                                if m:
+                                    base_species = m.group(1)
+                                else:
+                                    base_species = token
+
+                            seq = ''.join(current_seq_lines)
+                            if seq:
+                                if base_species not in species_locus_map:
+                                    species_locus_map[base_species] = {}
+                                if locus_name not in species_locus_map[base_species]:
+                                    species_locus_map[base_species][locus_name] = []
+                                species_locus_map[base_species][locus_name].append(seq)
+
+                        current_header = line
+                        current_seq_lines = []
+                    else:
+                        if current_header is not None:
+                            current_seq_lines.append(line)
+
+                if current_header is not None:
+                    header_body = current_header[1:]
+                    if ' ' in header_body:
+                        token = header_body.split(' ')[0]
+                    else:
+                        token = header_body
+
+                    if token.endswith('.main'):
+                        base_species = token[:-5]
+                    else:
+                        m = re.match(r"^(.*)\.([0-9]+)$", token)
+                        if m:
+                            base_species = m.group(1)
+                        else:
+                            base_species = token
+
+                    seq = ''.join(current_seq_lines)
+                    if seq:
+                        if base_species not in species_locus_map:
+                            species_locus_map[base_species] = {}
+                        if locus_name not in species_locus_map[base_species]:
+                            species_locus_map[base_species][locus_name] = []
+                        species_locus_map[base_species][locus_name].append(seq)
+
+        for species_name, locus_dict in species_locus_map.items():
+            species_output_file = os.path.join(per_species_dir, f"{species_name}.fasta")
+            with open(species_output_file, 'w') as sf:
+                for locus_name, seqs_for_locus in locus_dict.items():
+                    sorted_seqs = sorted(seqs_for_locus, key=len, reverse=True)
+                    if len(sorted_seqs) == 1:
+                        sf.write(f">{locus_name}\n")
+                        sf.write(f"{sorted_seqs[0]}\n")
+                    else:
+                        sf.write(f">{locus_name} main\n")
+                        sf.write(f"{sorted_seqs[0]}\n")
+                        for idx, seq in enumerate(sorted_seqs[1:]):
+                            node_num = idx + 1
+                            sf.write(f">{locus_name} NODE_NODE_{node_num}_length_{len(seq)}\n")
+                            sf.write(f"{seq}\n")
 
 def main():
     parser = argparse.ArgumentParser(
@@ -275,6 +554,8 @@ def main():
                         default='./Integrate_seqs.log')
     parser.add_argument('--single_copy', action='store_true',
                         help='Single-copy mode: Only keep the longest sequence for multi-copy genes. By default (multi-copy mode), all sequences will be kept with special naming - the longest sequence will be named as "species.main single_hit", and others as "species.0 NODE_1_length_XXX", "species.1 NODE_2_length_XXX", etc.')
+    parser.add_argument('--per_species_dir', required=False,
+                        help='Optional directory for per-species FASTA output. If provided, one file per species will be written as <species_name>.fasta, containing all loci for that species with headers formatted as >locus (single sequence) or >locus main / >locus NODE_NODE_X_length_XXX (for multiple sequences per locus).')
 
     args = parser.parse_args()
     
@@ -314,7 +595,7 @@ def main():
         sample_list = read_sample_list(args.sample_list)
     
     # Execute the integration
-    integrate_sequences(args.input, args.output, args.suffix, locus_list, sample_list, args.log, args.single_copy)
+    integrate_sequences(args.input, args.output, args.suffix, locus_list, sample_list, args.log, args.single_copy, args.per_species_dir)
 
 
 if __name__ == '__main__':

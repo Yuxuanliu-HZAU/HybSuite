@@ -713,7 +713,7 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
         )
     )
     
-    # Helper function to create button data (optimized version)
+    # Helper function to create button data for the length coverage heatmap
     def create_button_data(sample_order, group_by_type_flag, filter_type_value, sort_order='category descending', bar_color_style='viridis'):
         """Create button args for a specific configuration.
         
@@ -721,7 +721,7 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
             sample_order: List of sample names in desired order
             group_by_type_flag: Whether to group by type
             filter_type_value: Filter to show only Original or Filtered
-            sort_order: X-axis category order for loci sorting
+            sort_order: X-axis locus sorting mode ('category descending', 'total descending', 'total ascending')
             bar_color_style: Color style for bar charts
         """
         # Get bar colors based on color style
@@ -758,7 +758,7 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
             yaxis_title = "Sample - Type"
             shapes = []
         
-        # Calculate bar chart data (optimized)
+        # Calculate bar chart data (initially in original loci_sorted order)
         if filter_type_value:
             # Only Original or Only Filtered mode - use single color
             dtype = filter_type_value
@@ -821,13 +821,46 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
                     bar_right_orig.append(0)
                     bar_right_filt.append(count)
         
-        # Create hover text for bar charts
-        hover_text_top_orig = [f"<b>Locus:</b> {locus}<br><b>Type:</b> Original<br><b>Samples recovered:</b> {count}" 
-                               for locus, count in zip(loci_sorted, bar_top_orig)]
-        # For filtered bars, get absolute values
+        # Decide locus order on X-axis based on sort_order.
+        # Default: keep alphabetical loci_sorted order; for total_* modes, sort by total length_coverage (sum of z).
+        loci_current = list(loci_sorted)
+        if sort_order.startswith('total'):
+            # Use z_data (length_coverage) to compute total coverage per locus as sorting score
+            # z_data: list[row_index][locus_index]
+            num_loci = len(loci_current)
+            total_scores = []
+            for j in range(num_loci):
+                col_vals = [row[j] for row in z_data]
+                # Only use positive coverage values; ignore unrecovered loci (0)
+                pos_vals = [v for v in col_vals if v > 0]
+                if pos_vals:
+                    score = sum(pos_vals)
+                else:
+                    score = 0
+                total_scores.append(score)
+            descending = 'descending' in sort_order
+            idx_order = sorted(range(len(loci_current)), key=lambda i: total_scores[i], reverse=descending)
+            # Reorder loci and all per-locus arrays
+            loci_current = [loci_current[i] for i in idx_order]
+            bar_top_orig = [bar_top_orig[i] for i in idx_order]
+            bar_top_filt = [bar_top_filt[i] for i in idx_order]
+            # Reorder z_data (heatmap values) and hover (per-cell text)
+            z_data = [[row[i] for i in idx_order] for row in z_data]
+            hover = [[row[i] for i in idx_order] for row in hover]
+        else:
+            idx_order = list(range(len(loci_current)))
+
+        # Create hover text for bar charts using final loci_current and bar_top_* values
+        hover_text_top_orig = [
+            f"<b>Locus:</b> {locus}<br><b>Type:</b> Original<br><b>Samples recovered:</b> {count}"
+            for locus, count in zip(loci_current, bar_top_orig)
+        ]
+        # For filtered bars, get absolute values（注意 bar_top_filt 可能为负数）
         bar_top_filt_abs = [-y if y < 0 else y for y in bar_top_filt]
-        hover_text_top_filt = [f"<b>Locus:</b> {locus}<br><b>Type:</b> Filtered<br><b>Samples recovered:</b> {abs(count)}" 
-                               for locus, count in zip(loci_sorted, bar_top_filt)]
+        hover_text_top_filt = [
+            f"<b>Locus:</b> {locus}<br><b>Type:</b> Filtered<br><b>Samples recovered:</b> {abs(count)}"
+            for locus, count in zip(loci_current, bar_top_filt)
+        ]
         
         # Calculate tick values for y-axis to show only 0 and max values
         max_bar_value = max(bar_top_orig) if bar_top_orig else 10
@@ -852,17 +885,20 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
         top_bar_domain_start = 1 - (TOP_BAR_HEIGHT / plot_height)
         main_heatmap_domain_end = top_bar_domain_start - 0.005  # Small gap
         
-        # Return dict with trace indices matching: [0:heatmap, 1:top_orig, 2:top_filt, 3:right_orig, 4:right_filt]
+        # Return dict with trace indices: [0:heatmap, 1:top_orig, 2:top_filt, 3:right_orig, 4:right_filt]
         return {
             "trace_update": {
                 "y": [y_hierarchy, bar_top_orig, bar_top_filt, y_hierarchy, y_hierarchy],
-                "x": [loci_sorted, loci_sorted, loci_sorted, bar_right_orig, bar_right_filt],
+                "x": [loci_current, loci_current, loci_current, bar_right_orig, bar_right_filt],
                 "z": [z_data],
-                "text": [hover, hover_text_top_orig, hover_text_top_filt, None, None],
+                # Heatmap hover uses text; top bars use customdata in their hovertemplate
+                "text": [hover, None, None, None, None],
+                "customdata": [None, hover_text_top_orig, hover_text_top_filt, None, None],
                 "marker.color": [None, top_color_orig, top_color_filt, top_color_orig, top_color_filt],
             },
             "layout_update": {
-                "xaxis": {"title": "Locus", "type": "category", "categoryorder": sort_order,
+                "xaxis": {"title": "Locus", "type": "category", "categoryorder": "array",
+                         "categoryarray": loci_current,
                          "linecolor": "black", "ticks": "outside", "gridcolor": "rgb(64,64,64)", 
                          "domain": [0, 0.95]},
                 "yaxis": {"title": yaxis_title, "autorange": "reversed", "linecolor": "black",
@@ -1276,6 +1312,43 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
     # Create DataFrames for statistics
     stats_df_original = pd.DataFrame(sample_stats_list_original)
     stats_df_filtered = pd.DataFrame(sample_stats_list_filtered)
+
+    # Append overall average row for Original data
+    if not stats_df_original.empty:
+        avg_row_original = {
+            'Sample': 'Average',
+            'Recovered_Loci': stats_df_original['Recovered_Loci'].mean(),
+            'Avg_Length': stats_df_original['Avg_Length'].mean(),
+            'Median_Length': stats_df_original['Median_Length'].mean(),
+            'Avg_Coverage': stats_df_original['Avg_Coverage'].mean(),
+            'Median_Coverage': stats_df_original['Median_Coverage'].mean(),
+        }
+        stats_df_original = pd.concat(
+            [stats_df_original, pd.DataFrame([avg_row_original])],
+            ignore_index=True,
+        )
+
+    # Append overall average row for Filtered data
+    if not stats_df_filtered.empty:
+        avg_row_filtered = {
+            'Sample': 'Average',
+            'Recovered_Loci': stats_df_filtered['Recovered_Loci'].mean(),
+            'Avg_Length': stats_df_filtered['Avg_Length'].mean(),
+            'Median_Length': stats_df_filtered['Median_Length'].mean(),
+            'Avg_Coverage': stats_df_filtered['Avg_Coverage'].mean(),
+            'Median_Coverage': stats_df_filtered['Median_Coverage'].mean(),
+        }
+        stats_df_filtered = pd.concat(
+            [stats_df_filtered, pd.DataFrame([avg_row_filtered])],
+            ignore_index=True,
+        )
+
+    # Export statistics to CSV files in the output directory
+    try:
+        stats_df_original.to_csv(os.path.join(output_dir, "sample_stats_original.csv"), index=False)
+        stats_df_filtered.to_csv(os.path.join(output_dir, "sample_stats_filtered.csv"), index=False)
+    except Exception:
+        pass
     
     # Get header color based on color_style
     if color_style == 'viridis':
@@ -1289,6 +1362,20 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
     else:
         header_color = "rgb(116,196,118)"  # Default to green
     
+    # For display: sort Original samples by Recovered_Loci (descending), keep Average row at the end
+    if not stats_df_original.empty:
+        df_orig_no_avg = stats_df_original[stats_df_original['Sample'] != 'Average']
+        avg_part_orig = stats_df_original[stats_df_original['Sample'] == 'Average']
+        df_orig_sorted = pd.concat(
+            [
+                df_orig_no_avg.sort_values('Recovered_Loci', ascending=False),
+                avg_part_orig,
+            ],
+            ignore_index=True,
+        )
+    else:
+        df_orig_sorted = stats_df_original
+
     # Create plotly table for Original data
     fig_table_original = go.Figure()
     fig_table_original.add_trace(
@@ -1309,12 +1396,12 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
             ),
             cells=dict(
                 values=[
-                    stats_df_original['Sample'],
-                    stats_df_original['Recovered_Loci'],
-                    stats_df_original['Avg_Length'].round(2),
-                    stats_df_original['Median_Length'].round(2),
-                    stats_df_original['Avg_Coverage'].round(2),
-                    stats_df_original['Median_Coverage'].round(2)
+                    df_orig_sorted['Sample'],
+                    df_orig_sorted['Recovered_Loci'],
+                    df_orig_sorted['Avg_Length'].round(2),
+                    df_orig_sorted['Median_Length'].round(2),
+                    df_orig_sorted['Avg_Coverage'].round(2),
+                    df_orig_sorted['Median_Coverage'].round(2)
                 ],
                 fill_color='light grey',
                 align='left',
@@ -1323,15 +1410,29 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
             )
         )
     )
-    
+
     fig_table_original.update_layout(
         font_family="Arial",
         title="<b>3. Sample Statistics Summary (Original Data)</b><br><sup>Statistics based on original sequences with coverage > 0%</sup>",
-        height=max(400, 100 + 25 * len(stats_df_original)),
+        height=max(400, 100 + 25 * len(df_orig_sorted)),
     )
     
     figs.append(fig_table_original)
     
+    # For display: sort Filtered samples by Recovered_Loci (descending), keep Average row at the end
+    if not stats_df_filtered.empty:
+        df_filt_no_avg = stats_df_filtered[stats_df_filtered['Sample'] != 'Average']
+        avg_part_filt = stats_df_filtered[stats_df_filtered['Sample'] == 'Average']
+        df_filt_sorted = pd.concat(
+            [
+                df_filt_no_avg.sort_values('Recovered_Loci', ascending=False),
+                avg_part_filt,
+            ],
+            ignore_index=True,
+        )
+    else:
+        df_filt_sorted = stats_df_filtered
+
     # Create plotly table for Filtered data
     fig_table_filtered = go.Figure()
     fig_table_filtered.add_trace(
@@ -1352,12 +1453,12 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
             ),
             cells=dict(
                 values=[
-                    stats_df_filtered['Sample'],
-                    stats_df_filtered['Recovered_Loci'],
-                    stats_df_filtered['Avg_Length'].round(2),
-                    stats_df_filtered['Median_Length'].round(2),
-                    stats_df_filtered['Avg_Coverage'].round(2),
-                    stats_df_filtered['Median_Coverage'].round(2)
+                    df_filt_sorted['Sample'],
+                    df_filt_sorted['Recovered_Loci'],
+                    df_filt_sorted['Avg_Length'].round(2),
+                    df_filt_sorted['Median_Length'].round(2),
+                    df_filt_sorted['Avg_Coverage'].round(2),
+                    df_filt_sorted['Median_Coverage'].round(2)
                 ],
                 fill_color='light grey',
                 align='left',
@@ -1366,11 +1467,11 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
             )
         )
     )
-    
+
     fig_table_filtered.update_layout(
         font_family="Arial",
         title="<b>4. Sample Statistics Summary (Filtered Data)</b><br><sup>Statistics based on filtered sequences with coverage > 0%</sup>",
-        height=max(400, 100 + 25 * len(stats_df_filtered)),
+        height=max(400, 100 + 25 * len(df_filt_sorted)),
     )
     
     figs.append(fig_table_filtered)
@@ -1402,7 +1503,10 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
     
     # Helper function to build heatmap data for paralog
     def build_paralog_heatmap_data(sample_order):
-        """Build heatmap data for paralog counts"""
+        """Build heatmap data for paralog counts.
+        Only loci with paralog_sequences >= 2 are treated as true paralogs in z-data;
+        paralog = 1 is treated as 0 (blank cell), but hover text仍显示真实数值。
+        """
         z_vals = []
         y_labels_samp = []
         y_labels_typ = []
@@ -1419,14 +1523,17 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
                     # If combination doesn't exist, fill with zeros
                     row_paralog = [0] * len(loci_sorted_paralog)
                 
-                # Build hover text for this row
+                # Build hover text and z row (mask paralog=1 to 0)
                 row_hover = []
+                row_z = []
                 for i, locus in enumerate(loci_sorted_paralog):
                     paralog_val = row_paralog[i]
                     hover_text = f"<b>{sample}</b><br>Type: <b>{data_type}</b><br>Locus: <b>{locus}</b><br>Paralog Count: <b>{int(paralog_val)}</b>"
                     row_hover.append(hover_text)
+                    # Only count true paralogs >=2 in the heatmap values
+                    row_z.append(paralog_val if paralog_val >= 2 else 0)
                 
-                z_vals.append(row_paralog)
+                z_vals.append(row_z)
                 y_labels_samp.append(sample)
                 y_labels_typ.append(data_type)
                 hover_txts.append(row_hover)
@@ -1454,7 +1561,8 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
         # Only use Filtered data for sorting
         if (sample, 'Filtered') in pivot_paralog.index:
             row_vals = pivot_paralog.loc[(sample, 'Filtered'), :].values
-            paralogs = [v for v in row_vals if v > 0]  # Only non-zero values
+            # Only treat paralog >=2 as true paralogs
+            paralogs = [v for v in row_vals if v > 1]
         else:
             paralogs = []
         
@@ -1495,12 +1603,14 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
                         row_paralog = [0] * len(loci_sorted_paralog)
                     
                     row_hover = []
+                    row_z = []
                     for i, locus in enumerate(loci_sorted_paralog):
                         paralog_val = row_paralog[i]
                         hover_text = f"<b>{sample}</b><br>Type: <b>{data_type}</b><br>Locus: <b>{locus}</b><br>Paralog Count: <b>{int(paralog_val)}</b>"
                         row_hover.append(hover_text)
+                        row_z.append(paralog_val if paralog_val >= 2 else 0)
                     
-                    z_data.append(row_paralog)
+                    z_data.append(row_z)
                     # For group_by_type: Type is outer (index 0), Sample is inner (index 1)
                     y_hierarchy[0].append(data_type)
                     y_hierarchy[1].append(sample)
@@ -1516,12 +1626,14 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
                     row_paralog = [0] * len(loci_sorted_paralog)
                 
                 row_hover = []
+                row_z = []
                 for i, locus in enumerate(loci_sorted_paralog):
                     paralog_val = row_paralog[i]
                     hover_text = f"<b>{sample}</b><br>Type: <b>{filter_type}</b><br>Locus: <b>{locus}</b><br>Paralog Count: <b>{int(paralog_val)}</b>"
                     row_hover.append(hover_text)
+                    row_z.append(paralog_val if paralog_val >= 2 else 0)
                 
-                z_data.append(row_paralog)
+                z_data.append(row_z)
                 y_hierarchy[0].append(sample)
                 y_hierarchy[1].append(filter_type)
                 hover.append(row_hover)
@@ -1537,12 +1649,14 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
                         row_paralog = [0] * len(loci_sorted_paralog)
                     
                     row_hover = []
+                    row_z = []
                     for i, locus in enumerate(loci_sorted_paralog):
                         paralog_val = row_paralog[i]
                         hover_text = f"<b>{sample}</b><br>Type: <b>{data_type}</b><br>Locus: <b>{locus}</b><br>Paralog Count: <b>{int(paralog_val)}</b>"
                         row_hover.append(hover_text)
+                        row_z.append(paralog_val if paralog_val >= 2 else 0)
                     
-                    z_data.append(row_paralog)
+                    z_data.append(row_z)
                     y_hierarchy[0].append(sample)
                     y_hierarchy[1].append(data_type)
                     hover.append(row_hover)
@@ -1558,10 +1672,10 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
         if filter_type is not None:
             # Only Original or Only Filtered mode - use single color
             dtype = filter_type
-            # Top bars - only count samples of the selected type
+            # Top bars - only count samples of the selected type, with true paralogs (>=2)
             bar_top_data = [sum(1 for s in sample_order 
                                if (s, dtype) in pivot_paralog.index 
-                               and pivot_paralog.loc[(s, dtype), locus] > 0) 
+                               and pivot_paralog.loc[(s, dtype), locus] > 1) 
                            for locus in loci_sorted_paralog]
             
             # Determine bar assignment based on filter type
@@ -1581,10 +1695,11 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
             # Both modes - show both colors
             for locus in loci_sorted_paralog:
                 if locus in pivot_paralog.columns:
+                    # Only count true paralogs (>=2)
                     count_orig = sum(1 for idx in pivot_paralog.index 
-                                    if 'Original' in str(idx) and pivot_paralog.loc[idx, locus] > 0)
+                                    if 'Original' in str(idx) and pivot_paralog.loc[idx, locus] > 1)
                     count_filt = sum(1 for idx in pivot_paralog.index 
-                                    if 'Filtered' in str(idx) and pivot_paralog.loc[idx, locus] > 0)
+                                    if 'Filtered' in str(idx) and pivot_paralog.loc[idx, locus] > 1)
                 else:
                     count_orig = count_filt = 0
                 bar_top_orig_paralog.append(count_orig)
@@ -1592,12 +1707,6 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
             
             top_color_orig_paralog = COLOR_ORIGINAL
             top_color_filt_paralog = COLOR_FILTERED
-        
-        # Create hover text for top bars
-        hover_text_top_orig_paralog = [f"<b>Locus:</b> {locus}<br><b>Type:</b> {filter_type if filter_type else 'Original'}<br><b>Samples with paralogs:</b> {count}" 
-                                       for locus, count in zip(loci_sorted_paralog, bar_top_orig_paralog)]
-        hover_text_top_filt_paralog = [f"<b>Locus:</b> {locus}<br><b>Type:</b> Filtered<br><b>Samples with paralogs:</b> {abs(count)}" 
-                                       for locus, count in zip(loci_sorted_paralog, bar_top_filt_paralog)]
         
         # Right bars for paralog
         bar_right_orig_paralog = []
@@ -1612,7 +1721,7 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
                 for t, s in zip(y_hierarchy[0], y_hierarchy[1]):
                     count = sum(1 for locus in loci_sorted_paralog 
                                if (s, t) in pivot_paralog.index 
-                               and pivot_paralog.loc[(s, t), locus] > 0)
+                               and pivot_paralog.loc[(s, t), locus] > 1)
                     bar_right_orig_paralog.append(count if dtype == 'Original' else 0)
                     bar_right_filt_paralog.append(count if dtype == 'Filtered' else 0)
             else:
@@ -1620,7 +1729,7 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
                 for s, t in zip(y_hierarchy[0], y_hierarchy[1]):
                     count = sum(1 for locus in loci_sorted_paralog 
                                if (s, t) in pivot_paralog.index 
-                               and pivot_paralog.loc[(s, t), locus] > 0)
+                               and pivot_paralog.loc[(s, t), locus] > 1)
                     bar_right_orig_paralog.append(count if dtype == 'Original' else 0)
                     bar_right_filt_paralog.append(count if dtype == 'Filtered' else 0)
         else:
@@ -1630,7 +1739,8 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
                 # In group_by_type mode: y_hierarchy[0] is Type, y_hierarchy[1] is Sample
                 for dtype, sample in zip(y_hierarchy[0], y_hierarchy[1]):
                     if (sample, dtype) in pivot_paralog.index:
-                        count = (pivot_paralog.loc[(sample, dtype), :] > 0).sum()
+                        # Only count paralogs >=2
+                        count = (pivot_paralog.loc[(sample, dtype), :] > 1).sum()
                     else:
                         count = 0
                     
@@ -1644,7 +1754,8 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
                 # In normal mode: y_hierarchy[0] is Sample, y_hierarchy[1] is Type
                 for sample, dtype in zip(y_hierarchy[0], y_hierarchy[1]):
                     if (sample, dtype) in pivot_paralog.index:
-                        count = (pivot_paralog.loc[(sample, dtype), :] > 0).sum()
+                        # Only count paralogs >=2
+                        count = (pivot_paralog.loc[(sample, dtype), :] > 1).sum()
                     else:
                         count = 0
                     
@@ -1654,6 +1765,40 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
                     else:
                         bar_right_orig_paralog.append(0)
                         bar_right_filt_paralog.append(count)
+        
+        # Decide locus order on X-axis based on sort_order
+        # 默认：按 loci_sorted_paralog 的字母顺序；当使用 total_* 排序时，改用 z_data (paralog>=2) 的“总量”(sum z) 做打分，
+        # 与旧脚本中 Plotly categoryorder='total descending' 的语义保持一致。
+        loci_current_paralog = list(loci_sorted_paralog)
+        if sort_order.startswith('total'):
+            num_loci_p = len(loci_current_paralog)
+            total_scores_p = []
+            for j in range(num_loci_p):
+                col_vals = [row[j] for row in z_data]
+                pos_vals = [v for v in col_vals if v > 0]
+                if pos_vals:
+                    score = sum(pos_vals)
+                else:
+                    score = 0
+                total_scores_p.append(score)
+            descending_p = 'descending' in sort_order
+            idx_order_p = sorted(range(num_loci_p), key=lambda i: total_scores_p[i], reverse=descending_p)
+            loci_current_paralog = [loci_current_paralog[i] for i in idx_order_p]
+            bar_top_orig_paralog = [bar_top_orig_paralog[i] for i in idx_order_p]
+            bar_top_filt_paralog = [bar_top_filt_paralog[i] for i in idx_order_p]
+            # Reorder z_data and hover
+            z_data = [[row[i] for i in idx_order_p] for row in z_data]
+            hover = [[row[i] for i in idx_order_p] for row in hover]
+
+        # Create hover text for top bars based on the final locus order
+        hover_text_top_orig_paralog = [
+            f"<b>Locus:</b> {locus}<br><b>Type:</b> {filter_type if filter_type else 'Original'}<br><b>Samples with paralogs:</b> {count}"
+            for locus, count in zip(loci_current_paralog, bar_top_orig_paralog)
+        ]
+        hover_text_top_filt_paralog = [
+            f"<b>Locus:</b> {locus}<br><b>Type:</b> Filtered<br><b>Samples with paralogs:</b> {abs(count)}"
+            for locus, count in zip(loci_current_paralog, bar_top_filt_paralog)
+        ]
         
         # Calculate fixed height for top bar chart
         num_samples_display = len(y_hierarchy[0])
@@ -1691,14 +1836,15 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
         return {
             "trace_update": {
                 "y": [y_hierarchy, bar_top_orig_paralog, bar_top_filt_paralog, y_hierarchy, y_hierarchy],
-                "x": [loci_sorted_paralog, loci_sorted_paralog, loci_sorted_paralog, bar_right_orig_paralog, bar_right_filt_paralog],
+                "x": [loci_current_paralog, loci_current_paralog, loci_current_paralog, bar_right_orig_paralog, bar_right_filt_paralog],
                 "z": [z_data],
                 "text": [hover, None, None, None, None],
                 "customdata": [None, hover_text_top_orig_paralog, hover_text_top_filt_paralog, None, None],
                 "marker.color": [None, top_color_orig_paralog, top_color_filt_paralog, top_color_orig_paralog, top_color_filt_paralog],
             },
             "layout_update": {
-                "xaxis": {"title": "Locus", "type": "category", "categoryorder": sort_order,
+                "xaxis": {"title": "Locus", "type": "category", "categoryorder": "array",
+                         "categoryarray": loci_current_paralog,
                          "linecolor": "black", "ticks": "outside", "gridcolor": "rgb(64,64,64)", 
                          "domain": [0, 0.95]},
                 "yaxis": {"title": yaxis_title, "autorange": "reversed", "linecolor": "black",
@@ -2180,7 +2326,56 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
     # Create DataFrames
     stats_df_paralog_original = pd.DataFrame(sample_paralog_stats_list_original)
     stats_df_paralog_filtered = pd.DataFrame(sample_paralog_stats_list_filtered)
+
+    # Append overall average row for paralog Original data
+    if not stats_df_paralog_original.empty:
+        avg_paralog_orig = {
+            'Sample': 'Average',
+            'Loci_With_Paralogs': stats_df_paralog_original['Loci_With_Paralogs'].mean(),
+            'Median_Paralog': stats_df_paralog_original['Median_Paralog'].mean(),
+            'Max_Paralog': stats_df_paralog_original['Max_Paralog'].mean(),
+            'Total_Paralog': stats_df_paralog_original['Total_Paralog'].mean(),
+        }
+        stats_df_paralog_original = pd.concat(
+            [stats_df_paralog_original, pd.DataFrame([avg_paralog_orig])],
+            ignore_index=True,
+        )
+
+    # Append overall average row for paralog Filtered data
+    if not stats_df_paralog_filtered.empty:
+        avg_paralog_filt = {
+            'Sample': 'Average',
+            'Loci_With_Paralogs': stats_df_paralog_filtered['Loci_With_Paralogs'].mean(),
+            'Median_Paralog': stats_df_paralog_filtered['Median_Paralog'].mean(),
+            'Max_Paralog': stats_df_paralog_filtered['Max_Paralog'].mean(),
+            'Total_Paralog': stats_df_paralog_filtered['Total_Paralog'].mean(),
+        }
+        stats_df_paralog_filtered = pd.concat(
+            [stats_df_paralog_filtered, pd.DataFrame([avg_paralog_filt])],
+            ignore_index=True,
+        )
+
+    # Export paralog statistics to CSV files in the output directory
+    try:
+        stats_df_paralog_original.to_csv(os.path.join(output_dir, "sample_paralog_stats_original.csv"), index=False)
+        stats_df_paralog_filtered.to_csv(os.path.join(output_dir, "sample_paralog_stats_filtered.csv"), index=False)
+    except Exception:
+        pass
     
+    # For display: sort Original samples by Total_Paralog (descending), keep Average row at the end
+    if not stats_df_paralog_original.empty:
+        df_para_orig_no_avg = stats_df_paralog_original[stats_df_paralog_original['Sample'] != 'Average']
+        avg_para_orig = stats_df_paralog_original[stats_df_paralog_original['Sample'] == 'Average']
+        df_para_orig_sorted = pd.concat(
+            [
+                df_para_orig_no_avg.sort_values('Total_Paralog', ascending=False),
+                avg_para_orig,
+            ],
+            ignore_index=True,
+        )
+    else:
+        df_para_orig_sorted = stats_df_paralog_original
+
     # Create plotly table for Original paralog data
     fig_table_paralog_original = go.Figure()
     fig_table_paralog_original.add_trace(
@@ -2200,11 +2395,11 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
             ),
             cells=dict(
                 values=[
-                    stats_df_paralog_original['Sample'],
-                    stats_df_paralog_original['Loci_With_Paralogs'],
-                    stats_df_paralog_original['Median_Paralog'].round(2),
-                    stats_df_paralog_original['Max_Paralog'],
-                    stats_df_paralog_original['Total_Paralog']
+                    df_para_orig_sorted['Sample'],
+                    df_para_orig_sorted['Loci_With_Paralogs'],
+                    df_para_orig_sorted['Median_Paralog'].round(2),
+                    df_para_orig_sorted['Max_Paralog'],
+                    df_para_orig_sorted['Total_Paralog']
                 ],
                 fill_color='light grey',
                 align='left',
@@ -2213,15 +2408,29 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
             )
         )
     )
-    
+
     fig_table_paralog_original.update_layout(
         font_family="Arial",
         title="<b>7. Sample Paralog Statistics Summary (Original Data)</b><br><sup>Statistics based on original sequences with paralog count > 1</sup>",
-        height=max(400, 100 + 25 * len(stats_df_paralog_original)),
+        height=max(400, 100 + 25 * len(df_para_orig_sorted)),
     )
     
     figs.append(fig_table_paralog_original)
     
+    # For display: sort Filtered samples by Total_Paralog (descending), keep Average row at the end
+    if not stats_df_paralog_filtered.empty:
+        df_para_filt_no_avg = stats_df_paralog_filtered[stats_df_paralog_filtered['Sample'] != 'Average']
+        avg_para_filt = stats_df_paralog_filtered[stats_df_paralog_filtered['Sample'] == 'Average']
+        df_para_filt_sorted = pd.concat(
+            [
+                df_para_filt_no_avg.sort_values('Total_Paralog', ascending=False),
+                avg_para_filt,
+            ],
+            ignore_index=True,
+        )
+    else:
+        df_para_filt_sorted = stats_df_paralog_filtered
+
     # Create plotly table for Filtered paralog data
     fig_table_paralog_filtered = go.Figure()
     fig_table_paralog_filtered.add_trace(
@@ -2241,11 +2450,11 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
             ),
             cells=dict(
                 values=[
-                    stats_df_paralog_filtered['Sample'],
-                    stats_df_paralog_filtered['Loci_With_Paralogs'],
-                    stats_df_paralog_filtered['Median_Paralog'].round(2),
-                    stats_df_paralog_filtered['Max_Paralog'],
-                    stats_df_paralog_filtered['Total_Paralog']
+                    df_para_filt_sorted['Sample'],
+                    df_para_filt_sorted['Loci_With_Paralogs'],
+                    df_para_filt_sorted['Median_Paralog'].round(2),
+                    df_para_filt_sorted['Max_Paralog'],
+                    df_para_filt_sorted['Total_Paralog']
                 ],
                 fill_color='light grey',
                 align='left',
@@ -2254,11 +2463,11 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
             )
         )
     )
-    
+
     fig_table_paralog_filtered.update_layout(
         font_family="Arial",
         title="<b>8. Sample Paralog Statistics Summary (Filtered Data)</b><br><sup>Statistics based on filtered sequences with paralog count > 1</sup>",
-        height=max(400, 100 + 25 * len(stats_df_paralog_filtered)),
+        height=max(400, 100 + 25 * len(df_para_filt_sorted)),
     )
     
     figs.append(fig_table_paralog_filtered)
@@ -2267,7 +2476,7 @@ def build_stage2_html_report(length_stats_file, paralog_stats_file, output_dir, 
     config = dict(
         scrollZoom=True,
         toImageButtonOptions=dict(
-            format="svg",
+            format="png",
         ),
         modeBarButtonsToAdd=[
             "v1hovermode",

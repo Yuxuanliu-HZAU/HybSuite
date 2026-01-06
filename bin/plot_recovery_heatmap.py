@@ -49,11 +49,35 @@ try:
 except ImportError:
     sys.exit("Required Python package 'matplotlib' not found. Is it installed?")
 
+# ANSI color codes
+class ColoredFormatter(logging.Formatter):
+    """Custom formatter with colors for different log levels"""
+    
+    # ANSI escape codes for colors
+    COLORS = {
+        'DEBUG': '\033[36m',       # Cyan
+        'INFO': '\033[0m',         # Default (no color)
+        'WARNING': '\033[1;93m',   # Bold Bright Yellow (more visible)
+        'ERROR': '\033[1;91m',     # Bold Bright Red
+        'CRITICAL': '\033[1;91m',  # Bold Bright Red
+    }
+    RESET = '\033[0m'  # Reset to default
+    
+    def format(self, record):
+        # For WARNING and ERROR, color the entire message
+        if record.levelno >= logging.WARNING:
+            color = self.COLORS.get(record.levelname, self.RESET)
+            formatted = super().format(record)
+            # Apply color to the entire line
+            return f"{color}{formatted}{self.RESET}"
+        
+        return super().format(record)
+
 # Setup logging
 logger = logging.getLogger(f'hybpiper.{__name__}')
 logger.handlers = []  # Clear all existing handlers
 handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter(logging.Formatter(
+handler.setFormatter(ColoredFormatter(
     '[%(asctime)s] [%(levelname)s] %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 ))
@@ -108,22 +132,55 @@ def get_reference_lengths(ref_file, use_max=False):
     
     return avg_lengths, max_lengths
 
-def get_sequence_length(file_path):
-    """Get lengths of all sequences in a single file"""
+def get_sequence_length(file_path, filename_suffix=None, species_filter=None):
+    """Get lengths of all sequences in a single file
+    
+    Args:
+        file_path: Path to the FASTA file
+        filename_suffix: Suffix to remove from filename to get locus name
+        species_filter: Set of species names to include (if None, include all)
+    """
     lengths = {}
     try:
         for record in SeqIO.parse(file_path, "fasta"):
-            species = record.id.split()[0]
-            lengths[species] = len(record.seq)
+            species_raw = record.id.split()[0]
+            # Remove suffix like .digits or .main to get base sample name
+            species = re.sub(r'\.(main|\d+)$', '', species_raw)
+            
+            # Skip this species if it's not in the filter list
+            if species_filter is not None and species not in species_filter:
+                continue
+            
+            seq_length = len(record.seq)
+            # Keep only the longest sequence for each sample
+            if species not in lengths or seq_length > lengths[species]:
+                lengths[species] = seq_length
     except Exception as e:
         logger.error(f"Error processing {file_path}: {str(e)}")
-    return os.path.splitext(os.path.basename(file_path))[0], lengths
+    
+    # Extract locus name from filename
+    locus_raw = os.path.splitext(os.path.basename(file_path))[0]
+    
+    # Remove suffix from filename if specified
+    if filename_suffix:
+        # Support multiple suffixes separated by comma
+        suffixes = [s.strip() for s in filename_suffix.split(',')]
+        # Escape special regex characters and create pattern
+        escaped_suffixes = [re.escape(s) for s in suffixes]
+        pattern = r'(' + '|'.join(escaped_suffixes) + r')$'
+        locus = re.sub(pattern, '', locus_raw)
+    else:
+        # If no suffix specified, use the filename as is
+        locus = locus_raw
+    
+    return locus, lengths
 
-def calculate_seq_lengths(input_dir, species_list_file, output_species_list, output_file, ref_file, threads=1, use_max=False):
+def calculate_seq_lengths(input_dir, species_list_file, output_species_list, output_file, ref_file, threads=1, use_max=False, filename_suffix=None):
     """Calculate sequence lengths for each species and locus"""
     # If no species list is provided, automatically extract it
     if species_list_file is None:
         species = extract_species_names(input_dir)
+        species_filter = None  # No filtering needed
         if output_species_list:
             os.makedirs(os.path.dirname(os.path.abspath(output_species_list)), exist_ok=True)
             with open(output_species_list, 'w') as f:
@@ -133,7 +190,10 @@ def calculate_seq_lengths(input_dir, species_list_file, output_species_list, out
     else:
         # Read species list from file
         with open(species_list_file, 'r') as f:
-            species = [line.strip() for line in f]
+            species = [line.strip() for line in f if line.strip()]  # Filter out empty lines
+        # Create a set for efficient filtering
+        species_filter = set(species)
+        logger.info(f"Loaded {len(species)} species from species list file")
     
     fasta_files = [f for f in os.listdir(input_dir) 
                    if os.path.isfile(os.path.join(input_dir, f)) and 
@@ -144,15 +204,37 @@ def calculate_seq_lengths(input_dir, species_list_file, output_species_list, out
     ref_lengths = max_lengths if use_max else avg_lengths
     
     results = defaultdict(dict)
+    all_found_species = set()  # Track all species found in FASTA files
+    
     with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
         future_to_file = {
-            executor.submit(get_sequence_length, os.path.join(input_dir, f)): f 
+            executor.submit(get_sequence_length, os.path.join(input_dir, f), filename_suffix, species_filter): f 
             for f in fasta_files
         }
         
         for future in concurrent.futures.as_completed(future_to_file):
             locus, lengths = future.result()
             results[locus] = lengths
+            all_found_species.update(lengths.keys())
+    
+    # Check for mismatches if species list was provided
+    if species_filter is not None:
+        missing_species = set(species) - all_found_species
+        extra_species = all_found_species - set(species)
+        
+        if missing_species:
+            logger.warning(f"WARNING: {len(missing_species)} species in the list were NOT found in FASTA files:")
+            for sp in sorted(list(missing_species))[:10]:  # Show first 10
+                logger.warning(f"  - {sp}")
+            if len(missing_species) > 10:
+                logger.warning(f"  ... and {len(missing_species) - 10} more")
+        
+        if extra_species:
+            logger.warning(f"INFO: {len(extra_species)} species found in FASTA files but NOT in the list (filtered out):")
+            for sp in sorted(list(extra_species))[:10]:  # Show first 10
+                logger.warning(f"  - {sp}")
+            if len(extra_species) > 10:
+                logger.warning(f"  ... and {len(extra_species) - 10} more")
     
     df = pd.DataFrame(0, index=species, columns=sorted(results.keys(), key=natural_sort_key))
     
@@ -371,7 +453,9 @@ def extract_species_names(input_dir):
             for line in f:
                 if line.startswith('>'):
                     # Remove '>' and split by space
-                    species = line[1:].strip().split()[0]
+                    species_raw = line[1:].strip().split()[0]
+                    # Remove suffix like .digits or .main to get base sample name
+                    species = re.sub(r'\.(main|\d+)$', '', species_raw)
                     species_set.add(species)
     
     return sorted(list(species_set))
@@ -387,7 +471,8 @@ def main(args):
     df = calculate_seq_lengths(args.input_dir, args.species_list, 
                              args.output_species_list, 
                              args.output_seq_lengths, 
-                             args.reference, args.threads, args.use_max)
+                             args.reference, args.threads, args.use_max,
+                             args.filename_suffix)
     
     # Create heatmap unless --no_heatmap is specified
     if not args.no_heatmap:
@@ -407,6 +492,13 @@ def standalone():
     parser.add_argument('-s', '--species_list',
                         help='File containing list of species names (one per line). '
                              'If not provided, species names will be extracted from FASTA files')
+    
+    # File naming parameters
+    parser.add_argument('--filename_suffix',
+                        help='Suffix(es) to remove from input FASTA filenames to get locus names. '
+                             'Multiple suffixes can be separated by commas. '
+                             'Example: "_paralogs_all". '
+                             'If not specified, the input filenames will be recognized as loci names.')
     
     # Output related parameters (grouped together)
     parser.add_argument('--output_species_list', '-osp', 
