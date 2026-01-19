@@ -1,5 +1,7 @@
 # HybSuite: An integrated pipeline for hybrid capture phylogenomics from reads to trees
 
+[![install with conda](https://img.shields.io/badge/install%20with-conda-brightgreen.svg?style=flat)](https://anaconda.org/channels/YuxuanLiu/packages/hybsuite/overview)
+
 <img src="https://github.com/Yuxuanliu-HZAU/HybSuite/blob/master/images/HybSuite_logo.png" width="300" height="auto">
 
 **Released on 10.3.2025 by [Sun's Lab](https://github.com/SunLab-MiaoPu)**  
