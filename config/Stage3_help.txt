@@ -77,7 +77,7 @@ Arguments for integrated tools :
   -treeshrink_q_value <0-1>        
                         TreeShrink quantile threshold (Default: 0.05)
   -paragone_cutoff_value <FLOAT>       
-                        Branch length cutoff (Default: 0.03)
+                        Branch length cutoff (Default: 0.3)
   -paragone_minimum_taxa <INT>         
                         Minimum taxa per alignment (Default: 4)
   -paragone_min_tips <INT>             
