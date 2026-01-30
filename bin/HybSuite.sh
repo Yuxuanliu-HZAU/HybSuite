@@ -5083,9 +5083,10 @@ run_sp_tree_raxml_ng() {
 gene_tree_iqtree_fasttree() {
     local ortho_method="$1"
     # input:{output_dir}/06-Final_alignments/${ortho_method}
-    local input="$2"
+    local PH_tool="$2"
+    local input="$3"
     # output: {output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees
-    local output="$3"
+    local output="$4"
     
     rm -rf "${output}"
     mkdir -p "${output}"
@@ -5105,8 +5106,12 @@ gene_tree_iqtree_fasttree() {
       export OMP_NUM_THREADS=${nt_fasttree}
       stage_info_main "====>> Running ${gene_tree_tool} to construct single gene trees (${process} in parallel; ${nt_fasttree} threads for FastTree) ====>>"
     fi
-        while IFS= read -r file || [ -n "$file" ]; do
-      filename=${file%%.*}
+    while IFS= read -r file || [ -n "$file" ]; do
+      if [ "${PH_tool}" = "paragone" ]; then
+        filename=${file%%.selected_stripped.aln.trimmed.fasta}
+      elif [ "${PH_tool}" = "phylopypruner" ]; then
+        filename=${file%%.*}
+      fi
       if [ "${process}" != "all" ]; then
         read -u1000
       fi
@@ -5115,7 +5120,7 @@ gene_tree_iqtree_fasttree() {
         update_start_count "$filename" "$stage_logfile"
         if [ "${gene_tree}" = "1" ]; then
           stage_cmd "${log_mode}" "iqtree -s ${input}/${filename} -m MFP -nt ${nt_iqtree} -bb ${gene_tree_bb} -pre ${output}/${filename}"
-          iqtree -s "${input}/${file}" -m MFP -nt ${nt_iqtree} -bb "${gene_tree_bb}" -pre "${output}/${filename}" > /dev/null 2>&1
+          iqtree -s "${input}/${file}" -m MFP -nt "${nt_iqtree}" -bb "${gene_tree_bb}" -pre "${output}/${filename}" > /dev/null 2>&1
           if [ -s "${output}/${filename}.treefile" ]; then
             mv "${output}/${filename}.treefile" "${output}/${filename}.tre"
             find "${output}" -maxdepth 1 -name "${filename}.*" ! -name "*.tre" ! -delete
@@ -5598,13 +5603,22 @@ concatenated_analysis() {
 ################===========================================================================
 coalescent_analysis() {
   local ortho_method="$1"
+  local PH_tool="phylopypruner"
+
+  if [ "${run_paragone}" = "TRUE" ] && [ "${ortho_method}" != "HRS" ] && [ "${ortho_method}" != "RLWP" ] && [ "${ortho_method}" != "LS" ]; then
+    PH_tool="paragone"
+  fi
 
   if [ "${run_astral4}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
     stage_info_main_purple "====>> Coalescent analysis on ${ortho_method} alignments <<===="
     # Step 1: Preparing gene trees
     stage_info_main_blue "Step 1: Preparing gene trees ..."
     if echo "${run_coalescent_step}" | grep -q "1"; then
-      gene_tree_iqtree_fasttree "${ortho_method}" "${aln_dir}/${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees"
+      if [ "${PH_tool}" = "paragone" ]; then
+        gene_tree_iqtree_fasttree "${ortho_method}" "paragone" "${aln_dir}/${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees"
+      else
+        gene_tree_iqtree_fasttree "${ortho_method}" "phylopypruner" "${aln_dir}/${ortho_method}" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees"
+      fi
     else
       stage_info_main "Skipped (enable this step by including '1' in '-run_coalescent_step')."
     fi
@@ -5759,11 +5773,11 @@ if [ "${run_astral4}" = "TRUE" ] || [ "${run_wastral}" = "TRUE" ]; then
   if [ "${LS}" = "TRUE" ]; then
     coalescent_analysis "LS"
   fi
-  if [ "${MO}" = "TRUE" ]; then
-    coalescent_analysis "MO"
-  fi
   if [ "${MI}" = "TRUE" ]; then
     coalescent_analysis "MI"
+  fi
+  if [ "${MO}" = "TRUE" ]; then
+    coalescent_analysis "MO"
   fi
   if [ "${RT}" = "TRUE" ]; then
     coalescent_analysis "RT"
