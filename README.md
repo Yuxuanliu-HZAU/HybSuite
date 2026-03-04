@@ -164,18 +164,6 @@ https://github.com/Yuxuanliu-HZAU/HybSuite/wiki/Example-dataset
 
 # Changelog
 
-**1.2 (in preparation)** *~February 2026 (Chinese Spring Festival)* — **Advance Notice!**
-
-We tend to announce that **HybSuite v1.2** will be released before or around the **2026 Chinese Spring Festival**! 🎉  
-The new version will include several major updates and powerful new features:
-
-- **[CAPTUS](https://github.com/edgardomortiz/Captus) Integration** — A new optional module for data assembly in *HybSuite Stage 2*, offering enhanced flexibility and performance.
-- **[Plotly](https://plotly.com/) Visualization Support** — Automatically generate comprehensive HTML reports summarizing statistics from each stage.  
-  These reports will include publication-ready figures and tables for easier result interpretation and presentation.
-
-The related work is still in preparation now.
-**Stay tuned!**
-
 **1.1.5** *September, 2025* - **MAJOR UPDATE !**
 
 - **Pipeline restructuring**    
