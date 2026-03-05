@@ -6,7 +6,7 @@
 
 **Released on 10.3.2025 by [Sun's Lab](https://github.com/SunLab-MiaoPu)**  
 **Developed by:** [Yuxuan Liu](https://github.com/Yuxuanliu-HZAU)  
-**Contributors:**: [Miao Sun](https://github.com/Cactusolo), Zijia Lu, Wycliffe Omondi Omollo, Tao Xiong, Mengmeng Wang, Xueqin Wang, Liguo Zhang, Yiying Wang
+**Contributors:**: [Miao Sun](https://github.com/Cactusolo), Zijia Lu, Wycliffe Omondi Omollo, Tao Xiong, Mengmeng Wang, Xueqin Wang, Liguo Zhang, Yiying Wang   
 **Manual:** [https://yuxuanliu-hzau.github.io/HybSuite.docs/](https://yuxuanliu-hzau.github.io/HybSuite.docs/)
 
 If you have any questions/issues/suggestions, please leave a message [here](https://github.com/Yuxuanliu-HZAU/HybSuite/issues).  
