@@ -24,11 +24,11 @@ General arguments:
                         1: IQ-TREE, 2: RAxML, 3: RAxML-NG, 4: ASTRAL-IV, 5: wASTRAL
   
   === Steps control ===
-  -run_coalescent_step <1|2|3|4|5|12|123|1234|12345> 
+  -run_coalescent_step <INT> 
                         Control which coalescent analysis steps to run:
                         1: Construct single gene trees, 2: Combine and collapse gene trees, 3: Infer species tree, 4: Reroot gene trees, 5: PhyParts concordance analysis
                         (Default: 1234)
-  -run_concatenated_step <1|2|12> 
+  -run_concatenated_step <INT> 
                         Control which concatenated analysis steps to run:
                         1: Construct concatenated alignment, 2: Infer species tree
                         (Default: 12)
@@ -93,6 +93,8 @@ Arguments for integrated tools :
                         The pathway to the constraint tree for running RAxML-NG (Default: no constraint tree)
 
   === ASTRAL-IV ===
+  -astral4_root         Outermost (most distant) outgroup taxon name for ASTRAL-IV branch length calculation. (Default: none)
+                        (Strongly recommended for accurate branch length estimation. Specify only the single outermost outgroup.)  
   -astral_r <INT>       ASTRAL-IV rounds of search. (Default: 4)
   -astral_s <INT>       ASTRAL-IV rounds of subsampling. (Default: 4)
 
@@ -163,9 +165,6 @@ Arguments for integrated tools :
                         7: Ratio of supporting to all signal genes (blue/(blue+red+green))
                         8: Ratio of conflicting to all signal genes ((red+green)/(blue+red+green))
                         9: Original node support values from the input tree
-
-
-
 
 Command example :
   # Run HybSuite stage4 with IQ-TREE

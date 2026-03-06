@@ -57,6 +57,9 @@ Arguments for integrated tools:
                         The tool used for mapping reads to targets in HybPiper (only for protein targets) (Default: blast)
   -hybpiper_check_chimeric_contigs	<FALSE|TRUE>
                         Check whether a stitched contig is a potential chimera of contigs from multiple paralogs when running "hybpiper assemble". (Default: TRUE)
+  -hybpiper_cov_cutoff <INT>
+                        Specify the value of "-cov_cutoff" when running "hybpiper assemble" in Stage 2. (Default: 8)
+                        Increasing this value may increase the loci recovery efficiency but potentially introducing errors.
 
 Command example:
   # Run HybSuite stage2 with filtering paralog sequences

@@ -81,11 +81,11 @@ General arguments:
                         1: IQ-TREE, 2: RAxML, 3: RAxML-NG, 4: ASTRAL-IV, 5: wASTRAL, 6: ASTRAL-Pro
   
   === Steps control in stage 4 ===
-  -run_coalescent_step <1|2|3|4|5|12|123|1234|12345> 
+  -run_coalescent_step <INT> 
                         Control which coalescent analysis steps to run:
                         1: Construct single gene trees, 2: Combine and collapse gene trees, 3: Infer species tree, 4: Reroot gene trees, 5: PhyParts concordance analysis
                         (Default: 1234)
-  -run_concatenated_step <1|2|12> 
+  -run_concatenated_step <INT> 
                         Control which concatenated analysis steps to run:
                         1: Construct concatenated alignment, 2: Infer species tree
                         (Default: 12)
@@ -158,6 +158,9 @@ Arguments for integrated tools :
                         The tool used for mapping reads to targets in HybPiper (only for protein targets) (Default: blast)
   -hybpiper_check_chimeric_contigs	<FALSE|TRUE>
                         Check whether a stitched contig is a potential chimera of contigs from multiple paralogs when running "hybpiper assemble". (Default: FALSE)
+  -hybpiper_cov_cutoff <INT>
+                        Specify the value of "-cov_cutoff" when running "hybpiper assemble" in Stage 2. (Default: 8)
+                        Increasing this value may increase the loci recovery efficiency but potentially introducing errors.
   -hybpiper_skip_chimeric_genes <FALSE|TRUE>
                         Whether to recover sequences for putative chimeric genes when running "hybpiper retrieve_sequences" (HRS method) in Stage 3. (Default: FALSE)
   -hybpiper_retrieved_seqs_type <dna|intron|supercontig>
@@ -250,6 +253,8 @@ Arguments for integrated tools :
                         The pathway to the constraint tree for running RAxML-NG (Default: no constraint tree)
 
   === ASTRAL-IV (Stage 4) ===
+  -astral4_root         Outermost (most distant) outgroup taxon name for ASTRAL-IV branch length calculation. (Default: none)
+                        (Strongly recommended for accurate branch length estimation. Specify only the single outermost outgroup.)
   -astral_r <INT>       ASTRAL-IV rounds of search. (Default: 4)
   -astral_s <INT>       ASTRAL-IV rounds of subsampling. (Default: 4)
 
