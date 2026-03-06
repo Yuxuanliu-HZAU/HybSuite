@@ -4,7 +4,7 @@
 #===> Preparation and HybSuite Checking <===#
 #Options setting
 ###set the run name:
-hybsuite_version="1.1.6"
+hybsuite_version="1.1.7"
 current_time=$(date +"%Y-%m-%d_%H:%M:%S")
 # Read the variable list file and set the default values
 # Obtain the script path
@@ -3241,7 +3241,7 @@ if ([ "${run_stage2}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]) && [ "${ski
     ############################################################################################
     stage_info_main_blue "Step 4: Producing the length recovery report and heatmap..."
     stage_info_main "01-Producing the length recovery report and heatmap for the original (unfiltered) recovered sequences..."
-    stage_cmd_main "python ${script_dir}/plot_recovery_heatmap_v2.py -i ${output_dir}/02-All_paralogs/01-Original_paralogs -r ${t} --filename_suffix _paralogs_all --output_heatmap ${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap/Original_recovery_heatmap.html --output_seq_lengths ${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap/Original_recovered_-seq_lengths.tsv -t ${nt} -gw 0" 
+    stage_cmd_main "python ${script_dir}/plot_recovery_heatmap_v2.py -i ${output_dir}/02-All_paralogs/01-Original_paralogs -r ${t} --filename_suffix _paralogs_all --output_heatmap ${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap/Original_recovery_heatmap.html --output_seq_lengths ${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap/Original_recovered_seq_lengths.tsv -t ${nt} -gw 0" 
     python ${script_dir}/plot_recovery_heatmap_v2.py \
     -i ${output_dir}/02-All_paralogs/01-Original_paralogs \
     -r "${t}" \
@@ -3256,7 +3256,7 @@ if ([ "${run_stage2}" = "TRUE" ] || [ "${full_pipeline}" = "TRUE" ]) && [ "${ski
       stage_warning "Fail to produce the length recovery heatmap for original recovered sequences."
     fi
     stage_info_main "02-Producing the length recovery report and heatmap for the filtered recovered sequences..."
-    stage_cmd_main "python ${script_dir}/plot_recovery_heatmap_v2.py -i ${output_dir}/02-All_paralogs/03-Filtered_paralogs -r ${t} --filename_suffix _paralogs_all --output_heatmap ${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap/Original_recovery_heatmap.html --output_seq_lengths ${output_dir}/02-All_paralogs/02-Original_paralog_reports_and_heatmap/Original_recovered_-seq_lengths.tsv -t ${nt} -gw 0" 
+    stage_cmd_main "python ${script_dir}/plot_recovery_heatmap_v2.py -i ${output_dir}/02-All_paralogs/03-Filtered_paralogs -r ${t} --filename_suffix _paralogs_all --output_heatmap ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_recovery_heatmap.html --output_seq_lengths ${output_dir}/02-All_paralogs/04-Filtered_paralog_reports_and_heatmap/Filtered_recovered_seq_lengths.tsv -t ${nt} -gw 0" 
     python ${script_dir}/plot_recovery_heatmap_v2.py \
     -i ${output_dir}/02-All_paralogs/03-Filtered_paralogs \
     -r "${t}" \
@@ -5239,16 +5239,16 @@ run_astral4() {
     stage_info_main_light_purple "====>> ASTRAL-IV for ${ortho_method} orthogroups<<===="
     stage_info_main "01-Running ASTRAL-Ⅳ ..."
     if [ "${astral4_root}" = "_____" ] || [ "${root}" = "ParaGone_RT" ]; then
-      astral4_cmd="astral4 -t ${nt_astral4} -r ${astral4_r} -s ${astral4_s} -i ${input_combined_tree} -o ${output}/ASTRAL4_${prefix}_${ortho_method}.tre 2> ${output}/${prefix}_${ortho_method}_ASTRAL4.log"
+      astral4_cmd="astral4 -t ${nt_astral4} -r ${astral4_r} -s ${astral4_s} -i ${input_combined_tree} -o ${output}/ASTRAL-IV_${prefix}_${ortho_method}.tre 2> ${output}/ASTRAL-IV_${prefix}_${ortho_method}.log"
     else
-      astral4_cmd="astral4 -t ${nt_astral4} -r ${astral4_r} -s ${astral4_s} -i ${input_combined_tree} -o ${output}/ASTRAL4_${prefix}_${ortho_method}.tre --root ${astral4_root} 2> ${output}/${prefix}_${ortho_method}_ASTRAL4.log"
+      astral4_cmd="astral4 -t ${nt_astral4} -r ${astral4_r} -s ${astral4_s} -i ${input_combined_tree} -o ${output}/ASTRAL-IV_${prefix}_${ortho_method}.tre --root ${astral4_root} 2> ${output}/ASTRAL-IV_${prefix}_${ortho_method}.log"
     fi
     stage_cmd_main "${astral4_cmd}"
     eval "${astral4_cmd}" > /dev/null 2>&1
-    if [ -s "${output}/ASTRAL4_${prefix}_${ortho_method}.tre" ]; then
+    if [ -s "${output}/ASTRAL-IV_${prefix}_${ortho_method}.tre" ]; then
       stage_info_main "Succeed to run ASTRAL-Ⅳ for ${ortho_method} orthogroups."
       stage_info_main "The ASTRAL-Ⅳ tree for ${ortho_method} orthogroups has been written to:"
-      stage_info_main "${output}/ASTRAL4_${prefix}_${ortho_method}.tre"
+      stage_info_main "${output}/ASTRAL-IV_${prefix}_${ortho_method}.tre"
       stage_success "Finished."
     else
       stage_error "Fail to run ASTRAL-Ⅳ for ${ortho_method} orthogroups."
@@ -5256,10 +5256,10 @@ run_astral4() {
       stage_blank_main ""
       exit 1
     fi
-    if [ -s "${output}/ASTRAL4_${prefix}_${ortho_method}.tre" ]; then
+    if [ -s "${output}/ASTRAL-IV_${prefix}_${ortho_method}.tre" ]; then
       stage_info_main "Succeed to run ASTRAL-Ⅳ for ${ortho_method} orthogroups."
       stage_info_main "The ASTRAL-Ⅳ tree for ${ortho_method} orthogroups has been written to:"
-      stage_info_main "${output}/ASTRAL4_${prefix}_${ortho_method}.tre"
+      stage_info_main "${output}/ASTRAL-IV_${prefix}_${ortho_method}.tre"
       stage_success "Finished."
     else
       stage_error "Fail to run ASTRAL-Ⅳ for ${ortho_method} orthogroups."
@@ -5269,13 +5269,13 @@ run_astral4() {
     fi
 
     stage_info_main "02-Bootstrapping the ASTRAL-Ⅳ tree ..."
-    bootstrap_astral4_cmd="java -jar ${dependencies_dir}/ASTRAL-master/Astral/astral.5.7.8.jar -i \"${input_combined_tree}\" -o \"${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre\" -q \"${output}/ASTRAL4_${prefix}_${ortho_method}.tre\" >> ${output}/ASTRAL4_${prefix}_${ortho_method}.log 2>&1"
+    bootstrap_astral4_cmd="java -jar ${dependencies_dir}/ASTRAL-master/Astral/astral.5.7.8.jar -i \"${input_combined_tree}\" -o \"${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.tre\" -q \"${output}/ASTRAL-IV_${prefix}_${ortho_method}.tre\" >> ${output}/ASTRAL-III_LPP.log 2>&1"
     stage_cmd_main "${bootstrap_astral4_cmd}"
     eval "${bootstrap_astral4_cmd}" > /dev/null 2>&1
-    if [ -s "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre" ]; then
+    if [ -s "${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.tre" ]; then
       stage_info_main "Succeed to bootstrap the ASTRAL-Ⅳ tree."
       stage_info_main "The ASTRAL-Ⅳ tree with bootstrap values has been written to:"
-      stage_info_main "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre"
+      stage_info_main "${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.tre"
       stage_success "Finished."
     else
       stage_warning "Failed to bootstrap the ASTRAL-Ⅳ tree."
@@ -5286,28 +5286,28 @@ run_astral4() {
       cd "${output}"
       stage_info_main "03-Using Newick Utilities to reroot the tree (ASTRAL-IV)..."
       outgroup_name=$(cat "${output_dir}"/hybsuite_checklists/Outgroup.txt|fmt)
-      stage_cmd_main "nw_reroot ${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre ${outgroup_name} -l -s > ${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre"
-      nw_reroot "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre" ${outgroup_name} -l -s > "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre"
+      stage_cmd_main "nw_reroot ${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.tre ${outgroup_name} -l -s > ${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.rr.tre"
+      nw_reroot "${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.tre" ${outgroup_name} -l -s > "${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.rr.tre"
     
-      if [ ! -s "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre" ]; then
+      if [ ! -s "${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.rr.tre" ]; then
         if [ root="ParaGone_RT" ]; then
-          cp "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre" "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre"
+          cp "${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.tre" "${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.rr.tre"
           stage_info_main "Copied original tree as rerooted tree due to removing outgroups in ParaGone RT pipeline."
         fi
-        stage_warning "Failed to reroot the tree: ${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre." 
+        stage_warning "Failed to reroot the tree: ${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.rr.tre." 
         stage_warning "Please check your alignments and trees produced by ASTRAL-IV." 
         stage_blank_main ""
       else
           stage_info_main "Succeed to reroot the ASTRAL-IV tree."
           stage_info_main "The final rooted ASTRAL-IV tree with bootstrap values has been written to:"
-          stage_info_main "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre"
+          stage_info_main "${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.rr.tre"
           stage_success "Finished."
       fi
     else
       stage_info_main "No outgroup name is provided. The tree will not be rerooted."
-      cp ${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.tre ${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.no_rr.tre
+      cp ${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.tre ${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.no_rr.tre
       stage_info_main "The final unrooted ${ortho_method} concatenation-based tree (ASTRAL-IV) has been written to:"
-      stage_info_main "${output}/ASTRAL4_${prefix}_${ortho_method}.bootstrap.no_rr.tre"
+      stage_info_main "${output}/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.no_rr.tre"
       stage_success "Finished."
     fi
   }
@@ -5519,10 +5519,10 @@ run_phyparts_piecharts() {
 reroot_all_gene_trees() {
   local ortho_method="$1"
   
-  if [ -s "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre" ]; then
+  if [ -s "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.rr.tre" ]; then
       stage_info_main "01-Rerooting the gene trees via Reroot_genetrees.R ..."
       reroot_gene_trees "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees" "${output_dir}/08-Coalescent_analysis/${ortho_method}/04-Rerooted_gene_trees"
-  elif [ -s "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL4_${prefix}_${ortho_method}.bootstrap.no_rr.tre" ]; then
+  elif [ -s "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.no_rr.tre" ]; then
       stage_info_main "01-Rerooting the gene trees via Reroot_genetrees.R ..."
       stage_info_main "No outgroup found, skipping rerooting step"
   fi
@@ -5535,12 +5535,12 @@ run_phyparts_piecharts_astral4() {
   local ortho_method="$1"
 
   if [ "${run_astral4}" = "TRUE" ]; then
-    if [ -s "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre" ]; then
+    if [ -s "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.rr.tre" ]; then
       stage_info_main "02-Running PhyPartsPieCharts and modified_phypartspiecharts.py ..."
-      run_phyparts_piecharts "${prefix}_${ortho_method}" "ASTRAL-IV" "${output_dir}/08-Coalescent_analysis/${ortho_method}/04-Rerooted_gene_trees" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL4_${prefix}_${ortho_method}.bootstrap.rr.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/05-PhyParts_PieCharts/ASTRAL-IV"
-    elif [ -s "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL4_${prefix}_${ortho_method}.bootstrap.no_rr.tre" ]; then
+      run_phyparts_piecharts "${prefix}_${ortho_method}" "ASTRAL-IV" "${output_dir}/08-Coalescent_analysis/${ortho_method}/04-Rerooted_gene_trees" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.rr.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/05-PhyParts_PieCharts/ASTRAL-IV"
+    elif [ -s "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.no_rr.tre" ]; then
       stage_info_main "02-Running PhyPartsPieCharts and modified_phypartspiecharts.py ..."
-      run_phyparts_piecharts "${prefix}_${ortho_method}" "ASTRAL-IV" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL4_${prefix}_${ortho_method}.bootstrap.no_rr.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/05-PhyParts_PieCharts/ASTRAL-IV"
+      run_phyparts_piecharts "${prefix}_${ortho_method}" "ASTRAL-IV" "${output_dir}/08-Coalescent_analysis/${ortho_method}/01-Gene_trees" "${output_dir}/08-Coalescent_analysis/${ortho_method}/03-Species_tree/ASTRAL-IV/ASTRAL-IV_${prefix}_${ortho_method}.bootstrap.no_rr.tre" "${output_dir}/08-Coalescent_analysis/${ortho_method}/05-PhyParts_PieCharts/ASTRAL-IV"
     fi
   fi
 }
