@@ -86,6 +86,4 @@ hybsuite -v
 
 # Citation
 
-Our manuscript has been accepted by Applications in Plant Sciences and will be online soon:
-
-Liu, Y.-X.*, Lu, Z.-J., Omollo, W. O., Wang, M.-M., Zhang, L.-G., Xiong, T., Wang, X.-Q., Wang, Y.-Y., & Sun, M. (corresponding author). HybSuite: An integrated pipeline for hybrid capture phylogenomics from reads to trees. *Applications in Plant Sciences* 14(3): e70059. https://doi.org/10.1002/aps3.70059
+Liu, Y.-X., Lu, Z.-J., Omollo, W. O., Wang, M.-M., Zhang, L.-G., Xiong, T., Wang, X.-Q., Wang, Y.-Y., & Sun, M*. HybSuite: An integrated pipeline for hybrid capture phylogenomics from reads to trees. *Applications in Plant Sciences* 14(3): e70059. https://doi.org/10.1002/aps3.70059
